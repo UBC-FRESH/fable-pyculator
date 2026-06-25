@@ -9,32 +9,34 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Phase 0: Governance Bootstrap
 
-GitHub parent issue: pending public repo and `gh` access.
+GitHub parent issue: #1.
 
-Status: active pending initial commit and GitHub issue mapping.
+Initial commit: `8a5577d`.
+
+Status: complete.
 
 Goal: establish the repository contract, roadmap, changelog, planning area, package/docs/test
 scaffold, benchmark metadata, reference-document handling, and artifact hygiene for FABLE Pyculator.
 This phase wraps the current uncommitted scaffold as bootstrap evidence.
 
-- [x] P0.1 Establish project overview and agent operating contract. Child issue: pending.
+- [x] P0.1 Establish project overview and agent operating contract. Child issue: #2.
   - [x] Add `AGENTS.md` customized for FABLE Pyculator.
   - [x] Define the project boundary relative to Modelwright.
   - [x] Record source workbook, generated-model, and local artifact rules.
-- [x] P0.2 Establish roadmap, changelog, planning area, and artifact rules. Child issue: pending.
+- [x] P0.2 Establish roadmap, changelog, planning area, and artifact rules. Child issue: #3.
   - [x] Add `ROADMAP.md`.
   - [x] Add `CHANGE_LOG.md`.
   - [x] Add `planning/README.md`.
   - [x] Keep workbook binaries, generated models, extracts, logs, and validation reports under ignored
         `tmp/`.
-- [x] P0.3 Capture current package/docs/test scaffold as bootstrap evidence. Child issue: pending.
+- [x] P0.3 Capture current package/docs/test scaffold as bootstrap evidence. Child issue: #4.
   - [x] Add package metadata and importable `fable_pyculator` module.
   - [x] Add selection-control discovery and notebook control records.
   - [x] Add output-table discovery and pandas rendering helpers.
   - [x] Add Sphinx documentation scaffold and FABLE workbook structure notes.
   - [x] Add benchmark metadata and checksums for the public FABLE-C workbooks.
   - [x] Track the public 2020 FABLE Calculator documentation PDF under `reference/`.
-- [x] P0.4 Define strict GitHub issue, branch, and PR workflow. Child issue: pending.
+- [x] P0.4 Define strict GitHub issue, branch, and PR workflow. Child issue: #5.
   - [x] Mirror Modelwright's parent issue, child issue, feature branch, PR, and changelog workflow.
   - [x] Allow issue-number placeholders until the public remote and `gh` access exist.
   - [x] Require roadmap, changelog, issue comments, and verification evidence to stay synchronized
@@ -66,13 +68,13 @@ Verification evidence:
 - `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for all three ignored workbook
   files.
 
-Remaining before closing Phase 0:
+Closeout evidence:
 
-- Configure an approved Git author identity for this repository.
-- Ensure the public `UBC-FRESH/fable-pyculator` GitHub repository exists.
-- Install/authenticate `gh` or create the Phase 0 parent/child issues manually.
-- Record created issue numbers beside the Phase 0 entries.
-- Commit and push the bootstrap branch or initial `main` commit as approved by the maintainer.
+- Public GitHub repository: `UBC-FRESH/fable-pyculator`.
+- Local `origin` remote points to `https://github.com/UBC-FRESH/fable-pyculator.git`.
+- GitHub CLI installed locally under `~/.local/bin/gh` and authenticated as `gparadis`.
+- Phase 0 parent and child issues created and mapped in this roadmap.
+- Bootstrap commit pushed to `main`.
 
 ## Phase 1: FABLE-C Notebook Wrapper Maturation
 
@@ -105,4 +107,3 @@ Acceptance boundary:
 - May claim a coherent early FABLE-C notebook wrapper workflow for the inspected 2020 workbook.
 - Must not claim production readiness or cross-country support until country-specific validation
   evidence is recorded.
-
