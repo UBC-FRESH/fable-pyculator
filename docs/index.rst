@@ -1,0 +1,20 @@
+FABLE Pyculator
+===============
+
+FABLE Pyculator is a FABLE Calculator-specific notebook layer for
+Modelwright-generated Python models.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Guides
+
+   guides/artifacts
+   guides/workbook-structure
+   guides/notebook-control-surface
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API
+
+   reference/api
+
