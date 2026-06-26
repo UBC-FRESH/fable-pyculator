@@ -103,3 +103,5 @@ This file records completed project work in chronological order.
   Modelwright, adding release artifact checks and a trusted-publishing workflow, expanding Sphinx API
   documentation and public docstrings, and documenting the `v0.1.0a1` alpha release runbook and
   caveats.
+- Closed Phase 6 after PR #46 merged to `main` and the post-merge Tests and Docs Pages workflows
+  passed, including the release-artifact job and GitHub Pages deployment.

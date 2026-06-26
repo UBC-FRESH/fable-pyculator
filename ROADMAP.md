@@ -7,8 +7,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Phase 6 issue #41 has implementation and verification evidence for a narrow `v0.1.0a1` alpha
-  release; close the phase through the PR merge and post-merge docs deployment checks.
+- Phase 6 is closed with Modelwright-aligned `v0.1.0a1` alpha release workflow evidence.
+- Next release action, when approved by the maintainer: tag `v0.1.0a1` from `main`, run the release
+  workflow against TestPyPI, inspect the result, then publish to PyPI if the dry run is acceptable.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -454,7 +455,7 @@ GitHub parent issue: #41.
 
 Active branch: `feature/p6-alpha-release-readiness`.
 
-Status: active.
+Status: complete.
 
 Goal: prepare FABLE Pyculator for a narrow `v0.1.0a1` alpha release by mirroring Modelwright's
 package-release workflow and tightening documentation/API coverage.
@@ -524,4 +525,9 @@ Verification evidence:
 
 Closeout evidence:
 
-- Pending.
+- Phase 6 parent issue #41 is closed.
+- Phase 6 PR #46 merged to `main` with merge commit `f90cde1`.
+- Post-merge `Test` workflow passed on `main`, including quality, pytest/docs, and release-artifact
+  jobs.
+- Post-merge `Docs Pages` workflow passed on `main`, including Sphinx build, Read the Docs theme
+  artifact verification, artifact upload, and GitHub Pages deployment.
