@@ -217,11 +217,45 @@ such as ``Scenario`` and ``Result Indicator``, table descriptions, and source/pr
 not an Excel Table object in the 2020 workbook, so the first parser should treat it as a structured
 worksheet range with headers in row 1.
 
+Output Column Flavour Tags
+--------------------------
+
+Canonical output-sheet tables include a workbook pre-header row above the Excel Table range. That
+row marks each table column with a flavour tag such as ``DIRECT``, ``CALC``, ``DATA-*``, or
+``OUTPUT-*``. FABLE Pyculator records those tags as column metadata on discovered output tables so
+notebooks can display a focused subset of columns without losing workbook provenance.
+
+The 2020 and 2021 public workbooks share the same discovered canonical tag vocabulary:
+
+.. code-block:: text
+
+   AUX
+   CALC
+   DIRECT
+   DATA-1
+   DATA-3.2
+   DATA-4
+   DATA-5
+   DATA-9
+   OUTPUT-1
+   OUTPUT-3
+   OUTPUT-4
+   OUTPUT-5
+   OUTPUT-5,6
+   OUTPUT-6
+   OUTPUT-7
+   OUTPUT-8
+   OUTPUT-9
+
+Workbook spelling is preserved separately from the canonical tag. For example, the GHG workbook row
+uses ``OUTPUT - 8`` and FABLE Pyculator normalizes it to ``OUTPUT-8`` for filtering.
+
 Package Mapping
 ---------------
 
 ``discover_selection_controls`` maps the S.1-S.16 tables into notebook dropdown declarations.
 ``discover_output_tables`` maps Excel tables on the seven canonical output data sheets into
-DataFrame-ready table declarations.
+DataFrame-ready table declarations, including per-column flavour tags where the workbook pre-header
+row is present.
 ``curate_default_headline_series`` maps the initial FOOD, LAND, GHG, and WATER headline outputs into
 tidy DataFrame and matplotlib figure surfaces.

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from pathlib import Path
+import re
 
 from openpyxl import load_workbook
 from openpyxl.cell.cell import Cell
@@ -23,6 +24,10 @@ from fable_pyculator.spec import (
 
 SCENARIO_SHEET_HINTS = ("scenario", "scenarios")
 INPUT_LABEL_HINTS = ("scenario", "target", "assumption", "parameter", "select", "choice")
+OUTPUT_COLUMN_FLAVOUR_TAG_PATTERN = re.compile(
+    r"^(AUX|CALC|DIRECT|DATA\s*-\s*\d+(?:\.\d+)?|OUTPUT\s*-?\s*\d+(?:\s*,\s*\d+)*)$",
+    re.IGNORECASE,
+)
 
 
 def discover_scenario_parameters(
@@ -141,6 +146,12 @@ def discover_output_tables(
                 _column_label(worksheet.cell(min_row, column).value, column)
                 for column in range(min_col, max_col + 1)
             )
+            flavour_tags, raw_flavour_tags, flavour_tag_refs = _output_column_flavour_tags(
+                worksheet,
+                min_col,
+                min_row,
+                max_col,
+            )
             row_labels = tuple(
                 _row_label(worksheet.cell(row, min_col).value, row)
                 for row in range(min_row + 1, max_row + 1)
@@ -160,6 +171,9 @@ def discover_output_tables(
                     cell_refs=cell_refs,
                     row_labels=row_labels,
                     column_labels=column_labels,
+                    column_flavour_tags=flavour_tags,
+                    raw_column_flavour_tags=raw_flavour_tags,
+                    column_flavour_tag_refs=flavour_tag_refs,
                     label=table_name,
                 )
             )
@@ -383,3 +397,51 @@ def _column_label(value: object, column: int) -> str:
 
 def _row_label(value: object, row: int) -> str:
     return _optional_text(value) or str(row)
+
+
+def _output_column_flavour_tags(
+    worksheet: Worksheet,
+    min_col: int,
+    min_row: int,
+    max_col: int,
+) -> tuple[tuple[str | None, ...], tuple[str | None, ...], tuple[str | None, ...]]:
+    tag_row = _output_column_flavour_tag_row(worksheet, min_col, min_row, max_col)
+    if tag_row is None:
+        return (), (), ()
+    raw_tags: list[str | None] = []
+    tags: list[str | None] = []
+    refs: list[str | None] = []
+    for column in range(min_col, max_col + 1):
+        cell = worksheet.cell(tag_row, column)
+        raw_tag = _optional_text(cell.value)
+        raw_tags.append(raw_tag)
+        tags.append(_canonical_output_column_flavour_tag(raw_tag))
+        refs.append(f"{worksheet.title}!{cell.coordinate}")
+    return tuple(tags), tuple(raw_tags), tuple(refs)
+
+
+def _output_column_flavour_tag_row(
+    worksheet: Worksheet,
+    min_col: int,
+    min_row: int,
+    max_col: int,
+) -> int | None:
+    for row in range(min_row - 1, max(0, min_row - 10), -1):
+        values = [worksheet.cell(row, column).value for column in range(min_col, max_col + 1)]
+        if any(_canonical_output_column_flavour_tag(_optional_text(value)) for value in values):
+            return row
+    return None
+
+
+def _canonical_output_column_flavour_tag(value: str | None) -> str | None:
+    if value is None:
+        return None
+    text = re.sub(r"\s+", " ", value.strip()).upper()
+    if not text:
+        return None
+    text = re.sub(r"^(DATA|OUTPUT)\s*-\s*", r"\1-", text)
+    text = re.sub(r"^OUTPUT\s+(\d)", r"OUTPUT-\1", text)
+    text = re.sub(r"\s*,\s*", ",", text)
+    if OUTPUT_COLUMN_FLAVOUR_TAG_PATTERN.match(text):
+        return text
+    return None

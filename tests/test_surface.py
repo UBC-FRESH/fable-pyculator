@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from fable_pyculator import (
     FableCalculatorSpec,
     HeadlinePoint,
@@ -65,6 +67,98 @@ def test_output_table_frame_renders_declared_table_values() -> None:
     assert frame.loc["Calories", "Metric"] == "Calories"
     assert frame.loc["Calories", "2030"] == 2600
     assert frame.attrs["sheet"] == "FOOD"
+
+
+def test_output_table_frame_filters_by_column_flavour_tags() -> None:
+    spec = FableCalculatorSpec(
+        output_tables=[
+            OutputTable(
+                name="ghg_results",
+                label="ResultsGHG",
+                sheet="GHG",
+                range_ref="A2:D3",
+                cell_refs=(("GHG!A3", "GHG!B3", "GHG!C3", "GHG!D3"),),
+                row_labels=("2030",),
+                column_labels=("Year", "Hist", "TotalCO2e", "LandSeq"),
+                column_flavour_tags=("DIRECT", "DATA-5", "OUTPUT-8", "CALC"),
+                raw_column_flavour_tags=("DIRECT", "DATA-5", "OUTPUT - 8", "CALC"),
+                column_flavour_tag_refs=("GHG!A1", "GHG!B1", "GHG!C1", "GHG!D1"),
+            )
+        ]
+    )
+    run = run_scenario(
+        lambda inputs=None: {
+            "GHG!A3": 2030,
+            "GHG!B3": 12,
+            "GHG!C3": 42,
+            "GHG!D3": -2,
+        },
+        spec,
+    )
+
+    frame = output_table_frame(run, "ghg_results", column_flavour_tags="OUTPUT - 8")
+    exact_frame = output_table_frame(
+        run,
+        "ghg_results",
+        column_flavour_tags="OUTPUT-8",
+        include_context_columns=False,
+    )
+    multi_tag_frame = output_table_frame(
+        run,
+        "ghg_results",
+        column_flavour_tags=("DATA-5", "CALC"),
+    )
+
+    assert list(frame.columns) == ["Year", "TotalCO2e"]
+    assert frame.loc["2030", "TotalCO2e"] == 42
+    assert list(exact_frame.columns) == ["TotalCO2e"]
+    assert list(multi_tag_frame.columns) == ["Year", "Hist", "LandSeq"]
+    assert frame.attrs["selected_column_flavour_tags"] == ("OUTPUT-8",)
+    assert frame.attrs["column_flavour_tags"] == ["DIRECT", "DATA-5", "OUTPUT-8", "CALC"]
+    assert frame.attrs["raw_column_flavour_tags"] == ["DIRECT", "DATA-5", "OUTPUT - 8", "CALC"]
+    assert frame.attrs["selected_cell_refs"] == [["GHG!A3", "GHG!C3"]]
+
+
+def test_output_table_frame_reports_missing_or_unknown_column_flavour_tags() -> None:
+    missing_metadata_spec = FableCalculatorSpec(
+        output_tables=[
+            OutputTable(
+                name="food_results",
+                label="Results_Diets",
+                sheet="FOOD",
+                range_ref="A1:B2",
+                cell_refs=(("FOOD!A2", "FOOD!B2"),),
+                row_labels=("Calories",),
+                column_labels=("Metric", "2030"),
+            )
+        ]
+    )
+    missing_metadata_run = run_scenario(
+        lambda inputs=None: {"FOOD!A2": "Calories", "FOOD!B2": 2600},
+        missing_metadata_spec,
+    )
+
+    with pytest.raises(ValueError, match="does not have column flavour metadata"):
+        output_table_frame(missing_metadata_run, "food_results", column_flavour_tags="OUTPUT-1")
+
+    unknown_tag_spec = FableCalculatorSpec(
+        output_tables=[
+            OutputTable(
+                name="ghg_results",
+                label="ResultsGHG",
+                sheet="GHG",
+                range_ref="A2:B3",
+                cell_refs=(("GHG!A3", "GHG!B3"),),
+                row_labels=("2030",),
+                column_labels=("Year", "TotalCO2e"),
+                column_flavour_tags=("DIRECT", "OUTPUT-8"),
+            )
+        ]
+    )
+    unknown_tag_run = run_scenario(lambda inputs=None: {"GHG!A3": 2030, "GHG!B3": 42}, unknown_tag_spec)
+
+    with pytest.raises(KeyError, match="OUTPUT-1"):
+        output_table_frame(unknown_tag_run, "ghg_results", column_flavour_tags="OUTPUT-1")
 
 
 def test_headline_frame_renders_value_and_sum_series() -> None:

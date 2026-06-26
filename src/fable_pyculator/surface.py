@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from numbers import Real
+import re
 from types import ModuleType
 from typing import Any
 
@@ -88,17 +89,41 @@ def outputs_frame(run: ScenarioRun) -> Any:
     return pd.DataFrame(rows, columns=["name", "label", "group", "cell_ref", "value", "unit", "description"])
 
 
-def output_table_frame(run: ScenarioRun, table_name: str) -> Any:
+def output_table_frame(
+    run: ScenarioRun,
+    table_name: str,
+    column_flavour_tags: str | Sequence[str] | None = None,
+    *,
+    include_context_columns: bool = True,
+) -> Any:
     """Render one declared FABLE output table from a scenario run."""
 
     table = _output_table(run.spec, table_name)
-    return _table_frame(table, run.values)
+    return _table_frame(
+        table,
+        run.values,
+        column_flavour_tags=column_flavour_tags,
+        include_context_columns=include_context_columns,
+    )
 
 
-def output_tables(run: ScenarioRun) -> dict[str, Any]:
+def output_tables(
+    run: ScenarioRun,
+    column_flavour_tags: str | Sequence[str] | None = None,
+    *,
+    include_context_columns: bool = True,
+) -> dict[str, Any]:
     """Render all declared FABLE output tables from a scenario run."""
 
-    return {table.name: _table_frame(table, run.values) for table in run.spec.output_tables}
+    return {
+        table.name: _table_frame(
+            table,
+            run.values,
+            column_flavour_tags=column_flavour_tags,
+            include_context_columns=include_context_columns,
+        )
+        for table in run.spec.output_tables
+    }
 
 
 def headline_frame(run: ScenarioRun, series_name: str) -> Any:
@@ -176,13 +201,28 @@ def _headline_series(spec: FableCalculatorSpec, series_name: str) -> HeadlineSer
     raise KeyError(f"unknown headline series {series_name!r}")
 
 
-def _table_frame(table: OutputTable, values: Mapping[str, object]) -> Any:
+def _table_frame(
+    table: OutputTable,
+    values: Mapping[str, object],
+    *,
+    column_flavour_tags: str | Sequence[str] | None = None,
+    include_context_columns: bool = True,
+) -> Any:
     pd = _load_pandas()
+    column_indices = _output_table_column_indices(
+        table,
+        column_flavour_tags,
+        include_context_columns=include_context_columns,
+    )
     rows = [
-        [values.get(cell_ref) for cell_ref in row]
+        [values.get(row[index]) for index in column_indices]
         for row in table.cell_refs
     ]
-    frame = pd.DataFrame(rows, index=list(table.row_labels), columns=list(table.column_labels))
+    frame = pd.DataFrame(
+        rows,
+        index=list(table.row_labels),
+        columns=[table.column_labels[index] for index in column_indices],
+    )
     frame.index.name = "row"
     frame.attrs.update(
         {
@@ -191,10 +231,67 @@ def _table_frame(table: OutputTable, values: Mapping[str, object]) -> Any:
             "description": table.description,
             "sheet": table.sheet,
             "range_ref": table.range_ref,
+            "selected_column_flavour_tags": _requested_column_flavour_tags(column_flavour_tags),
+            "include_context_columns": include_context_columns,
+            "column_flavour_tags": list(table.column_flavour_tags),
+            "raw_column_flavour_tags": list(table.raw_column_flavour_tags),
+            "column_flavour_tag_refs": list(table.column_flavour_tag_refs),
             "cell_refs": [list(row) for row in table.cell_refs],
+            "selected_cell_refs": [[row[index] for index in column_indices] for row in table.cell_refs],
         }
     )
     return frame
+
+
+def _output_table_column_indices(
+    table: OutputTable,
+    column_flavour_tags: str | Sequence[str] | None,
+    *,
+    include_context_columns: bool,
+) -> tuple[int, ...]:
+    requested_tags = _requested_column_flavour_tags(column_flavour_tags)
+    if requested_tags is None:
+        return tuple(range(len(table.column_labels)))
+    if not table.column_flavour_tags:
+        raise ValueError(f"output table {table.name!r} does not have column flavour metadata")
+    available_tags = set(tag for tag in table.column_flavour_tags if tag is not None)
+    unknown_tags = sorted(set(requested_tags) - available_tags)
+    if unknown_tags:
+        raise KeyError(f"output table {table.name!r} does not contain column flavour tag(s): {', '.join(unknown_tags)}")
+    selected_tags = set(requested_tags)
+    if include_context_columns:
+        selected_tags.update(("AUX", "DIRECT"))
+    return tuple(
+        index
+        for index, tag in enumerate(table.column_flavour_tags)
+        if tag in selected_tags
+    )
+
+
+def _requested_column_flavour_tags(column_flavour_tags: str | Sequence[str] | None) -> tuple[str, ...] | None:
+    if column_flavour_tags is None:
+        return None
+    if isinstance(column_flavour_tags, str):
+        values = (column_flavour_tags,)
+    else:
+        values = tuple(column_flavour_tags)
+    normalized = tuple(_canonical_column_flavour_tag(value) for value in values)
+    unknown = [value for value, tag in zip(values, normalized, strict=True) if tag is None]
+    if unknown:
+        raise ValueError(f"unknown column flavour tag value(s): {', '.join(str(value) for value in unknown)}")
+    return normalized
+
+
+def _canonical_column_flavour_tag(value: str) -> str | None:
+    text = re.sub(r"\s+", " ", str(value).strip()).upper()
+    if not text:
+        return None
+    text = re.sub(r"^(DATA|OUTPUT)\s*-\s*", r"\1-", text)
+    text = re.sub(r"^OUTPUT\s+(\d)", r"OUTPUT-\1", text)
+    text = re.sub(r"\s*,\s*", ",", text)
+    if re.match(r"^(AUX|CALC|DIRECT|DATA-\d+(?:\.\d+)?|OUTPUT-\d+(?:,\d+)*)$", text):
+        return text
+    return None
 
 
 def _headline_frame(series: HeadlineSeries, values: Mapping[str, object]) -> Any:

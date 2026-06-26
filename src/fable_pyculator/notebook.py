@@ -84,6 +84,8 @@ def run_notebook_loop(
     *,
     scenario_name: str = "scenario",
     output_table_names: Sequence[str] = DEFAULT_OUTPUT_TABLES,
+    output_table_column_flavour_tags: str | Sequence[str] | None = None,
+    include_context_columns: bool = True,
     headline_series_names: Sequence[str] = DEFAULT_HEADLINE_SERIES,
     include_figures: bool = True,
 ) -> NotebookLoopResult:
@@ -91,7 +93,12 @@ def run_notebook_loop(
 
     run = run_scenario(generated_model, spec, selections, name=scenario_name)
     tables = {
-        table_name: output_table_frame(run, table_name)
+        table_name: output_table_frame(
+            run,
+            table_name,
+            column_flavour_tags=output_table_column_flavour_tags,
+            include_context_columns=include_context_columns,
+        )
         for table_name in output_table_names
     }
     headline_tables = {
@@ -121,6 +128,8 @@ def run_2020_notebook_loop(
     generated_model_path: str | Path = DEFAULT_2020_GENERATED_MODEL_PATH,
     scenario_name: str = "scenario",
     output_table_names: Sequence[str] = DEFAULT_OUTPUT_TABLES,
+    output_table_column_flavour_tags: str | Sequence[str] | None = None,
+    include_context_columns: bool = True,
     headline_series_names: Sequence[str] = DEFAULT_HEADLINE_SERIES,
     include_figures: bool = True,
 ) -> NotebookLoopResult:
@@ -134,6 +143,8 @@ def run_2020_notebook_loop(
         selections,
         scenario_name=scenario_name,
         output_table_names=output_table_names,
+        output_table_column_flavour_tags=output_table_column_flavour_tags,
+        include_context_columns=include_context_columns,
         headline_series_names=headline_series_names,
         include_figures=include_figures,
     )

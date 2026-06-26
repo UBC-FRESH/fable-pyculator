@@ -7,10 +7,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Post-Phase-1 maintenance issue #13 adds VSCode `.venv` bootstrap, notebook artifact-path handling,
-  and a committed post-run notebook preview for test users.
-- Phase 1 is closed. Choose and map the next roadmap phase before starting the next non-trivial
-  implementation lane.
+- Phase 2 implementation is complete on branch `feature/p2-output-table-column-flavour-filtering`;
+  open a PR for issue #15, wait for CI, merge to `main`, and confirm docs deployment.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -167,3 +165,65 @@ Closeout evidence:
 - RTD docs alignment PR #12 merged to `main` with merge commit `24a6f24`.
 - Post-merge `Docs Pages` workflow built, verified the Read the Docs theme artifact, and deployed to
   `https://ubc-fresh.github.io/fable-pyculator/`.
+
+## Phase 2: Output Table Column-Flavour Filtering
+
+GitHub parent issue: #15.
+
+Active branch: `feature/p2-output-table-column-flavour-filtering`.
+
+Status: active.
+
+Goal: add workbook-derived column flavour metadata to discovered output tables and let notebooks
+render DataFrames filtered by tags such as `OUTPUT-1`, `DATA-4`, `CALC`, and `DIRECT` while
+preserving current all-column rendering by default.
+
+- [x] P2.1 Discover output table column flavour metadata. Child issue: #16.
+  - Status: complete.
+  - [x] Extend `OutputTable` with canonical, raw, and source-cell column flavour metadata.
+  - [x] Detect the closest recognized pre-header tag row above each canonical output Excel table.
+  - [x] Normalize variants such as `DATA -3.2` and `OUTPUT - 8` while preserving raw values.
+- [x] P2.2 Add output table flavour filtering API. Child issue: #18.
+  - Status: complete.
+  - [x] Add filter arguments to `output_table_frame` and `output_tables`.
+  - [x] Thread filter arguments through `run_notebook_loop` and `run_2020_notebook_loop`.
+  - [x] Keep `DIRECT` and `AUX` context columns by default when filtering.
+- [x] P2.3 Document output table flavour tags. Child issue: #19.
+  - Status: complete.
+  - [x] Document the workbook pre-header flavour-tag row in the Sphinx guides.
+  - [x] Add notebook/user-guide examples for all columns, `OUTPUT-8`, and one `DATA-*` filter.
+- [x] P2.4 Validate output flavour tags across workbooks. Child issue: #17.
+  - Status: complete.
+  - [x] Add opt-in workbook-backed checks for 2020 and 2021 tag inventories.
+  - [x] Confirm GHG `OUTPUT - 8` normalizes to `OUTPUT-8`.
+  - [x] Record verification evidence before parent issue closeout.
+
+Acceptance boundary:
+
+- May claim discovered FABLE-C output tables carry workbook-derived column flavour metadata for the
+  inspected public workbook structures.
+- May claim output DataFrames can be filtered by canonical flavour tags while preserving all-column
+  rendering by default.
+- Must not claim stable public API compatibility or arbitrary country-calculator support until later
+  validation and release-readiness evidence exists.
+
+Implementation evidence:
+
+- Added `OutputTable.column_flavour_tags`, `raw_column_flavour_tags`, and
+  `column_flavour_tag_refs`.
+- Updated output-table discovery to capture and normalize workbook pre-header tag rows.
+- Added render-time filtering to `output_table_frame`, `output_tables`, `run_notebook_loop`, and
+  `run_2020_notebook_loop`.
+- Added Sphinx guide examples for filtered output table rendering.
+- Added synthetic and opt-in workbook-backed tests for discovery, filtering, and 2020/2021 inventory
+  stability.
+
+Verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 24 tests and 6 workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -vv tests/test_fable_workbook_output_flavour_tags.py`
+  passed against ignored local workbook artifacts.
