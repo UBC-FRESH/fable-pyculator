@@ -93,11 +93,11 @@ Use the full loop when the default artifacts are present:
 
    from fable_pyculator import run_2020_notebook_loop
 
-   result = run_2020_notebook_loop(
-       {"gdp_scen": "SSP1"},
-       output_table_names=("ghg_resultsghg",),
-       headline_series_names=("food_total_kcal_feas", "land_total_area", "ghg_total_co2e", "water_total_footprint"),
-   )
+   result = run_2020_notebook_loop({"gdp_scen": "SSP1"})
+
+By default, the loop renders every discovered output table and every curated headline frame from the
+single generated-model run. Use explicit ``output_table_names`` or ``headline_series_names`` only
+when you deliberately want a smaller rendered result.
 
 To render a focused output table, request one or more column flavour tags. Exact tags such as
 ``OUTPUT-8`` work, ``DATA`` selects the whole ``DATA-*`` family, and trailing-star patterns such as
@@ -108,9 +108,7 @@ To render a focused output table, request one or more column flavour tags. Exact
 
    result = run_2020_notebook_loop(
        {"gdp_scen": "SSP1"},
-       output_table_names=("ghg_resultsghg",),
        output_table_column_flavour_tags="OUTPUT-*",
-       headline_series_names=("ghg_total_co2e",),
        include_figures=False,
    )
 
@@ -153,6 +151,7 @@ Typical notebook cells:
    output_table_frame(result.run, "ghg_resultsghg", column_flavour_tags="DATA")
    output_table_frame(result.run, "ghg_resultsghg", column_flavour_tags="DATA-5")
    result.headline_frames["ghg_total_co2e"]
+   result.headline_frames["water_total_footprint"]
    result.headline_figures["ghg_total_co2e"]
 
 Current Boundary

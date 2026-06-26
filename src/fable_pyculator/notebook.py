@@ -27,8 +27,8 @@ from fable_pyculator.surface import (
 
 DEFAULT_2020_WORKBOOK_PATH = Path("tmp/private-workbooks/2020_Open_FABLECalculator.xlsx")
 DEFAULT_2020_GENERATED_MODEL_PATH = Path("tmp/generated-models/fable-2020/generated_fable_2020_model.py")
-DEFAULT_OUTPUT_TABLES = ("ghg_resultsghg",)
-DEFAULT_HEADLINE_SERIES = ("food_total_kcal_feas", "land_total_area", "ghg_total_co2e", "water_total_footprint")
+DEFAULT_OUTPUT_TABLES = None
+DEFAULT_HEADLINE_SERIES = None
 
 
 @dataclass(frozen=True)
@@ -83,15 +83,17 @@ def run_notebook_loop(
     selections: Mapping[str, object] | None = None,
     *,
     scenario_name: str = "scenario",
-    output_table_names: Sequence[str] = DEFAULT_OUTPUT_TABLES,
+    output_table_names: Sequence[str] | None = DEFAULT_OUTPUT_TABLES,
     output_table_column_flavour_tags: str | Sequence[str] | None = None,
     include_context_columns: bool = True,
-    headline_series_names: Sequence[str] = DEFAULT_HEADLINE_SERIES,
+    headline_series_names: Sequence[str] | None = DEFAULT_HEADLINE_SERIES,
     include_figures: bool = True,
 ) -> NotebookLoopResult:
     """Run a generated model and render selected FABLE notebook artifacts."""
 
     run = run_scenario(generated_model, spec, selections, name=scenario_name)
+    selected_output_table_names = _output_table_names(spec, output_table_names)
+    selected_headline_series_names = _headline_series_names(spec, headline_series_names)
     tables = {
         table_name: output_table_frame(
             run,
@@ -99,16 +101,16 @@ def run_notebook_loop(
             column_flavour_tags=output_table_column_flavour_tags,
             include_context_columns=include_context_columns,
         )
-        for table_name in output_table_names
+        for table_name in selected_output_table_names
     }
     headline_tables = {
         series_name: headline_frame(run, series_name)
-        for series_name in headline_series_names
+        for series_name in selected_headline_series_names
     }
     figures = (
         {
             series_name: plot_headline(run, series_name)
-            for series_name in headline_series_names
+            for series_name in selected_headline_series_names
         }
         if include_figures
         else {}
@@ -127,10 +129,10 @@ def run_2020_notebook_loop(
     workbook_path: str | Path = DEFAULT_2020_WORKBOOK_PATH,
     generated_model_path: str | Path = DEFAULT_2020_GENERATED_MODEL_PATH,
     scenario_name: str = "scenario",
-    output_table_names: Sequence[str] = DEFAULT_OUTPUT_TABLES,
+    output_table_names: Sequence[str] | None = DEFAULT_OUTPUT_TABLES,
     output_table_column_flavour_tags: str | Sequence[str] | None = None,
     include_context_columns: bool = True,
-    headline_series_names: Sequence[str] = DEFAULT_HEADLINE_SERIES,
+    headline_series_names: Sequence[str] | None = DEFAULT_HEADLINE_SERIES,
     include_figures: bool = True,
 ) -> NotebookLoopResult:
     """Run the default 2020 FABLE-C notebook loop from ignored local artifacts."""
@@ -148,3 +150,15 @@ def run_2020_notebook_loop(
         headline_series_names=headline_series_names,
         include_figures=include_figures,
     )
+
+
+def _output_table_names(spec: FableCalculatorSpec, output_table_names: Sequence[str] | None) -> tuple[str, ...]:
+    if output_table_names is None:
+        return tuple(table.name for table in spec.output_tables)
+    return tuple(output_table_names)
+
+
+def _headline_series_names(spec: FableCalculatorSpec, headline_series_names: Sequence[str] | None) -> tuple[str, ...]:
+    if headline_series_names is None:
+        return tuple(series.name for series in spec.headline_series)
+    return tuple(headline_series_names)

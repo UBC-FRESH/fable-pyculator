@@ -89,11 +89,10 @@ Use ``run_2020_notebook_loop`` when those artifacts have been restored locally:
 
    result = run_2020_notebook_loop(
        {"gdp_scen": "SSP1"},
-       output_table_names=("ghg_resultsghg",),
        output_table_column_flavour_tags="OUTPUT-8",
-       headline_series_names=("ghg_total_co2e",),
    )
 
+   result.output_tables.keys()
    result.output_tables["ghg_resultsghg"]
    result.headline_frames["ghg_total_co2e"]
    result.headline_figures["ghg_total_co2e"]

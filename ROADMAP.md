@@ -7,8 +7,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Phase 2 follow-up issue #21 is implemented on branch `feature/p2-output-flavour-wildcards`;
-  open a PR, wait for CI, merge to `main`, and confirm docs deployment.
+- Phase 3 implementation is complete on branch `feature/p3-default-all-rendered-outputs`; open a PR
+  for issue #23, wait for CI, merge to `main`, and confirm docs deployment.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -237,3 +237,62 @@ Verification evidence:
   passed against ignored local workbook artifacts.
 - `.venv/bin/python -m pytest tests/test_surface.py -q` passed with 7 tests.
 - `.venv/bin/sphinx-build -b html docs _build/html -W` passed after P2.5 docs updates.
+
+Closeout evidence:
+
+- Phase 2 parent issue #15 is closed.
+- Phase 2 PR #20 merged to `main` with merge commit `1be2e19`.
+- Phase 2 follow-up PR #22 merged to `main` with merge commit `6ecd076`.
+- Post-merge Tests and Docs Pages workflows passed, and GitHub Pages deployed.
+
+## Phase 3: Default Notebook Loop To All Rendered Outputs
+
+GitHub parent issue: #23.
+
+Active branch: `feature/p3-default-all-rendered-outputs`.
+
+Status: active.
+
+Goal: make one generated-model run render every declared output table and every curated headline frame
+by default so notebook users can inspect additional outputs without rerunning a model that may take
+several minutes.
+
+- [x] P3.1 Update notebook loop default selection semantics. Child issue: #25.
+  - Status: complete.
+  - [x] Make `run_notebook_loop` render all spec output tables by default.
+  - [x] Make `run_notebook_loop` render all spec headline frames by default.
+  - [x] Preserve explicit subset arguments for faster focused rendering.
+  - [x] Thread the semantics through `run_2020_notebook_loop`.
+- [x] P3.2 Update tests and docs for all-output defaults. Child issue: #24.
+  - Status: complete.
+  - [x] Add tests for default all-output rendering.
+  - [x] Add tests for explicit subset rendering.
+  - [x] Update README and Sphinx notebook workflow docs.
+
+Acceptance boundary:
+
+- May claim `run_notebook_loop` and `run_2020_notebook_loop` render all declared output tables and
+  headline frames by default.
+- Must preserve explicit subset rendering through `output_table_names` and `headline_series_names`.
+- Must not change generated-model execution semantics.
+
+Implementation evidence:
+
+- Changed notebook loop defaults so `output_table_names=None` and `headline_series_names=None` render
+  every declared output table and headline frame from the spec.
+- Preserved explicit subset rendering for callers that pass `output_table_names` or
+  `headline_series_names`.
+- Updated and re-executed the 2020 example notebook so it imports `output_table_frame`, uses the
+  all-output default, and renders wildcard flavour-filter examples without stale errors.
+- Updated README and Sphinx notebook workflow docs to describe the run-once, inspect-any-result
+  behavior.
+
+Verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 26 tests and 6 workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- Re-executed `examples/notebooks/fable-pyculator-2020-loop.ipynb` with repo `.venv`; saved 8
+  executed code cells, 0 errors, 0 stream outputs, 5 HTML table outputs, and 1 PNG figure.

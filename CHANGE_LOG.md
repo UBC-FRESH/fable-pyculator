@@ -71,3 +71,9 @@ This file records completed project work in chronological order.
   such as `DATA`, `DATA*`, and `OUTPUT-*`.
 - Completed Phase 2 follow-up issue #21 by adding prefix-family and trailing-star wildcard output
   flavour filters plus README and Sphinx examples.
+- Activated Phase 3 on `feature/p3-default-all-rendered-outputs`, created parent issue #23 and child
+  issues #25 and #24, and scoped the phase around rendering all output tables and headline frames by
+  default from a single generated-model run.
+- Completed Phase 3 implementation by making notebook loops render all declared output tables and
+  headline frames by default, preserving explicit subset rendering, and re-executing the 2020 example
+  notebook with working wildcard flavour-filter examples.
