@@ -32,3 +32,24 @@ This file records completed project work in chronological order.
   child issues #2 through #5, and recorded the issue mapping in `ROADMAP.md`.
 - Closed Phase 0 after posting verification evidence to child issues #2 through #5 and parent issue
   #1.
+- Activated Phase 1 on `feature/p1-fable-c-notebook-wrapper-maturation`, created GitHub parent issue
+  #6 and child issues #7 through #10, and scoped the phase around hardening FABLE-C selection-control
+  discovery, curating headline outputs and figures, building the first 2020 generated-model notebook
+  loop, and adding user-guide/validation evidence.
+- Completed P1.1 by adding opt-in workbook-backed tests that validate the 2020 S.1 through S.16
+  selection-control contract, confirm 2021 shares the same control structure with the known
+  `Affor_scen` default difference, and preserve 2019 as an older 12-control fragility check; recorded
+  findings in `planning/phase-1-selection-control-validation.md`.
+- Completed P1.2 by adding curated headline output series for FOOD, LAND, GHG, and WATER, plus
+  notebook rendering helpers for tidy pandas headline frames and matplotlib line figures; recorded
+  source table mappings in `planning/phase-1-headline-output-curation.md`.
+- Added a `Docs Pages` GitHub Actions workflow and phase close-out guidance so Sphinx docs build on
+  pull requests to `main` and deploy to GitHub Pages after merges to `main`.
+- Completed P1.3 by adding the first 2020 notebook-loop helpers that build a workbook-derived spec,
+  load an ignored generated Modelwright model from `tmp/generated-models/fable-2020/`, apply
+  selection-control overrides, and return rendered output tables plus curated headline frames and
+  figures; added `examples/notebooks/fable-pyculator-2020-loop.ipynb` and recorded the contract in
+  `planning/phase-1-2020-notebook-loop.md`.
+- Completed P1.4 by adding Sphinx guide pages for the 2020 notebook workflow and validation scope,
+  linking the tracked example notebook into the docs, and recording 2020 benchmark evidence plus 2021
+  follow-up scope in `planning/phase-1-user-guide-validation-closeout.md`.

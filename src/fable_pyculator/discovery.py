@@ -8,9 +8,12 @@ from pathlib import Path
 from openpyxl import load_workbook
 from openpyxl.cell.cell import Cell
 from openpyxl.utils.cell import get_column_letter, range_boundaries
+from openpyxl.worksheet.worksheet import Worksheet
 
 from fable_pyculator.spec import (
     FABLE_OUTPUT_SURFACE_SHEETS,
+    HeadlinePoint,
+    HeadlineSeries,
     OutputTable,
     ScenarioParameter,
     SelectionControl,
@@ -161,6 +164,164 @@ def discover_output_tables(
                 )
             )
     return tables
+
+
+def curate_default_headline_series(workbook_path: str | Path) -> list[HeadlineSeries]:
+    """Curate the first FOOD, LAND, GHG, and WATER headline output series.
+
+    The initial curation is intentionally narrow and provenance-friendly. It uses table descriptions
+    from ``Indextables`` where available, then maps stable table columns on the canonical output
+    sheets into notebook-ready time series.
+    """
+
+    workbook = load_workbook(workbook_path, data_only=False, read_only=False)
+    descriptions = (
+        _indextable_descriptions(workbook["Indextables"])
+        if "Indextables" in workbook.sheetnames
+        else {}
+    )
+    return [
+        HeadlineSeries(
+            name="food_total_kcal_feas",
+            label="Feasible total kilocalorie consumption",
+            group="FOOD",
+            sheet="FOOD",
+            table_name="Total_results_diets",
+            points=_headline_points(
+                workbook["FOOD"],
+                "Total_results_diets",
+                year_header="YEAR",
+                value_headers=("kcal_feas",),
+                row_filters={"PROD_GROUP": "TOTAL"},
+            ),
+            unit="kcal/cap/day",
+            description=descriptions.get(_description_key("Total_results_diets")),
+        ),
+        HeadlineSeries(
+            name="land_total_area",
+            label="Total land area",
+            group="LAND",
+            sheet="LAND",
+            table_name="ResultsLand",
+            points=_headline_points(
+                workbook["LAND"],
+                "ResultsLand",
+                year_header="Year",
+                value_headers=("TOTAL",),
+            ),
+            description=descriptions.get(_description_key("ResultsLand")),
+        ),
+        HeadlineSeries(
+            name="ghg_total_co2e",
+            label="Total GHG emissions",
+            group="GHG",
+            sheet="GHG",
+            table_name="ResultsGHG",
+            points=_headline_points(
+                workbook["GHG"],
+                "ResultsGHG",
+                year_header="Year",
+                value_headers=("TotalCO2e",),
+            ),
+            description=descriptions.get(_description_key("ResultsGHG")),
+        ),
+        HeadlineSeries(
+            name="water_total_footprint",
+            label="Total water footprint",
+            group="WATER",
+            sheet="WATER",
+            table_name="TotalResultsWF",
+            points=_headline_points(
+                workbook["WATER"],
+                "TotalResultsWF",
+                year_header="YEAR",
+                value_headers=(
+                    "wf_green_crop",
+                    "wf_blue_crop",
+                    "wf_grey_crop",
+                    "wf_green_live",
+                    "wf_blue_live",
+                    "wf_grey_live",
+                ),
+                row_filters={"Product": "TOTAL"},
+            ),
+            description=descriptions.get(_description_key("TotalResultsWF")),
+            aggregation="sum",
+        ),
+    ]
+
+
+def _headline_points(
+    worksheet: Worksheet,
+    table_name: str,
+    *,
+    year_header: str,
+    value_headers: tuple[str, ...],
+    row_filters: dict[str, object] | None = None,
+) -> tuple[HeadlinePoint, ...]:
+    table = worksheet.tables[table_name]
+    min_col, min_row, max_col, max_row = range_boundaries(table.ref)
+    headers = {
+        _optional_text(worksheet.cell(min_row, column).value): column
+        for column in range(min_col, max_col + 1)
+    }
+    year_column = _required_header(headers, year_header, table_name)
+    value_columns = tuple(_required_header(headers, header, table_name) for header in value_headers)
+    filter_columns = {
+        _required_header(headers, header, table_name): expected
+        for header, expected in (row_filters or {}).items()
+    }
+    points: list[HeadlinePoint] = []
+    for row in range(min_row + 1, max_row + 1):
+        if any(worksheet.cell(row, column).value != expected for column, expected in filter_columns.items()):
+            continue
+        year = worksheet.cell(row, year_column).value
+        if year is None:
+            continue
+        points.append(
+            HeadlinePoint(
+                year=year,
+                cell_refs=tuple(
+                    f"{worksheet.title}!{get_column_letter(column)}{row}"
+                    for column in value_columns
+                ),
+            )
+        )
+    return tuple(points)
+
+
+def _required_header(headers: dict[str | None, int], header: str, table_name: str) -> int:
+    if header not in headers:
+        raise KeyError(f"table {table_name!r} does not contain header {header!r}")
+    return headers[header]
+
+
+def _indextable_descriptions(worksheet: Worksheet) -> dict[str, str]:
+    header_cells = next(worksheet.iter_rows(min_row=1, max_row=1), ())
+    headers = [_optional_text(cell.value) for cell in header_cells]
+    table_column = _header_index(headers, ("table", "name"))
+    description_column = _header_index(headers, ("description", "table description"))
+    if table_column is None or description_column is None:
+        return {}
+    descriptions: dict[str, str] = {}
+    for row in worksheet.iter_rows(min_row=2):
+        table_name = _optional_text(row[table_column].value)
+        description = _optional_text(row[description_column].value)
+        if table_name and description:
+            descriptions[_description_key(table_name)] = description
+    return descriptions
+
+
+def _header_index(headers: list[str | None], candidates: tuple[str, ...]) -> int | None:
+    lowered_candidates = {candidate.casefold() for candidate in candidates}
+    for index, header in enumerate(headers):
+        if header is not None and header.casefold() in lowered_candidates:
+            return index
+    return None
+
+
+def _description_key(table_name: str) -> str:
+    return "".join(character.casefold() for character in table_name if character.isalnum())
 
 
 def _first_label_cell(row: Iterable[Cell], label_hints: tuple[str, ...]) -> tuple[str, int] | None:

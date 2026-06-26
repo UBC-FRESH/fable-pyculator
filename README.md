@@ -25,7 +25,9 @@ This project uses the same agent-assisted workflow as Modelwright:
 - keep source workbooks, generated models, extracts, logs, and validation reports under ignored
   `tmp/`;
 - once the public GitHub repo and `gh` access exist, map roadmap phases to GitHub parent issues and
-  roadmap tasks to child issues.
+  roadmap tasks to child issues;
+- close every phase through a PR back to `main`, with Sphinx docs rebuilt in CI and deployed to
+  GitHub Pages after merge.
 
 The local remote is expected to be:
 
@@ -102,6 +104,32 @@ run = run_scenario(generated_model, spec, {"gdp_scen": "SSP1"})
 output_table_frame(run, "ghg_resultsghg")
 ```
 
+The first 2020 notebook loop helper uses ignored local artifacts by default:
+
+```text
+tmp/private-workbooks/2020_Open_FABLECalculator.xlsx
+tmp/generated-models/fable-2020/generated_fable_2020_model.py
+```
+
+```python
+from fable_pyculator import run_2020_notebook_loop
+
+result = run_2020_notebook_loop({"gdp_scen": "SSP1"})
+result.output_tables["ghg_resultsghg"]
+result.headline_frames["ghg_total_co2e"]
+result.headline_figures["ghg_total_co2e"]
+```
+
+Tracked notebook example:
+
+```text
+examples/notebooks/fable-pyculator-2020-loop.ipynb
+```
+
+The Sphinx guide expands this into a full workflow under
+`docs/guides/2020-notebook-workflow.rst`, with validation boundaries recorded in
+`docs/guides/validation-scope.rst`.
+
 The public API is intentionally small while the FABLE-specific conventions are being discovered from
 real country calculators.
 
@@ -110,6 +138,15 @@ real country calculators.
 ```bash
 .venv/bin/python -m pip install -e '.[dev,notebook,docs]'
 .venv/bin/sphinx-build -b html docs _build/html -W
+```
+
+The `Docs Pages` GitHub Actions workflow builds Sphinx docs on pull requests to `main` and deploys
+the built HTML to GitHub Pages after merges to `main`.
+
+GitHub Pages URL:
+
+```text
+https://ubc-fresh.github.io/fable-pyculator/
 ```
 
 ## Default Checks

@@ -5,7 +5,12 @@ from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.worksheet.table import Table
 
-from fable_pyculator import discover_output_tables, discover_scenario_parameters, discover_selection_controls
+from fable_pyculator import (
+    curate_default_headline_series,
+    discover_output_tables,
+    discover_scenario_parameters,
+    discover_selection_controls,
+)
 
 
 def test_discover_scenario_parameters_finds_labeled_values(tmp_path: Path) -> None:
@@ -78,4 +83,70 @@ def test_discover_output_tables_finds_tables_on_canonical_output_sheets(tmp_path
     assert table.cell_refs == (
         ("FOOD!A2", "FOOD!B2", "FOOD!C2"),
         ("FOOD!A3", "FOOD!B3", "FOOD!C3"),
+    )
+
+
+def test_curate_default_headline_series_maps_core_output_tables(tmp_path: Path) -> None:
+    workbook = Workbook()
+    workbook.active.title = "Indextables"
+    indextables = workbook["Indextables"]
+    indextables.append(["Table", "Description"])
+    indextables.append(["Total_Results_diets", "Diet totals"])
+    indextables.append(["ResultsLand", "Land totals"])
+    indextables.append(["ResultsGHG", "GHG totals"])
+    indextables.append(["TotalResultsWF", "Water totals"])
+
+    food = workbook.create_sheet("FOOD")
+    food.append(["PROD_GROUP", "YEAR", "kcal_feas"])
+    food.append(["TOTAL", 2030, 2500])
+    food.append(["TOTAL", 2050, 2600])
+    food.add_table(Table(displayName="Total_results_diets", ref="A1:C3"))
+
+    land = workbook.create_sheet("LAND")
+    land.append(["Year", "TOTAL"])
+    land.append([2030, 100])
+    land.add_table(Table(displayName="ResultsLand", ref="A1:B2"))
+
+    ghg = workbook.create_sheet("GHG")
+    ghg.append(["Year", "TotalCO2e"])
+    ghg.append([2030, 42])
+    ghg.add_table(Table(displayName="ResultsGHG", ref="A1:B2"))
+
+    water = workbook.create_sheet("WATER")
+    water.append(
+        [
+            "Product",
+            "YEAR",
+            "wf_green_crop",
+            "wf_blue_crop",
+            "wf_grey_crop",
+            "wf_green_live",
+            "wf_blue_live",
+            "wf_grey_live",
+        ]
+    )
+    water.append(["TOTAL", 2030, 1, 2, 3, 4, 5, 6])
+    water.add_table(Table(displayName="TotalResultsWF", ref="A1:H2"))
+
+    path = tmp_path / "fable.xlsx"
+    workbook.save(path)
+
+    series = curate_default_headline_series(path)
+
+    assert [item.name for item in series] == [
+        "food_total_kcal_feas",
+        "land_total_area",
+        "ghg_total_co2e",
+        "water_total_footprint",
+    ]
+    assert series[0].description == "Diet totals"
+    assert series[0].points[0].cell_refs == ("FOOD!C2",)
+    assert series[3].aggregation == "sum"
+    assert series[3].points[0].cell_refs == (
+        "WATER!C2",
+        "WATER!D2",
+        "WATER!E2",
+        "WATER!F2",
+        "WATER!G2",
+        "WATER!H2",
     )

@@ -136,6 +136,8 @@ Use this workflow for active development from the first post-bootstrap phase bou
 - Keep `ROADMAP.md`, `CHANGE_LOG.md`, and issue comments synchronized as task state changes.
 - Open a PR from the phase branch back to `main` when the parent issue's child issues are complete or
   explicitly deferred.
+- Treat Sphinx docs as part of every phase close-out ritual: the phase PR must pass the docs build,
+  and the post-merge push to `main` must rebuild and deploy the docs to GitHub Pages.
 - Close the parent issue only after the PR has merged back to `main`.
 - Do not start a new active parent issue and branch until the current parent issue is closed, unless
   the maintainer explicitly approves a parallel lane.
@@ -168,6 +170,9 @@ Current default verification commands:
 sha256sum -c benchmarks/fable-calculator/checksums.sha256
 ```
 
+GitHub Actions should also rebuild Sphinx docs for pull requests to `main` and deploy them to GitHub
+Pages after merges to `main`.
+
 When adding tooling:
 
 - Document required commands in `README.md` or a dedicated planning note.
@@ -195,4 +200,3 @@ Documentation should be practical and provenance-oriented:
 - Capture assumptions, known gaps, and follow-up questions.
 - Avoid presenting generated behavior, recovered workbook meaning, or country-calculator support as
   authoritative until validated against source workbook behavior.
-

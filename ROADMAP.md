@@ -7,6 +7,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
+- Open the Phase 1 PR after P1.4 is committed, pushed, and issue #10 is closed.
+- Treat the phase close-out PR as the docs deployment gate: Sphinx must build on the PR, and the
+  merge to `main` must trigger the GitHub Pages deployment workflow.
+
 ## Phase 0: Governance Bootstrap
 
 GitHub parent issue: #1.
@@ -78,32 +82,74 @@ Closeout evidence:
 
 ## Phase 1: FABLE-C Notebook Wrapper Maturation
 
-GitHub parent issue: planned after Phase 0 closeout.
+GitHub parent issue: #6.
 
-Status: planned.
+Active branch: `feature/p1-fable-c-notebook-wrapper-maturation`.
+
+Status: active.
 
 Goal: turn the bootstrap selection-control and output-table discoveries into a coherent 2020 FABLE-C
 notebook workflow that can drive a generated Modelwright model, render canonical outputs, and expose
 clear user-guide examples.
 
-- [ ] P1.1 Harden scenario selection control discovery. Child issue: planned.
-  - [ ] Validate S.1 through S.16 on the 2020 workbook.
-  - [ ] Confirm 2021 compatibility and document differences.
-  - [ ] Keep 2019 as an older-structure fragility check.
-- [ ] P1.2 Curate headline output indicators and figures. Child issue: planned.
-  - [ ] Use `Indextables` and the canonical output sheets to select initial FOOD, LAND, GHG, and WATER
+- [x] P1.1 Harden scenario selection control discovery. Child issue: #7.
+  - Status: complete.
+  - [x] Validate S.1 through S.16 on the 2020 workbook.
+  - [x] Confirm 2021 compatibility and document differences.
+  - [x] Keep 2019 as an older-structure fragility check.
+- [x] P1.2 Curate headline output indicators and figures. Child issue: #8.
+  - Status: complete.
+  - [x] Use `Indextables` and the canonical output sheets to select initial FOOD, LAND, GHG, and WATER
         headline outputs.
-  - [ ] Render notebook-friendly pandas tables and matplotlib figures.
-- [ ] P1.3 Build the first 2020 generated-model notebook loop. Child issue: planned.
-  - [ ] Load or reference an ignored generated 2020 Modelwright model.
-  - [ ] Apply selection-control overrides.
-  - [ ] Render discovered output tables and curated headline outputs.
-- [ ] P1.4 Add user-guide documentation and validation evidence. Child issue: planned.
-  - [ ] Expand the Sphinx guide around scenario selection, running the model, and reading outputs.
-  - [ ] Record 2020 benchmark evidence and 2021 follow-up scope.
+  - [x] Render notebook-friendly pandas tables and matplotlib figures.
+- [x] P1.3 Build the first 2020 generated-model notebook loop. Child issue: #9.
+  - Status: complete.
+  - [x] Load or reference an ignored generated 2020 Modelwright model.
+  - [x] Apply selection-control overrides.
+  - [x] Render discovered output tables and curated headline outputs.
+- [x] P1.4 Add user-guide documentation and validation evidence. Child issue: #10.
+  - Status: complete.
+  - [x] Expand the Sphinx guide around scenario selection, running the model, and reading outputs.
+  - [x] Record 2020 benchmark evidence and 2021 follow-up scope.
 
 Acceptance boundary:
 
 - May claim a coherent early FABLE-C notebook wrapper workflow for the inspected 2020 workbook.
 - Must not claim production readiness or cross-country support until country-specific validation
   evidence is recorded.
+
+Implementation evidence:
+
+- Added opt-in workbook-backed tests for the 2020, 2021, and 2019 public FABLE-C workbooks.
+- Added `planning/phase-1-selection-control-validation.md` with validation findings.
+- Added curated `HeadlineSeries` declarations for initial FOOD, LAND, GHG, and WATER outputs.
+- Added `curate_default_headline_series`, `headline_frame`, `headline_frames`, and `plot_headline`.
+- Added `planning/phase-1-headline-output-curation.md` with source table and column mappings.
+- Added `.github/workflows/docs-pages.yml` so Sphinx docs build on PRs and deploy to GitHub Pages
+  after merges to `main`.
+- Confirmed GitHub Pages is configured for workflow deployment at
+  `https://ubc-fresh.github.io/fable-pyculator/`.
+- Added the first 2020 notebook-loop helpers: `build_2020_notebook_spec`, `load_generated_model`,
+  `run_notebook_loop`, and `run_2020_notebook_loop`.
+- Added tracked example notebook `examples/notebooks/fable-pyculator-2020-loop.ipynb`.
+- Added `planning/phase-1-2020-notebook-loop.md` with ignored generated-model artifact paths and
+  loop boundaries.
+- Added Sphinx guide pages `docs/guides/2020-notebook-workflow.rst` and
+  `docs/guides/validation-scope.rst`.
+- Added `planning/phase-1-user-guide-validation-closeout.md` with Phase 1 closeout evidence and
+  2021 follow-up scope.
+
+Verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 16 tests and 4 workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -vv tests/test_fable_workbook_selection_controls.py`
+  passed against ignored local workbook artifacts.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -vv tests/test_fable_workbook_headline_series.py`
+  passed against the ignored local 2020 workbook artifact.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -vv tests/test_fable_workbook_selection_controls.py tests/test_fable_workbook_headline_series.py`
+  passed with 4 workbook-backed tests.
+- `.venv/bin/python -m pytest tests/test_notebook.py` passed with 4 tests.
+- `.venv/bin/python -m pytest tests/test_examples.py` passed with 1 test.

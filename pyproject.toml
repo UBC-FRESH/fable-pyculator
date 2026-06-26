@@ -60,6 +60,9 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  "workbook: tests that require local FABLE workbook artifacts and are skipped unless explicitly enabled"
+]
 
 [tool.ruff]
 line-length = 120

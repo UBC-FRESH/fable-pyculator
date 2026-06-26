@@ -11,10 +11,11 @@ Modelwright-generated Python models.
    guides/artifacts
    guides/workbook-structure
    guides/notebook-control-surface
+   guides/2020-notebook-workflow
+   guides/validation-scope
 
 .. toctree::
    :maxdepth: 2
    :caption: API
 
    reference/api
-
