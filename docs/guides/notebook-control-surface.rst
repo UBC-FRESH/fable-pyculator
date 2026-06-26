@@ -51,6 +51,43 @@ output table:
    headline_frame(run, "ghg_total_co2e")
    plot_headline(run, "ghg_total_co2e")
 
+2020 Notebook Loop
+------------------
+
+The first convenience loop points to ignored local 2020 artifacts:
+
+- ``tmp/private-workbooks/2020_Open_FABLECalculator.xlsx``
+- ``tmp/generated-models/fable-2020/generated_fable_2020_model.py``
+
+Use ``run_2020_notebook_loop`` when those artifacts have been restored locally:
+
+- :download:`fable-pyculator-2020-loop.ipynb <../../examples/notebooks/fable-pyculator-2020-loop.ipynb>`
+
+.. code-block:: python
+
+   from fable_pyculator import run_2020_notebook_loop
+
+   result = run_2020_notebook_loop(
+       {"gdp_scen": "SSP1"},
+       output_table_names=("ghg_resultsghg",),
+       headline_series_names=("ghg_total_co2e",),
+   )
+
+   result.output_tables["ghg_resultsghg"]
+   result.headline_frames["ghg_total_co2e"]
+   result.headline_figures["ghg_total_co2e"]
+
+For notebooks that need more control over paths or rendering choices, split the loop into its
+pieces:
+
+.. code-block:: python
+
+   from fable_pyculator import build_2020_notebook_spec, load_generated_model, run_notebook_loop
+
+   spec = build_2020_notebook_spec("tmp/private-workbooks/2020_Open_FABLECalculator.xlsx")
+   generated_model = load_generated_model("tmp/generated-models/fable-2020/generated_fable_2020_model.py")
+   result = run_notebook_loop(generated_model, spec, {"gdp_scen": "SSP1"})
+
 Current Scope
 -------------
 
@@ -58,5 +95,5 @@ The first implementation discovers high-level selection tables. Detailed editabl
 on ``SCENARIOS definition`` still need a separate curation pass before they are exposed as notebook
 inputs. Output table discovery currently maps Excel table cells into DataFrame surfaces; stable
 headline outputs are currently curated for FOOD, LAND, GHG, and WATER. The first curation is still
-benchmark-oriented and should be validated against generated 2020 model behavior before it is treated
-as a stable reporting API.
+benchmark-oriented. The 2020 notebook loop can run against an ignored generated model artifact, but
+full generated-model equivalence remains a validation-phase claim rather than a wrapper API claim.

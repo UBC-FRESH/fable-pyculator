@@ -7,7 +7,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Continue Phase 1 with P1.3 after P1.2 is committed, pushed, and issue #8 is closed.
+- Continue Phase 1 with P1.4 after P1.3 is committed, pushed, and issue #9 is closed.
 - Treat the phase close-out PR as the docs deployment gate: Sphinx must build on the PR, and the
   merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -102,10 +102,11 @@ clear user-guide examples.
   - [x] Use `Indextables` and the canonical output sheets to select initial FOOD, LAND, GHG, and WATER
         headline outputs.
   - [x] Render notebook-friendly pandas tables and matplotlib figures.
-- [ ] P1.3 Build the first 2020 generated-model notebook loop. Child issue: #9.
-  - [ ] Load or reference an ignored generated 2020 Modelwright model.
-  - [ ] Apply selection-control overrides.
-  - [ ] Render discovered output tables and curated headline outputs.
+- [x] P1.3 Build the first 2020 generated-model notebook loop. Child issue: #9.
+  - Status: complete.
+  - [x] Load or reference an ignored generated 2020 Modelwright model.
+  - [x] Apply selection-control overrides.
+  - [x] Render discovered output tables and curated headline outputs.
 - [ ] P1.4 Add user-guide documentation and validation evidence. Child issue: #10.
   - [ ] Expand the Sphinx guide around scenario selection, running the model, and reading outputs.
   - [ ] Record 2020 benchmark evidence and 2021 follow-up scope.
@@ -127,6 +128,11 @@ Implementation evidence:
   after merges to `main`.
 - Confirmed GitHub Pages is configured for workflow deployment at
   `https://ubc-fresh.github.io/fable-pyculator/`.
+- Added the first 2020 notebook-loop helpers: `build_2020_notebook_spec`, `load_generated_model`,
+  `run_notebook_loop`, and `run_2020_notebook_loop`.
+- Added tracked example notebook `examples/notebooks/fable-pyculator-2020-loop.ipynb`.
+- Added `planning/phase-1-2020-notebook-loop.md` with ignored generated-model artifact paths and
+  loop boundaries.
 
 Verification evidence:
 
@@ -140,3 +146,5 @@ Verification evidence:
   passed against the ignored local 2020 workbook artifact.
 - `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -vv tests/test_fable_workbook_selection_controls.py tests/test_fable_workbook_headline_series.py`
   passed with 4 workbook-backed tests.
+- `.venv/bin/python -m pytest tests/test_notebook.py` passed with 4 tests.
+- `.venv/bin/python -m pytest tests/test_examples.py` passed with 1 test.

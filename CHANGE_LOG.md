@@ -45,3 +45,8 @@ This file records completed project work in chronological order.
   source table mappings in `planning/phase-1-headline-output-curation.md`.
 - Added a `Docs Pages` GitHub Actions workflow and phase close-out guidance so Sphinx docs build on
   pull requests to `main` and deploy to GitHub Pages after merges to `main`.
+- Completed P1.3 by adding the first 2020 notebook-loop helpers that build a workbook-derived spec,
+  load an ignored generated Modelwright model from `tmp/generated-models/fable-2020/`, apply
+  selection-control overrides, and return rendered output tables plus curated headline frames and
+  figures; added `examples/notebooks/fable-pyculator-2020-loop.ipynb` and recorded the contract in
+  `planning/phase-1-2020-notebook-loop.md`.
