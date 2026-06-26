@@ -161,6 +161,47 @@ row.
      - 2
      - ``OECD_AGLINK``
 
+Initial Headline Outputs
+------------------------
+
+The first curated headline set is intentionally small. It uses ``Indextables`` descriptions for
+provenance and maps one stable time series from each of the FOOD, LAND, GHG, and WATER output
+surfaces.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Series
+     - Sheet
+     - Table
+     - Columns
+     - Notes
+   * - ``food_total_kcal_feas``
+     - ``FOOD``
+     - ``Total_results_diets``
+     - ``YEAR``, ``kcal_feas``
+     - Uses rows where ``PROD_GROUP`` is ``TOTAL``.
+   * - ``land_total_area``
+     - ``LAND``
+     - ``ResultsLand``
+     - ``Year``, ``TOTAL``
+     - Uses the workbook's reported total land area values.
+   * - ``ghg_total_co2e``
+     - ``GHG``
+     - ``ResultsGHG``
+     - ``Year``, ``TotalCO2e``
+     - Uses the workbook's total agriculture and land-use-change emissions series.
+   * - ``water_total_footprint``
+     - ``WATER``
+     - ``TotalResultsWF``
+     - ``YEAR`` plus six water-footprint component columns
+     - Uses rows where ``Product`` is ``TOTAL`` and sums green, blue, and grey crop/livestock
+       components.
+
+In the 2020 workbook, each initial headline series maps to 11 five-year points from 2000 through
+2050. The WATER series stores six source cell references per point because its notebook value is a
+sum of workbook component columns.
+
 Cross-Version Notes
 -------------------
 
@@ -182,3 +223,5 @@ Package Mapping
 ``discover_selection_controls`` maps the S.1-S.16 tables into notebook dropdown declarations.
 ``discover_output_tables`` maps Excel tables on the seven canonical output data sheets into
 DataFrame-ready table declarations.
+``curate_default_headline_series`` maps the initial FOOD, LAND, GHG, and WATER headline outputs into
+tidy DataFrame and matplotlib figure surfaces.

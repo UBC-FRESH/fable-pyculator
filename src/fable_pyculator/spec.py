@@ -9,6 +9,7 @@ from modelwright.references import normalize_cell_reference
 
 
 ControlKind = Literal["number", "text", "choice", "boolean"]
+HeadlineAggregation = Literal["value", "sum"]
 FABLE_OUTPUT_SURFACE_SHEETS = (
     "FOOD",
     "PRODUCTION",
@@ -71,6 +72,41 @@ class OutputTable:
         object.__setattr__(self, "cell_refs", tuple(tuple(row) for row in self.cell_refs))
         object.__setattr__(self, "row_labels", tuple(self.row_labels))
         object.__setattr__(self, "column_labels", tuple(self.column_labels))
+
+
+@dataclass(frozen=True)
+class HeadlinePoint:
+    """One year/value point in a curated headline output series."""
+
+    year: int | str
+    cell_refs: tuple[str, ...] | list[str]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "cell_refs",
+            tuple(_normalize_full_cell_ref(cell_ref) for cell_ref in self.cell_refs),
+        )
+
+
+@dataclass(frozen=True)
+class HeadlineSeries:
+    """One curated notebook headline series built from FABLE output tables."""
+
+    name: str
+    label: str
+    group: str
+    sheet: str
+    table_name: str
+    points: tuple[HeadlinePoint, ...] | list[HeadlinePoint]
+    unit: str | None = None
+    description: str | None = None
+    aggregation: HeadlineAggregation = "value"
+
+    def __post_init__(self) -> None:
+        points = tuple(self.points)
+        _require_unique("headline year", (str(point.year) for point in points))
+        object.__setattr__(self, "points", points)
 
 
 @dataclass(frozen=True)
@@ -138,6 +174,7 @@ class FableCalculatorSpec:
     selection_controls: tuple[SelectionControl, ...] | list[SelectionControl] = field(default_factory=tuple)
     outputs: tuple[OutputIndicator, ...] | list[OutputIndicator] = field(default_factory=tuple)
     output_tables: tuple[OutputTable, ...] | list[OutputTable] = field(default_factory=tuple)
+    headline_series: tuple[HeadlineSeries, ...] | list[HeadlineSeries] = field(default_factory=tuple)
     workbook_id: str | None = None
     provenance: str | None = None
 
@@ -146,10 +183,12 @@ class FableCalculatorSpec:
         selection_controls = tuple(self.selection_controls)
         outputs = tuple(self.outputs)
         output_tables = tuple(self.output_tables)
+        headline_series = tuple(self.headline_series)
         _require_unique("parameter", (parameter.name for parameter in parameters))
         _require_unique("selection control", (control.name for control in selection_controls))
         _require_unique("output", (output.name for output in outputs))
         _require_unique("output table", (table.name for table in output_tables))
+        _require_unique("headline series", (series.name for series in headline_series))
         overlap = set(parameter.name for parameter in parameters) & set(control.name for control in selection_controls)
         if overlap:
             raise ValueError(f"parameter and selection control names overlap: {', '.join(sorted(overlap))}")
@@ -157,6 +196,7 @@ class FableCalculatorSpec:
         object.__setattr__(self, "selection_controls", selection_controls)
         object.__setattr__(self, "outputs", outputs)
         object.__setattr__(self, "output_tables", output_tables)
+        object.__setattr__(self, "headline_series", headline_series)
 
     def input_mapping(self, values: dict[str, object]) -> dict[str, object]:
         """Convert scenario values keyed by parameter name to generated-model cell inputs."""

@@ -7,6 +7,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
+- Continue Phase 1 with P1.3 after P1.2 is committed, pushed, and issue #8 is closed.
+- Treat the phase close-out PR as the docs deployment gate: Sphinx must build on the PR, and the
+  merge to `main` must trigger the GitHub Pages deployment workflow.
+
 ## Phase 0: Governance Bootstrap
 
 GitHub parent issue: #1.
@@ -93,10 +97,11 @@ clear user-guide examples.
   - [x] Validate S.1 through S.16 on the 2020 workbook.
   - [x] Confirm 2021 compatibility and document differences.
   - [x] Keep 2019 as an older-structure fragility check.
-- [ ] P1.2 Curate headline output indicators and figures. Child issue: #8.
-  - [ ] Use `Indextables` and the canonical output sheets to select initial FOOD, LAND, GHG, and WATER
+- [x] P1.2 Curate headline output indicators and figures. Child issue: #8.
+  - Status: complete.
+  - [x] Use `Indextables` and the canonical output sheets to select initial FOOD, LAND, GHG, and WATER
         headline outputs.
-  - [ ] Render notebook-friendly pandas tables and matplotlib figures.
+  - [x] Render notebook-friendly pandas tables and matplotlib figures.
 - [ ] P1.3 Build the first 2020 generated-model notebook loop. Child issue: #9.
   - [ ] Load or reference an ignored generated 2020 Modelwright model.
   - [ ] Apply selection-control overrides.
@@ -115,11 +120,23 @@ Implementation evidence:
 
 - Added opt-in workbook-backed tests for the 2020, 2021, and 2019 public FABLE-C workbooks.
 - Added `planning/phase-1-selection-control-validation.md` with validation findings.
+- Added curated `HeadlineSeries` declarations for initial FOOD, LAND, GHG, and WATER outputs.
+- Added `curate_default_headline_series`, `headline_frame`, `headline_frames`, and `plot_headline`.
+- Added `planning/phase-1-headline-output-curation.md` with source table and column mappings.
+- Added `.github/workflows/docs-pages.yml` so Sphinx docs build on PRs and deploy to GitHub Pages
+  after merges to `main`.
+- Confirmed GitHub Pages is configured for workflow deployment at
+  `https://ubc-fresh.github.io/fable-pyculator/`.
 
 Verification evidence:
 
 - `.venv/bin/python -m ruff check .` passed.
-- `.venv/bin/python -m pytest` passed with workbook-backed tests skipped by default.
+- `.venv/bin/python -m pytest` passed with 16 tests and 4 workbook-backed skips.
 - `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
 - `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -vv tests/test_fable_workbook_selection_controls.py`
   passed against ignored local workbook artifacts.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -vv tests/test_fable_workbook_headline_series.py`
+  passed against the ignored local 2020 workbook artifact.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -vv tests/test_fable_workbook_selection_controls.py tests/test_fable_workbook_headline_series.py`
+  passed with 4 workbook-backed tests.

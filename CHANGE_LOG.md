@@ -40,3 +40,8 @@ This file records completed project work in chronological order.
   selection-control contract, confirm 2021 shares the same control structure with the known
   `Affor_scen` default difference, and preserve 2019 as an older 12-control fragility check; recorded
   findings in `planning/phase-1-selection-control-validation.md`.
+- Completed P1.2 by adding curated headline output series for FOOD, LAND, GHG, and WATER, plus
+  notebook rendering helpers for tidy pandas headline frames and matplotlib line figures; recorded
+  source table mappings in `planning/phase-1-headline-output-curation.md`.
+- Added a `Docs Pages` GitHub Actions workflow and phase close-out guidance so Sphinx docs build on
+  pull requests to `main` and deploy to GitHub Pages after merges to `main`.

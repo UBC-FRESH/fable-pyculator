@@ -26,6 +26,8 @@ This project uses the same agent-assisted workflow as Modelwright:
   `tmp/`;
 - once the public GitHub repo and `gh` access exist, map roadmap phases to GitHub parent issues and
   roadmap tasks to child issues.
+- close every phase through a PR back to `main`, with Sphinx docs rebuilt in CI and deployed to
+  GitHub Pages after merge.
 
 The local remote is expected to be:
 
@@ -110,6 +112,15 @@ real country calculators.
 ```bash
 .venv/bin/python -m pip install -e '.[dev,notebook,docs]'
 .venv/bin/sphinx-build -b html docs _build/html -W
+```
+
+The `Docs Pages` GitHub Actions workflow builds Sphinx docs on pull requests to `main` and deploys
+the built HTML to GitHub Pages after merges to `main`.
+
+GitHub Pages URL:
+
+```text
+https://ubc-fresh.github.io/fable-pyculator/
 ```
 
 ## Default Checks

@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from numbers import Real
 from types import ModuleType
 from typing import Any
 
 from modelwright.wrappers import ModelFacade, cell
 
-from fable_pyculator.spec import FableCalculatorSpec, OutputTable
+from fable_pyculator.spec import FableCalculatorSpec, HeadlineSeries, OutputTable
 
 
 @dataclass(frozen=True)
@@ -100,6 +101,35 @@ def output_tables(run: ScenarioRun) -> dict[str, Any]:
     return {table.name: _table_frame(table, run.values) for table in run.spec.output_tables}
 
 
+def headline_frame(run: ScenarioRun, series_name: str) -> Any:
+    """Render one curated FABLE headline series as a tidy pandas DataFrame."""
+
+    series = _headline_series(run.spec, series_name)
+    return _headline_frame(series, run.values)
+
+
+def headline_frames(run: ScenarioRun) -> dict[str, Any]:
+    """Render all declared FABLE headline series as tidy pandas DataFrames."""
+
+    return {series.name: _headline_frame(series, run.values) for series in run.spec.headline_series}
+
+
+def plot_headline(run: ScenarioRun, series_name: str) -> Any:
+    """Plot one curated FABLE headline series as a notebook-friendly line chart."""
+
+    plt = _load_matplotlib()
+    series = _headline_series(run.spec, series_name)
+    frame = _headline_frame(series, run.values)
+    figure, axis = plt.subplots(figsize=(8, 4))
+    axis.plot(frame["year"], frame["value"], marker="o")
+    axis.set_title(series.label)
+    axis.set_xlabel("year")
+    axis.set_ylabel(series.unit or "value")
+    axis.grid(True, alpha=0.3)
+    figure.tight_layout()
+    return figure
+
+
 def plot_outputs(run: ScenarioRun, *, group: str | None = None) -> Any:
     """Plot numeric output indicators as a simple horizontal bar chart."""
 
@@ -139,6 +169,13 @@ def _output_table(spec: FableCalculatorSpec, table_name: str) -> OutputTable:
     raise KeyError(f"unknown output table {table_name!r}")
 
 
+def _headline_series(spec: FableCalculatorSpec, series_name: str) -> HeadlineSeries:
+    for series in spec.headline_series:
+        if series.name == series_name or series.label == series_name:
+            return series
+    raise KeyError(f"unknown headline series {series_name!r}")
+
+
 def _table_frame(table: OutputTable, values: Mapping[str, object]) -> Any:
     pd = _load_pandas()
     rows = [
@@ -158,6 +195,51 @@ def _table_frame(table: OutputTable, values: Mapping[str, object]) -> Any:
         }
     )
     return frame
+
+
+def _headline_frame(series: HeadlineSeries, values: Mapping[str, object]) -> Any:
+    pd = _load_pandas()
+    rows = [
+        {
+            "name": series.name,
+            "label": series.label,
+            "group": series.group,
+            "year": point.year,
+            "value": _headline_value(series, point.cell_refs, values),
+            "unit": series.unit,
+            "cell_refs": tuple(point.cell_refs),
+            "description": series.description,
+        }
+        for point in series.points
+    ]
+    frame = pd.DataFrame(
+        rows,
+        columns=["name", "label", "group", "year", "value", "unit", "cell_refs", "description"],
+    )
+    frame.attrs.update(
+        {
+            "name": series.name,
+            "label": series.label,
+            "group": series.group,
+            "sheet": series.sheet,
+            "table_name": series.table_name,
+            "unit": series.unit,
+            "aggregation": series.aggregation,
+            "description": series.description,
+        }
+    )
+    return frame
+
+
+def _headline_value(series: HeadlineSeries, cell_refs: tuple[str, ...], values: Mapping[str, object]) -> object:
+    point_values = [values.get(cell_ref) for cell_ref in cell_refs]
+    if series.aggregation == "value":
+        return point_values[0] if point_values else None
+    if series.aggregation == "sum":
+        if all(isinstance(value, Real) and not isinstance(value, bool) for value in point_values):
+            return sum(point_values)
+        return None
+    raise ValueError(f"unsupported headline aggregation {series.aggregation!r}")
 
 
 def _load_pandas() -> Any:

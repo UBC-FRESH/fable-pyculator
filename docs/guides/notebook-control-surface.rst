@@ -17,15 +17,24 @@ Minimal Example
    from fable_pyculator import (
        FableCalculatorSpec,
        ScenarioControlSurface,
+       curate_default_headline_series,
        discover_output_tables,
        discover_selection_controls,
+       headline_frame,
        output_table_frame,
+       plot_headline,
        run_scenario,
    )
 
-   controls = discover_selection_controls("tmp/private-workbooks/2020_Open_FABLECalculator.xlsx")
-   output_tables = discover_output_tables("tmp/private-workbooks/2020_Open_FABLECalculator.xlsx")
-   spec = FableCalculatorSpec(selection_controls=controls, output_tables=output_tables)
+   workbook_path = "tmp/private-workbooks/2020_Open_FABLECalculator.xlsx"
+   controls = discover_selection_controls(workbook_path)
+   output_tables = discover_output_tables(workbook_path)
+   headlines = curate_default_headline_series(workbook_path)
+   spec = FableCalculatorSpec(
+       selection_controls=controls,
+       output_tables=output_tables,
+       headline_series=headlines,
+   )
 
    surface = ScenarioControlSurface(spec)
    surface
@@ -39,6 +48,8 @@ output table:
 
    run = run_scenario(generated_model, spec, surface.values())
    output_table_frame(run, "ghg_resultsghg")
+   headline_frame(run, "ghg_total_co2e")
+   plot_headline(run, "ghg_total_co2e")
 
 Current Scope
 -------------
@@ -46,5 +57,6 @@ Current Scope
 The first implementation discovers high-level selection tables. Detailed editable parameter tables
 on ``SCENARIOS definition`` still need a separate curation pass before they are exposed as notebook
 inputs. Output table discovery currently maps Excel table cells into DataFrame surfaces; stable
-headline figures still need curated output indicator declarations from ``Indextables`` and the result
-tables.
+headline outputs are currently curated for FOOD, LAND, GHG, and WATER. The first curation is still
+benchmark-oriented and should be validated against generated 2020 model behavior before it is treated
+as a stable reporting API.
