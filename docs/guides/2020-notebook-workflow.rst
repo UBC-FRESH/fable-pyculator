@@ -13,6 +13,9 @@ The tracked example notebook is:
 
 - :download:`fable-pyculator-2020-loop.ipynb <../../examples/notebooks/fable-pyculator-2020-loop.ipynb>`
 
+It is intentionally committed after a successful 2020 benchmark run so GitHub can render the example
+tables and figure directly in the browser.
+
 Before opening it in VSCode, create the repo-local environment from the ``fable-pyculator`` repository
 root:
 

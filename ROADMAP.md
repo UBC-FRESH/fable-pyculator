@@ -7,8 +7,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Post-Phase-1 maintenance issue #13 adds VSCode `.venv` bootstrap and notebook artifact-path
-  handling for test users.
+- Post-Phase-1 maintenance issue #13 adds VSCode `.venv` bootstrap, notebook artifact-path handling,
+  and a committed post-run notebook preview for test users.
 - Phase 1 is closed. Choose and map the next roadmap phase before starting the next non-trivial
   implementation lane.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and

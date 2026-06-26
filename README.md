@@ -140,6 +140,9 @@ Tracked notebook example:
 examples/notebooks/fable-pyculator-2020-loop.ipynb
 ```
 
+This notebook is intentionally committed after a successful 2020 benchmark run so GitHub can render
+the example tables and figure directly in the browser.
+
 In VSCode, point the notebook kernel at the `.venv` created in the `fable-pyculator` repo root.
 The notebook setup cell prints the active environment prefix and warns if the selected kernel does
 not appear to be that repo-local `.venv`.
