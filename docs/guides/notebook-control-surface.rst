@@ -53,6 +53,21 @@ output table:
    headline_frame(run, "ghg_total_co2e")
    plot_headline(run, "ghg_total_co2e")
 
+Discovered output tables can also be rendered with selected column flavour tags. Context columns
+tagged ``DIRECT`` or ``AUX`` are kept by default so filtered frames still include identifiers such as
+``Year`` or ``Product``:
+
+.. code-block:: python
+
+   output_table_frame(run, "ghg_resultsghg", column_flavour_tags="OUTPUT-8")
+   output_table_frame(run, "ghg_resultsghg", column_flavour_tags="DATA-5")
+   output_table_frame(
+       run,
+       "ghg_resultsghg",
+       column_flavour_tags=("DATA-5", "OUTPUT-8"),
+       include_context_columns=False,
+   )
+
 2020 Notebook Loop
 ------------------
 
@@ -72,6 +87,7 @@ Use ``run_2020_notebook_loop`` when those artifacts have been restored locally:
    result = run_2020_notebook_loop(
        {"gdp_scen": "SSP1"},
        output_table_names=("ghg_resultsghg",),
+       output_table_column_flavour_tags="OUTPUT-8",
        headline_series_names=("ghg_total_co2e",),
    )
 

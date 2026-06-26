@@ -61,3 +61,9 @@ This file records completed project work in chronological order.
   instead of assuming the kernel starts at the repo root.
 - Committed the 2020 example notebook after a successful benchmark run so GitHub can render the
   example output tables and headline figure directly in the browser.
+- Activated Phase 2 on `feature/p2-output-table-column-flavour-filtering`, promoted issue #15 to the
+  phase parent, and created child issues #16, #18, #19, and #17 for output table column-flavour
+  metadata, filtering API, documentation, and workbook-backed validation.
+- Completed Phase 2 implementation by adding workbook-derived output table column flavour metadata,
+  render-time flavour filtering for output DataFrames and notebook loops, Sphinx guide examples, and
+  opt-in workbook-backed validation for the 2020 and 2021 public FABLE-C tag inventories.

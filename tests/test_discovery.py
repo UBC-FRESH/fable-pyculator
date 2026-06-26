@@ -64,10 +64,11 @@ def test_discover_output_tables_finds_tables_on_canonical_output_sheets(tmp_path
     workbook = Workbook()
     worksheet = workbook.active
     worksheet.title = "FOOD"
+    worksheet.append(["DIRECT", "DATA -1", "OUTPUT - 8"])
     worksheet.append(["Metric", "2020", "2030"])
     worksheet.append(["Calories", 2500, 2600])
     worksheet.append(["Protein", 80, 82])
-    worksheet.add_table(Table(displayName="Results_Diets", ref="A1:C3"))
+    worksheet.add_table(Table(displayName="Results_Diets", ref="A2:C4"))
     path = tmp_path / "fable.xlsx"
     workbook.save(path)
 
@@ -77,12 +78,15 @@ def test_discover_output_tables_finds_tables_on_canonical_output_sheets(tmp_path
     table = tables[0]
     assert table.name == "food_results_diets"
     assert table.sheet == "FOOD"
-    assert table.range_ref == "A1:C3"
+    assert table.range_ref == "A2:C4"
     assert table.column_labels == ("Metric", "2020", "2030")
+    assert table.column_flavour_tags == ("DIRECT", "DATA-1", "OUTPUT-8")
+    assert table.raw_column_flavour_tags == ("DIRECT", "DATA -1", "OUTPUT - 8")
+    assert table.column_flavour_tag_refs == ("FOOD!A1", "FOOD!B1", "FOOD!C1")
     assert table.row_labels == ("Calories", "Protein")
     assert table.cell_refs == (
-        ("FOOD!A2", "FOOD!B2", "FOOD!C2"),
         ("FOOD!A3", "FOOD!B3", "FOOD!C3"),
+        ("FOOD!A4", "FOOD!B4", "FOOD!C4"),
     )
 
 

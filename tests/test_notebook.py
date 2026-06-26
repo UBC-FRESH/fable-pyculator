@@ -41,16 +41,16 @@ def test_run_notebook_loop_applies_selection_controls_and_renders_artifacts() ->
             "SCENARIOS selection!A4": None,
         }
         return {
-            "GHG!A2": 2030,
-            "GHG!B2": 42,
-            "FOOD!C2": 2500,
-            "LAND!B2": 100,
-            "WATER!C2": 1,
-            "WATER!D2": 2,
-            "WATER!E2": 3,
-            "WATER!F2": 4,
-            "WATER!G2": 5,
-            "WATER!H2": 6,
+            "GHG!A3": 2030,
+            "GHG!B3": 42,
+            "FOOD!C3": 2500,
+            "LAND!B3": 100,
+            "WATER!C3": 1,
+            "WATER!D3": 2,
+            "WATER!E3": 3,
+            "WATER!F3": 4,
+            "WATER!G3": 5,
+            "WATER!H3": 6,
         }
 
     result = run_notebook_loop(
@@ -78,16 +78,16 @@ def test_run_2020_notebook_loop_loads_ignored_model_path(tmp_path: Path) -> None
     model_path.write_text(
         "def calculate(inputs=None):\n"
         "    return {\n"
-        "        'GHG!A2': 2030,\n"
-        "        'GHG!B2': 42,\n"
-        "        'FOOD!C2': 2500,\n"
-        "        'LAND!B2': 100,\n"
-        "        'WATER!C2': 1,\n"
-        "        'WATER!D2': 2,\n"
-        "        'WATER!E2': 3,\n"
-        "        'WATER!F2': 4,\n"
-        "        'WATER!G2': 5,\n"
-        "        'WATER!H2': 6,\n"
+        "        'GHG!A3': 2030,\n"
+        "        'GHG!B3': 42,\n"
+        "        'FOOD!C3': 2500,\n"
+        "        'LAND!B3': 100,\n"
+        "        'WATER!C3': 1,\n"
+        "        'WATER!D3': 2,\n"
+        "        'WATER!E3': 3,\n"
+        "        'WATER!F3': 4,\n"
+        "        'WATER!G3': 5,\n"
+        "        'WATER!H3': 6,\n"
         "    }\n",
         encoding="utf-8",
     )
@@ -97,6 +97,7 @@ def test_run_2020_notebook_loop_loads_ignored_model_path(tmp_path: Path) -> None
         workbook_path=workbook_path,
         generated_model_path=model_path,
         output_table_names=("ghg_resultsghg",),
+        output_table_column_flavour_tags="OUTPUT-8",
         headline_series_names=("ghg_total_co2e",),
         include_figures=False,
     )
@@ -106,6 +107,7 @@ def test_run_2020_notebook_loop_loads_ignored_model_path(tmp_path: Path) -> None
         "SCENARIOS selection!A4": "x",
     }
     assert result.headline_frames["ghg_total_co2e"].loc[0, "value"] == 42
+    assert list(result.output_tables["ghg_resultsghg"].columns) == ["Year", "TotalCO2e"]
 
 
 def _synthetic_workbook_path(path: Path | None = None) -> Path:
@@ -127,21 +129,25 @@ def _synthetic_workbook_path(path: Path | None = None) -> Path:
     indextables.append(["TotalResultsWF", "Water totals"])
 
     food = workbook.create_sheet("FOOD")
+    food.append(["DIRECT", "DIRECT", "OUTPUT-7"])
     food.append(["PROD_GROUP", "YEAR", "kcal_feas"])
     food.append(["TOTAL", 2030, 2500])
-    food.add_table(Table(displayName="Total_results_diets", ref="A1:C2"))
+    food.add_table(Table(displayName="Total_results_diets", ref="A2:C3"))
 
     land = workbook.create_sheet("LAND")
+    land.append(["DIRECT", "OUTPUT-4"])
     land.append(["Year", "TOTAL"])
     land.append([2030, 100])
-    land.add_table(Table(displayName="ResultsLand", ref="A1:B2"))
+    land.add_table(Table(displayName="ResultsLand", ref="A2:B3"))
 
     ghg = workbook.create_sheet("GHG")
+    ghg.append(["DIRECT", "OUTPUT - 8"])
     ghg.append(["Year", "TotalCO2e"])
     ghg.append([2030, 42])
-    ghg.add_table(Table(displayName="ResultsGHG", ref="A1:B2"))
+    ghg.add_table(Table(displayName="ResultsGHG", ref="A2:B3"))
 
     water = workbook.create_sheet("WATER")
+    water.append(["DIRECT", "DIRECT", "OUTPUT-9", "OUTPUT-9", "OUTPUT-9", "OUTPUT-9", "OUTPUT-9", "OUTPUT-9"])
     water.append(
         [
             "Product",
@@ -155,7 +161,7 @@ def _synthetic_workbook_path(path: Path | None = None) -> Path:
         ]
     )
     water.append(["TOTAL", 2030, 1, 2, 3, 4, 5, 6])
-    water.add_table(Table(displayName="TotalResultsWF", ref="A1:H2"))
+    water.add_table(Table(displayName="TotalResultsWF", ref="A2:H3"))
 
     target = path or Path("tmp/test-scratch/synthetic_fable.xlsx")
     target.parent.mkdir(parents=True, exist_ok=True)

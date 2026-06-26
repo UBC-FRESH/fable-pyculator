@@ -65,6 +65,9 @@ class OutputTable:
     cell_refs: tuple[tuple[str, ...], ...]
     row_labels: tuple[str, ...]
     column_labels: tuple[str, ...]
+    column_flavour_tags: tuple[str | None, ...] | list[str | None] = ()
+    raw_column_flavour_tags: tuple[str | None, ...] | list[str | None] = ()
+    column_flavour_tag_refs: tuple[str | None, ...] | list[str | None] = ()
     label: str | None = None
     description: str | None = None
 
@@ -72,6 +75,17 @@ class OutputTable:
         object.__setattr__(self, "cell_refs", tuple(tuple(row) for row in self.cell_refs))
         object.__setattr__(self, "row_labels", tuple(self.row_labels))
         object.__setattr__(self, "column_labels", tuple(self.column_labels))
+        object.__setattr__(self, "column_flavour_tags", tuple(self.column_flavour_tags))
+        object.__setattr__(self, "raw_column_flavour_tags", tuple(self.raw_column_flavour_tags))
+        object.__setattr__(self, "column_flavour_tag_refs", tuple(self.column_flavour_tag_refs))
+        column_count = len(self.column_labels)
+        for field_name in ("column_flavour_tags", "raw_column_flavour_tags", "column_flavour_tag_refs"):
+            values = getattr(self, field_name)
+            if values and len(values) != column_count:
+                raise ValueError(
+                    f"output table {self.name!r} has {len(values)} {field_name} values "
+                    f"for {column_count} columns"
+                )
 
 
 @dataclass(frozen=True)
