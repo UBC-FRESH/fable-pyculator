@@ -57,8 +57,6 @@ def test_run_notebook_loop_applies_selection_controls_and_renders_artifacts() ->
         calculate,
         spec,
         {"gdp_scen": "SSP1"},
-        output_table_names=("ghg_resultsghg",),
-        headline_series_names=("ghg_total_co2e", "water_total_footprint"),
         include_figures=False,
     )
 
@@ -66,10 +64,47 @@ def test_run_notebook_loop_applies_selection_controls_and_renders_artifacts() ->
         "SCENARIOS selection!A3": "x",
         "SCENARIOS selection!A4": None,
     }
+    assert set(result.output_tables) == {
+        "food_total_results_diets",
+        "land_resultsland",
+        "ghg_resultsghg",
+        "water_totalresultswf",
+    }
+    assert set(result.headline_frames) == {
+        "food_total_kcal_feas",
+        "land_total_area",
+        "ghg_total_co2e",
+        "water_total_footprint",
+    }
     assert result.output_tables["ghg_resultsghg"].loc["2030", "TotalCO2e"] == 42
     assert result.headline_frames["ghg_total_co2e"].loc[0, "value"] == 42
     assert result.headline_frames["water_total_footprint"].loc[0, "value"] == 21
     assert result.headline_figures == {}
+
+
+def test_run_notebook_loop_preserves_explicit_rendered_artifact_subsets() -> None:
+    spec = build_2020_notebook_spec(_synthetic_workbook_path())
+
+    result = run_notebook_loop(
+        lambda inputs=None: {
+            "GHG!A3": 2030,
+            "GHG!B3": 42,
+            "WATER!C3": 1,
+            "WATER!D3": 2,
+            "WATER!E3": 3,
+            "WATER!F3": 4,
+            "WATER!G3": 5,
+            "WATER!H3": 6,
+        },
+        spec,
+        output_table_names=("ghg_resultsghg",),
+        headline_series_names=("ghg_total_co2e",),
+        include_figures=False,
+    )
+
+    assert set(result.output_tables) == {"ghg_resultsghg"}
+    assert set(result.headline_frames) == {"ghg_total_co2e"}
+    assert result.output_tables["ghg_resultsghg"].loc["2030", "TotalCO2e"] == 42
 
 
 def test_run_2020_notebook_loop_loads_ignored_model_path(tmp_path: Path) -> None:

@@ -132,10 +132,15 @@ tmp/generated-models/fable-2020/generated_fable_2020_model.py
 from fable_pyculator import run_2020_notebook_loop
 
 result = run_2020_notebook_loop({"gdp_scen": "SSP1"})
+result.output_tables.keys()
 result.output_tables["ghg_resultsghg"]
 result.headline_frames["ghg_total_co2e"]
 result.headline_figures["ghg_total_co2e"]
 ```
+
+By default the loop renders every discovered output table and every curated headline frame from the
+single generated-model run. Pass `output_table_names` or `headline_series_names` only when you want a
+smaller rendered subset.
 
 Tracked notebook example:
 
