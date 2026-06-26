@@ -138,6 +138,8 @@ Implementation evidence:
   `docs/guides/validation-scope.rst`.
 - Added `planning/phase-1-user-guide-validation-closeout.md` with Phase 1 closeout evidence and
   2021 follow-up scope.
+- Aligned Sphinx configuration and Pages workflow with Modelwright's Read the Docs themed docs setup,
+  including RTD theme options, docs requirements, and a theme artifact verifier.
 
 Verification evidence:
 
@@ -153,3 +155,4 @@ Verification evidence:
   passed with 4 workbook-backed tests.
 - `.venv/bin/python -m pytest tests/test_notebook.py` passed with 4 tests.
 - `.venv/bin/python -m pytest tests/test_examples.py` passed with 1 test.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
