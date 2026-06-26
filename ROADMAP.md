@@ -7,8 +7,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Phase 2 implementation is complete on branch `feature/p2-output-table-column-flavour-filtering`;
-  open a PR for issue #15, wait for CI, merge to `main`, and confirm docs deployment.
+- Phase 2 follow-up issue #21 is implemented on branch `feature/p2-output-flavour-wildcards`;
+  open a PR, wait for CI, merge to `main`, and confirm docs deployment.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -170,7 +170,7 @@ Closeout evidence:
 
 GitHub parent issue: #15.
 
-Active branch: `feature/p2-output-table-column-flavour-filtering`.
+Active branch: `feature/p2-output-flavour-wildcards`.
 
 Status: active.
 
@@ -197,6 +197,12 @@ preserving current all-column rendering by default.
   - [x] Add opt-in workbook-backed checks for 2020 and 2021 tag inventories.
   - [x] Confirm GHG `OUTPUT - 8` normalizes to `OUTPUT-8`.
   - [x] Record verification evidence before parent issue closeout.
+- [x] P2.5 Add wildcard output flavour tag filters. Child issue: #21.
+  - Status: complete.
+  - [x] Support `DATA` as a prefix-family alias for all `DATA-*` tags.
+  - [x] Support trailing-star wildcard filters such as `DATA*` and `OUTPUT-*`.
+  - [x] Preserve exact-tag behavior and `DIRECT`/`AUX` context-column defaults.
+  - [x] Add unit tests and docs examples for wildcard filters.
 
 Acceptance boundary:
 
@@ -204,6 +210,8 @@ Acceptance boundary:
   inspected public workbook structures.
 - May claim output DataFrames can be filtered by canonical flavour tags while preserving all-column
   rendering by default.
+- After P2.5, may claim exact, prefix-family, and trailing-star wildcard flavour filters are
+  supported.
 - Must not claim stable public API compatibility or arbitrary country-calculator support until later
   validation and release-readiness evidence exists.
 
@@ -227,3 +235,5 @@ Verification evidence:
 - `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
 - `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -vv tests/test_fable_workbook_output_flavour_tags.py`
   passed against ignored local workbook artifacts.
+- `.venv/bin/python -m pytest tests/test_surface.py -q` passed with 7 tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed after P2.5 docs updates.

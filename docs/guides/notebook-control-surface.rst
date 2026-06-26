@@ -61,6 +61,9 @@ tagged ``DIRECT`` or ``AUX`` are kept by default so filtered frames still includ
 
    output_table_frame(run, "ghg_resultsghg", column_flavour_tags="OUTPUT-8")
    output_table_frame(run, "ghg_resultsghg", column_flavour_tags="DATA-5")
+   output_table_frame(run, "ghg_resultsghg", column_flavour_tags="DATA")
+   output_table_frame(run, "ghg_resultsghg", column_flavour_tags="DATA*")
+   output_table_frame(run, "ghg_resultsghg", column_flavour_tags="OUTPUT-*")
    output_table_frame(
        run,
        "ghg_resultsghg",

@@ -99,15 +99,17 @@ Use the full loop when the default artifacts are present:
        headline_series_names=("food_total_kcal_feas", "land_total_area", "ghg_total_co2e", "water_total_footprint"),
    )
 
-To render a focused output table, request one or more column flavour tags. The default keeps context
-columns such as ``Year`` alongside the requested flavour:
+To render a focused output table, request one or more column flavour tags. Exact tags such as
+``OUTPUT-8`` work, ``DATA`` selects the whole ``DATA-*`` family, and trailing-star patterns such as
+``DATA*`` or ``OUTPUT-*`` select matching prefixes. The default keeps context columns such as
+``Year`` alongside the requested flavour:
 
 .. code-block:: python
 
    result = run_2020_notebook_loop(
        {"gdp_scen": "SSP1"},
        output_table_names=("ghg_resultsghg",),
-       output_table_column_flavour_tags="OUTPUT-8",
+       output_table_column_flavour_tags="OUTPUT-*",
        headline_series_names=("ghg_total_co2e",),
        include_figures=False,
    )
@@ -148,6 +150,7 @@ Typical notebook cells:
 .. code-block:: python
 
    result.output_tables["ghg_resultsghg"].head()
+   output_table_frame(result.run, "ghg_resultsghg", column_flavour_tags="DATA")
    output_table_frame(result.run, "ghg_resultsghg", column_flavour_tags="DATA-5")
    result.headline_frames["ghg_total_co2e"]
    result.headline_figures["ghg_total_co2e"]

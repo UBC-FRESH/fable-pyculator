@@ -67,3 +67,7 @@ This file records completed project work in chronological order.
 - Completed Phase 2 implementation by adding workbook-derived output table column flavour metadata,
   render-time flavour filtering for output DataFrames and notebook loops, Sphinx guide examples, and
   opt-in workbook-backed validation for the 2020 and 2021 public FABLE-C tag inventories.
+- Reopened Phase 2 for follow-up issue #21 to add wildcard and prefix-family output flavour filters
+  such as `DATA`, `DATA*`, and `OUTPUT-*`.
+- Completed Phase 2 follow-up issue #21 by adding prefix-family and trailing-star wildcard output
+  flavour filters plus README and Sphinx examples.

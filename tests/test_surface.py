@@ -114,9 +114,56 @@ def test_output_table_frame_filters_by_column_flavour_tags() -> None:
     assert list(exact_frame.columns) == ["TotalCO2e"]
     assert list(multi_tag_frame.columns) == ["Year", "Hist", "LandSeq"]
     assert frame.attrs["selected_column_flavour_tags"] == ("OUTPUT-8",)
+    assert frame.attrs["matched_column_flavour_tags"] == ("OUTPUT-8",)
     assert frame.attrs["column_flavour_tags"] == ["DIRECT", "DATA-5", "OUTPUT-8", "CALC"]
     assert frame.attrs["raw_column_flavour_tags"] == ["DIRECT", "DATA-5", "OUTPUT - 8", "CALC"]
     assert frame.attrs["selected_cell_refs"] == [["GHG!A3", "GHG!C3"]]
+
+
+def test_output_table_frame_filters_by_prefix_and_wildcard_column_flavour_tags() -> None:
+    spec = FableCalculatorSpec(
+        output_tables=[
+            OutputTable(
+                name="mixed_results",
+                label="MixedResults",
+                sheet="GHG",
+                range_ref="A2:F3",
+                cell_refs=(("GHG!A3", "GHG!B3", "GHG!C3", "GHG!D3", "GHG!E3", "GHG!F3"),),
+                row_labels=("2030",),
+                column_labels=("Year", "FAO", "Scenario", "TotalCO2e", "LandSeq", "Water"),
+                column_flavour_tags=("DIRECT", "DATA-5", "DATA-9", "OUTPUT-8", "CALC", "OUTPUT-9"),
+            )
+        ]
+    )
+    run = run_scenario(
+        lambda inputs=None: {
+            "GHG!A3": 2030,
+            "GHG!B3": 12,
+            "GHG!C3": 15,
+            "GHG!D3": 42,
+            "GHG!E3": -2,
+            "GHG!F3": 6,
+        },
+        spec,
+    )
+
+    data_family = output_table_frame(run, "mixed_results", column_flavour_tags="DATA")
+    data_wildcard = output_table_frame(run, "mixed_results", column_flavour_tags="DATA*")
+    output_wildcard = output_table_frame(
+        run,
+        "mixed_results",
+        column_flavour_tags="OUTPUT-*",
+        include_context_columns=False,
+    )
+
+    assert list(data_family.columns) == ["Year", "FAO", "Scenario"]
+    assert list(data_wildcard.columns) == ["Year", "FAO", "Scenario"]
+    assert list(output_wildcard.columns) == ["TotalCO2e", "Water"]
+    assert data_family.attrs["selected_column_flavour_tags"] == ("DATA",)
+    assert data_family.attrs["matched_column_flavour_tags"] == ("DATA-5", "DATA-9")
+    assert data_wildcard.attrs["selected_column_flavour_tags"] == ("DATA*",)
+    assert output_wildcard.attrs["selected_column_flavour_tags"] == ("OUTPUT-*",)
+    assert output_wildcard.attrs["matched_column_flavour_tags"] == ("OUTPUT-8", "OUTPUT-9")
 
 
 def test_output_table_frame_reports_missing_or_unknown_column_flavour_tags() -> None:
@@ -159,6 +206,9 @@ def test_output_table_frame_reports_missing_or_unknown_column_flavour_tags() -> 
 
     with pytest.raises(KeyError, match="OUTPUT-1"):
         output_table_frame(unknown_tag_run, "ghg_results", column_flavour_tags="OUTPUT-1")
+
+    with pytest.raises(KeyError, match="OUTPUT-9"):
+        output_table_frame(unknown_tag_run, "ghg_results", column_flavour_tags="OUTPUT-9*")
 
 
 def test_headline_frame_renders_value_and_sum_series() -> None:

@@ -248,7 +248,9 @@ The 2020 and 2021 public workbooks share the same discovered canonical tag vocab
    OUTPUT-9
 
 Workbook spelling is preserved separately from the canonical tag. For example, the GHG workbook row
-uses ``OUTPUT - 8`` and FABLE Pyculator normalizes it to ``OUTPUT-8`` for filtering.
+uses ``OUTPUT - 8`` and FABLE Pyculator normalizes it to ``OUTPUT-8`` for filtering. Renderers accept
+exact tags, the ``DATA`` and ``OUTPUT`` family aliases, and trailing-star prefix wildcards such as
+``DATA*`` and ``OUTPUT-*``.
 
 Package Mapping
 ---------------

@@ -209,7 +209,7 @@ def _table_frame(
     include_context_columns: bool = True,
 ) -> Any:
     pd = _load_pandas()
-    column_indices = _output_table_column_indices(
+    column_indices, requested_tags, matched_tags = _output_table_column_selection(
         table,
         column_flavour_tags,
         include_context_columns=include_context_columns,
@@ -231,7 +231,8 @@ def _table_frame(
             "description": table.description,
             "sheet": table.sheet,
             "range_ref": table.range_ref,
-            "selected_column_flavour_tags": _requested_column_flavour_tags(column_flavour_tags),
+            "selected_column_flavour_tags": requested_tags,
+            "matched_column_flavour_tags": matched_tags,
             "include_context_columns": include_context_columns,
             "column_flavour_tags": list(table.column_flavour_tags),
             "raw_column_flavour_tags": list(table.raw_column_flavour_tags),
@@ -243,29 +244,31 @@ def _table_frame(
     return frame
 
 
-def _output_table_column_indices(
+def _output_table_column_selection(
     table: OutputTable,
     column_flavour_tags: str | Sequence[str] | None,
     *,
     include_context_columns: bool,
-) -> tuple[int, ...]:
+) -> tuple[tuple[int, ...], tuple[str, ...] | None, tuple[str, ...] | None]:
     requested_tags = _requested_column_flavour_tags(column_flavour_tags)
     if requested_tags is None:
-        return tuple(range(len(table.column_labels)))
+        return tuple(range(len(table.column_labels))), None, None
     if not table.column_flavour_tags:
         raise ValueError(f"output table {table.name!r} does not have column flavour metadata")
     available_tags = set(tag for tag in table.column_flavour_tags if tag is not None)
-    unknown_tags = sorted(set(requested_tags) - available_tags)
-    if unknown_tags:
-        raise KeyError(f"output table {table.name!r} does not contain column flavour tag(s): {', '.join(unknown_tags)}")
-    selected_tags = set(requested_tags)
+    matched_tags = _matched_column_flavour_tags(requested_tags, available_tags)
+    if not matched_tags:
+        raise KeyError(
+            f"output table {table.name!r} does not contain column flavour tag pattern(s): "
+            f"{', '.join(requested_tags)}"
+        )
+    selected_tags = set(matched_tags)
     if include_context_columns:
         selected_tags.update(("AUX", "DIRECT"))
-    return tuple(
-        index
-        for index, tag in enumerate(table.column_flavour_tags)
-        if tag in selected_tags
+    column_indices = tuple(
+        index for index, tag in enumerate(table.column_flavour_tags) if tag in selected_tags
     )
+    return column_indices, requested_tags, tuple(sorted(matched_tags))
 
 
 def _requested_column_flavour_tags(column_flavour_tags: str | Sequence[str] | None) -> tuple[str, ...] | None:
@@ -282,9 +285,32 @@ def _requested_column_flavour_tags(column_flavour_tags: str | Sequence[str] | No
     return normalized
 
 
+def _matched_column_flavour_tags(requested_tags: tuple[str, ...], available_tags: set[str]) -> set[str]:
+    matched_tags: set[str] = set()
+    for requested_tag in requested_tags:
+        if requested_tag.endswith("*"):
+            prefix = requested_tag.removesuffix("*")
+            matched_tags.update(tag for tag in available_tags if tag.startswith(prefix))
+        elif requested_tag in {"DATA", "OUTPUT"}:
+            matched_tags.update(tag for tag in available_tags if tag.startswith(f"{requested_tag}-"))
+        elif requested_tag in available_tags:
+            matched_tags.add(requested_tag)
+    return matched_tags
+
+
 def _canonical_column_flavour_tag(value: str) -> str | None:
     text = re.sub(r"\s+", " ", str(value).strip()).upper()
     if not text:
+        return None
+    if text in {"DATA", "OUTPUT"}:
+        return text
+    if text.endswith("*"):
+        prefix = text.removesuffix("*")
+        prefix = re.sub(r"^(DATA|OUTPUT)\s*-\s*", r"\1-", prefix)
+        prefix = re.sub(r"^OUTPUT\s+(\d)", r"OUTPUT-\1", prefix)
+        prefix = re.sub(r"\s*,\s*", ",", prefix)
+        if re.match(r"^(AUX|CALC|DIRECT|DATA(?:-\d*(?:\.\d+)?)?|OUTPUT(?:-\d*(?:,\d+)*)?)$", prefix):
+            return f"{prefix}*"
         return None
     text = re.sub(r"^(DATA|OUTPUT)\s*-\s*", r"\1-", text)
     text = re.sub(r"^OUTPUT\s+(\d)", r"OUTPUT-\1", text)

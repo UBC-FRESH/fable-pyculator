@@ -117,6 +117,8 @@ spec = FableCalculatorSpec(selection_controls=selection_controls, output_tables=
 run = run_scenario(generated_model, spec, {"gdp_scen": "SSP1"})
 output_table_frame(run, "ghg_resultsghg")
 output_table_frame(run, "ghg_resultsghg", column_flavour_tags="OUTPUT-8")
+output_table_frame(run, "ghg_resultsghg", column_flavour_tags="DATA")
+output_table_frame(run, "ghg_resultsghg", column_flavour_tags="OUTPUT-*")
 ```
 
 The first 2020 notebook loop helper uses ignored local artifacts by default:
