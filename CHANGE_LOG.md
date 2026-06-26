@@ -53,3 +53,6 @@ This file records completed project work in chronological order.
 - Completed P1.4 by adding Sphinx guide pages for the 2020 notebook workflow and validation scope,
   linking the tracked example notebook into the docs, and recording 2020 benchmark evidence plus 2021
   follow-up scope in `planning/phase-1-user-guide-validation-closeout.md`.
+- Aligned FABLE Pyculator's Sphinx configuration and Pages workflow with Modelwright's Read the Docs
+  themed documentation setup, including matching RTD theme options, `docs/requirements.txt`, and a
+  generated-artifact theme verifier.
