@@ -8,6 +8,7 @@ from openpyxl.worksheet.table import Table
 from fable_pyculator import (
     curate_default_headline_series,
     discover_output_tables,
+    discover_scenario_definition_tables,
     discover_scenario_parameters,
     discover_selection_controls,
 )
@@ -88,6 +89,45 @@ def test_discover_output_tables_finds_tables_on_canonical_output_sheets(tmp_path
         ("FOOD!A3", "FOOD!B3", "FOOD!C3"),
         ("FOOD!A4", "FOOD!B4", "FOOD!C4"),
     )
+
+
+def test_discover_scenario_definition_tables_preserves_table_values_and_tags(tmp_path: Path) -> None:
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = "SCENARIOS definition"
+    worksheet.append(["DIRECT", "SCEN", "DATA - 1", "CALC"])
+    worksheet.append(["DietScen", "PROD_GROUP", "target", "diff"])
+    worksheet.append(["Current", "CEREALS", 2500, "=C3-2400"])
+    worksheet.append(["Ambitious", "CEREALS", 2600, "=C4-2400"])
+    worksheet.add_table(Table(displayName="DietTarget", ref="A2:D4"))
+    path = tmp_path / "fable.xlsx"
+    workbook.save(path)
+
+    tables = discover_scenario_definition_tables(path)
+
+    assert len(tables) == 1
+    table = tables[0]
+    assert table.name == "scenarios_definition_diettarget"
+    assert table.label == "DietTarget"
+    assert table.sheet == "SCENARIOS definition"
+    assert table.range_ref == "A2:D4"
+    assert table.column_labels == ("DietScen", "PROD_GROUP", "target", "diff")
+    assert table.column_flavour_tags == ("DIRECT", "SCEN", "DATA-1", "CALC")
+    assert table.raw_column_flavour_tags == ("DIRECT", "SCEN", "DATA - 1", "CALC")
+    assert table.column_flavour_tag_refs == (
+        "SCENARIOS definition!A1",
+        "SCENARIOS definition!B1",
+        "SCENARIOS definition!C1",
+        "SCENARIOS definition!D1",
+    )
+    assert table.row_labels == ("Current", "Ambitious")
+    assert table.cell_refs[0] == (
+        "SCENARIOS definition!A3",
+        "SCENARIOS definition!B3",
+        "SCENARIOS definition!C3",
+        "SCENARIOS definition!D3",
+    )
+    assert table.values[1] == ("Ambitious", "CEREALS", 2600, "=C4-2400")
 
 
 def test_curate_default_headline_series_maps_core_output_tables(tmp_path: Path) -> None:

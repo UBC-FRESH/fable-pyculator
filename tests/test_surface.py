@@ -8,6 +8,7 @@ from fable_pyculator import (
     HeadlineSeries,
     OutputIndicator,
     OutputTable,
+    ScenarioDefinitionTable,
     ScenarioParameter,
     headline_frame,
     headline_frames,
@@ -15,6 +16,8 @@ from fable_pyculator import (
     outputs_frame,
     plot_headline,
     run_scenario,
+    scenario_definition_table_frame,
+    scenario_definition_tables,
 )
 
 
@@ -209,6 +212,51 @@ def test_output_table_frame_reports_missing_or_unknown_column_flavour_tags() -> 
 
     with pytest.raises(KeyError, match="OUTPUT-9"):
         output_table_frame(unknown_tag_run, "ghg_results", column_flavour_tags="OUTPUT-9*")
+
+
+def test_scenario_definition_table_frame_renders_workbook_values() -> None:
+    spec = FableCalculatorSpec(
+        scenario_definition_tables=[
+            ScenarioDefinitionTable(
+                name="scenarios_definition_diettarget",
+                label="DietTarget",
+                sheet="SCENARIOS definition",
+                range_ref="A2:C3",
+                cell_refs=(
+                    (
+                        "SCENARIOS definition!A3",
+                        "SCENARIOS definition!B3",
+                        "SCENARIOS definition!C3",
+                    ),
+                ),
+                row_labels=("Current",),
+                column_labels=("DietScen", "PROD_GROUP", "target"),
+                values=(("Current", "CEREALS", 2500),),
+                column_flavour_tags=("DIRECT", "SCEN", "DATA-1"),
+                raw_column_flavour_tags=("DIRECT", "SCEN", "DATA - 1"),
+                column_flavour_tag_refs=(
+                    "SCENARIOS definition!A1",
+                    "SCENARIOS definition!B1",
+                    "SCENARIOS definition!C1",
+                ),
+            )
+        ]
+    )
+
+    frame = scenario_definition_table_frame(spec, "DietTarget")
+    frames = scenario_definition_tables(spec)
+
+    assert frame.loc["Current", "target"] == 2500
+    assert frames["scenarios_definition_diettarget"].loc["Current", "PROD_GROUP"] == "CEREALS"
+    assert frame.attrs["sheet"] == "SCENARIOS definition"
+    assert frame.attrs["column_flavour_tags"] == ["DIRECT", "SCEN", "DATA-1"]
+    assert frame.attrs["cell_refs"] == [
+        [
+            "SCENARIOS definition!A3",
+            "SCENARIOS definition!B3",
+            "SCENARIOS definition!C3",
+        ]
+    ]
 
 
 def test_headline_frame_renders_value_and_sum_series() -> None:

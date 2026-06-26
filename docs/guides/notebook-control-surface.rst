@@ -21,19 +21,23 @@ Minimal Example
        ScenarioControlSurface,
        curate_default_headline_series,
        discover_output_tables,
+       discover_scenario_definition_tables,
        discover_selection_controls,
        headline_frame,
        output_table_frame,
        plot_headline,
        run_scenario,
+       scenario_definition_table_frame,
    )
 
    workbook_path = "tmp/private-workbooks/2020_Open_FABLECalculator.xlsx"
    controls = discover_selection_controls(workbook_path)
+   definition_tables = discover_scenario_definition_tables(workbook_path)
    output_tables = discover_output_tables(workbook_path)
    headlines = curate_default_headline_series(workbook_path)
    spec = FableCalculatorSpec(
        selection_controls=controls,
+       scenario_definition_tables=definition_tables,
        output_tables=output_tables,
        headline_series=headlines,
    )
@@ -42,6 +46,7 @@ Minimal Example
    surface
 
    model_inputs = spec.input_mapping(surface.values())
+   scenario_definition_table_frame(spec, "DietTarget")
 
 When a generated Modelwright module is available, run the selected scenario and render a discovered
 output table:
@@ -111,9 +116,9 @@ pieces:
 Current Scope
 -------------
 
-The current implementation discovers high-level selection tables. Detailed editable parameter tables
-on ``SCENARIOS definition`` still need a separate curation pass before they are exposed as notebook
-inputs. Output table discovery currently maps Excel table cells into DataFrame surfaces; headline
-outputs are currently curated for FOOD, LAND, GHG, and WATER. The first curation is still
+The current implementation discovers high-level selection tables and renders native
+``SCENARIOS definition`` tables for inspection. The definition tables are not yet exposed as a full
+editable widget surface. Output table discovery maps Excel table cells into DataFrame surfaces;
+headline outputs are currently curated for FOOD, LAND, GHG, and WATER. The first curation is still
 benchmark-oriented. The 2020 notebook loop can run against an ignored generated model artifact, but
 full generated-model equivalence remains a validation-phase claim rather than a wrapper API claim.

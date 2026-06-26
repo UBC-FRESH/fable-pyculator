@@ -7,8 +7,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Post-Phase-3 polish issue #27 clarifies the 2020 notebook output inspection cells and rendered
-  GitHub preview.
+- Phase 4 issue #29 discovers `SCENARIOS definition` native tables as notebook-inspectable metadata
+  before richer scenario-definition editing widgets are attempted.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -302,3 +302,72 @@ Closeout evidence:
 - Phase 3 parent issue #23 is closed.
 - Phase 3 PR #26 merged to `main` with merge commit `9def97b`.
 - Post-merge Tests and Docs Pages workflows passed, and GitHub Pages deployed.
+
+## Phase 4: Scenario Definition Table Discovery
+
+GitHub parent issue: #29.
+
+Active branch: `feature/p4-scenario-definition-table-discovery`.
+
+Status: active.
+
+Goal: discover the FABLE-C `SCENARIOS definition` workbook surface as structured notebook metadata
+so users can inspect the parameter-definition tables behind the scenario-selection controls before
+the project attempts richer editing widgets.
+
+- [x] P4.1 Inspect scenario definition workbook tables. Child issue: #30.
+  - Status: complete.
+  - [x] Record the 2020/2021 `SCENARIOS definition` native table inventory.
+  - [x] Capture provenance-tag row behavior and known 2019 older-structure difference.
+  - [x] Add a focused planning note with assumptions and follow-up risks.
+- [x] P4.2 Add scenario definition table discovery API. Child issue: #31.
+  - Status: complete.
+  - [x] Add typed scenario-definition table declarations.
+  - [x] Discover native Excel tables from `SCENARIOS definition`.
+  - [x] Preserve headers, cell refs, range refs, row/column labels, and flavour-tag provenance.
+  - [x] Include discovered tables in `build_2020_notebook_spec`.
+- [x] P4.3 Add notebook inspection helpers for definition tables. Child issue: #32.
+  - Status: complete.
+  - [x] Add pandas rendering helper(s) for one or all scenario-definition tables.
+  - [x] Include DataFrame attrs for workbook provenance and column flavour tags.
+  - [x] Add focused synthetic tests.
+- [x] P4.4 Document and validate scenario definition discovery. Child issue: #33.
+  - Status: complete.
+  - [x] Update README and Sphinx guides.
+  - [x] Add opt-in workbook-backed checks for 2020/2021 table inventory stability.
+  - [x] Update roadmap and changelog evidence.
+  - [x] Run default verification and record results.
+
+Acceptance boundary:
+
+- May claim the inspected 2020 and 2021 public FABLE-C workbooks expose notebook-inspectable
+  scenario-definition table metadata.
+- May claim definition table DataFrames preserve workbook headers, row labels, cell refs, and
+  column flavour provenance.
+- Must not claim full editable scenario-definition widgets, stable API compatibility, production
+  readiness, or arbitrary country-calculator support.
+
+Implementation evidence:
+
+- Added `planning/phase-4-scenario-definition-table-discovery.md` with the 2020/2021 table inventory
+  and known 2019 older-structure note.
+- Added `ScenarioDefinitionTable` and `discover_scenario_definition_tables`.
+- Added `scenario_definition_table_frame` and `scenario_definition_tables` notebook inspection
+  helpers.
+- Included scenario-definition table discovery in `build_2020_notebook_spec`.
+- Updated README and Sphinx guides with scenario-definition table inspection examples.
+- Added synthetic and opt-in workbook-backed tests for scenario-definition table discovery.
+
+Verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 29 tests and 8 workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -q tests/test_fable_workbook_scenario_definition_tables.py`
+  passed with 2 tests against ignored local workbook artifacts.
+
+Closeout evidence:
+
+- Pending.

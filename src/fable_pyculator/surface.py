@@ -11,7 +11,7 @@ from typing import Any
 
 from modelwright.wrappers import ModelFacade, cell
 
-from fable_pyculator.spec import FableCalculatorSpec, HeadlineSeries, OutputTable
+from fable_pyculator.spec import FableCalculatorSpec, HeadlineSeries, OutputTable, ScenarioDefinitionTable
 
 
 @dataclass(frozen=True)
@@ -126,6 +126,22 @@ def output_tables(
     }
 
 
+def scenario_definition_table_frame(spec: FableCalculatorSpec, table_name: str) -> Any:
+    """Render one discovered FABLE scenario definition table as a pandas DataFrame."""
+
+    table = _scenario_definition_table(spec, table_name)
+    return _scenario_definition_table_frame(table)
+
+
+def scenario_definition_tables(spec: FableCalculatorSpec) -> dict[str, Any]:
+    """Render all discovered FABLE scenario definition tables as pandas DataFrames."""
+
+    return {
+        table.name: _scenario_definition_table_frame(table)
+        for table in spec.scenario_definition_tables
+    }
+
+
 def headline_frame(run: ScenarioRun, series_name: str) -> Any:
     """Render one curated FABLE headline series as a tidy pandas DataFrame."""
 
@@ -194,6 +210,13 @@ def _output_table(spec: FableCalculatorSpec, table_name: str) -> OutputTable:
     raise KeyError(f"unknown output table {table_name!r}")
 
 
+def _scenario_definition_table(spec: FableCalculatorSpec, table_name: str) -> ScenarioDefinitionTable:
+    for table in spec.scenario_definition_tables:
+        if table.name == table_name or table.label == table_name:
+            return table
+    raise KeyError(f"unknown scenario definition table {table_name!r}")
+
+
 def _headline_series(spec: FableCalculatorSpec, series_name: str) -> HeadlineSeries:
     for series in spec.headline_series:
         if series.name == series_name or series.label == series_name:
@@ -239,6 +262,30 @@ def _table_frame(
             "column_flavour_tag_refs": list(table.column_flavour_tag_refs),
             "cell_refs": [list(row) for row in table.cell_refs],
             "selected_cell_refs": [[row[index] for index in column_indices] for row in table.cell_refs],
+        }
+    )
+    return frame
+
+
+def _scenario_definition_table_frame(table: ScenarioDefinitionTable) -> Any:
+    pd = _load_pandas()
+    frame = pd.DataFrame(
+        [list(row) for row in table.values],
+        index=list(table.row_labels),
+        columns=list(table.column_labels),
+    )
+    frame.index.name = "row"
+    frame.attrs.update(
+        {
+            "name": table.name,
+            "label": table.label,
+            "description": table.description,
+            "sheet": table.sheet,
+            "range_ref": table.range_ref,
+            "column_flavour_tags": list(table.column_flavour_tags),
+            "raw_column_flavour_tags": list(table.raw_column_flavour_tags),
+            "column_flavour_tag_refs": list(table.column_flavour_tag_refs),
+            "cell_refs": [list(row) for row in table.cell_refs],
         }
     )
     return frame

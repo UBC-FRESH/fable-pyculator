@@ -212,6 +212,75 @@ surfaces. The 2021 workbook differs in at least one default: ``Affor_scen`` defa
 The 2019 workbook has only 12 discovered selection controls and fewer output sheets. It is useful as
 a fragility and source-defect check, but it should not define the first control-surface contract.
 
+Scenario Definition Tables
+--------------------------
+
+The 2020 and 2021 workbooks expose ``SCENARIOS definition`` as native Excel tables rather than as
+single-choice ``x`` marker controls. Phase 4 discovers those tables for notebook inspection while
+deferring a richer editable-parameter widget surface.
+
+Observed table-name inventory for the 2020 and 2021 public workbooks:
+
+.. code-block:: text
+
+   LandScenTarget
+   GdpPopTarget
+   income_elas
+   FoodLossTarget
+   FLScenTarget
+   ImplCoefOptions
+   ImpScenTarget
+   ImportDef
+   Product_ImpScen
+   product_Exports
+   ExpScenTarget
+   ExportDef
+   LivePdtyTarget
+   LivePdtyDef
+   CropPdtyTarget
+   CropPdtyDef
+   AfforTarget
+   AfforScenDef
+   DietTarget
+   DietScenDef
+   DietImplRates
+   FinalTradeAdj
+   CCShifters
+   PAtarget
+   PAtarget_def
+   PHLoss_target
+   PHLossTarget_def
+   BiofuelScen_def
+
+Most 2020/2021 definition tables begin on row 28, while row 23 acts as a pre-header provenance tag
+band. Discovered column tags include ``AUX``, ``DIRECT``, ``SCEN``, ``CALC``, ``DATA-1``,
+``DATA-2``, ``DATA-3``, and ``DATA-4``. These tags are preserved beside the DataFrame-ready table
+declarations so notebook users can see which columns are scenario identifiers, direct workbook
+parameters, source data, or calculations.
+
+Known version differences:
+
+- ``ImplCoefOptions`` is larger in 2021 than in 2020.
+- ``AfforTarget`` and ``AfforScenDef`` change shape between 2020 and 2021.
+- The 2019 workbook has an older layout with a row-32 tag band and fewer native definition tables.
+
+Use ``discover_scenario_definition_tables`` and ``scenario_definition_table_frame`` to inspect these
+surfaces:
+
+.. code-block:: python
+
+   from fable_pyculator import (
+       FableCalculatorSpec,
+       discover_scenario_definition_tables,
+       scenario_definition_table_frame,
+   )
+
+   definition_tables = discover_scenario_definition_tables(
+       "tmp/private-workbooks/2020_Open_FABLECalculator.xlsx"
+   )
+   spec = FableCalculatorSpec(scenario_definition_tables=definition_tables)
+   scenario_definition_table_frame(spec, "DietTarget")
+
 ``Indextables`` should drive user-guide labeling and output grouping. It records table names, roles
 such as ``Scenario`` and ``Result Indicator``, table descriptions, and source/provenance text. It is
 not an Excel Table object in the 2020 workbook, so the first parser should treat it as a structured
@@ -256,6 +325,9 @@ Package Mapping
 ---------------
 
 ``discover_selection_controls`` maps the S.1-S.16 tables into notebook dropdown declarations.
+``discover_scenario_definition_tables`` maps native Excel tables on ``SCENARIOS definition`` into
+DataFrame-ready inspection tables with per-column flavour tags where the workbook pre-header row is
+present.
 ``discover_output_tables`` maps Excel tables on the seven canonical output data sheets into
 DataFrame-ready table declarations, including per-column flavour tags where the workbook pre-header
 row is present.

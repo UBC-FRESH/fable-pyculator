@@ -89,6 +89,66 @@ class OutputTable:
 
 
 @dataclass(frozen=True)
+class ScenarioDefinitionTable:
+    """One rectangular table on the FABLE scenario definition sheet."""
+
+    name: str
+    sheet: str
+    range_ref: str
+    cell_refs: tuple[tuple[str, ...], ...]
+    row_labels: tuple[str, ...]
+    column_labels: tuple[str, ...]
+    values: tuple[tuple[object, ...], ...] | list[list[object]] | list[tuple[object, ...]] = ()
+    column_flavour_tags: tuple[str | None, ...] | list[str | None] = ()
+    raw_column_flavour_tags: tuple[str | None, ...] | list[str | None] = ()
+    column_flavour_tag_refs: tuple[str | None, ...] | list[str | None] = ()
+    label: str | None = None
+    description: str | None = None
+
+    def __post_init__(self) -> None:
+        cell_refs = tuple(tuple(_normalize_full_cell_ref(cell_ref) for cell_ref in row) for row in self.cell_refs)
+        values = tuple(tuple(row) for row in self.values)
+        object.__setattr__(self, "cell_refs", cell_refs)
+        object.__setattr__(self, "row_labels", tuple(self.row_labels))
+        object.__setattr__(self, "column_labels", tuple(self.column_labels))
+        object.__setattr__(self, "values", values)
+        object.__setattr__(self, "column_flavour_tags", tuple(self.column_flavour_tags))
+        object.__setattr__(self, "raw_column_flavour_tags", tuple(self.raw_column_flavour_tags))
+        object.__setattr__(self, "column_flavour_tag_refs", tuple(self.column_flavour_tag_refs))
+        row_count = len(self.row_labels)
+        column_count = len(self.column_labels)
+        if len(cell_refs) != row_count:
+            raise ValueError(
+                f"scenario definition table {self.name!r} has {len(cell_refs)} cell rows "
+                f"for {row_count} row labels"
+            )
+        if values and len(values) != row_count:
+            raise ValueError(
+                f"scenario definition table {self.name!r} has {len(values)} value rows "
+                f"for {row_count} row labels"
+            )
+        for row in cell_refs:
+            if len(row) != column_count:
+                raise ValueError(
+                    f"scenario definition table {self.name!r} has a cell row with {len(row)} "
+                    f"cells for {column_count} columns"
+                )
+        for row in values:
+            if len(row) != column_count:
+                raise ValueError(
+                    f"scenario definition table {self.name!r} has a value row with {len(row)} "
+                    f"values for {column_count} columns"
+                )
+        for field_name in ("column_flavour_tags", "raw_column_flavour_tags", "column_flavour_tag_refs"):
+            field_values = getattr(self, field_name)
+            if field_values and len(field_values) != column_count:
+                raise ValueError(
+                    f"scenario definition table {self.name!r} has {len(field_values)} {field_name} "
+                    f"values for {column_count} columns"
+                )
+
+
+@dataclass(frozen=True)
 class HeadlinePoint:
     """One year/value point in a curated headline output series."""
 
@@ -186,6 +246,9 @@ class FableCalculatorSpec:
 
     parameters: tuple[ScenarioParameter, ...] | list[ScenarioParameter] = field(default_factory=tuple)
     selection_controls: tuple[SelectionControl, ...] | list[SelectionControl] = field(default_factory=tuple)
+    scenario_definition_tables: tuple[ScenarioDefinitionTable, ...] | list[ScenarioDefinitionTable] = field(
+        default_factory=tuple
+    )
     outputs: tuple[OutputIndicator, ...] | list[OutputIndicator] = field(default_factory=tuple)
     output_tables: tuple[OutputTable, ...] | list[OutputTable] = field(default_factory=tuple)
     headline_series: tuple[HeadlineSeries, ...] | list[HeadlineSeries] = field(default_factory=tuple)
@@ -195,11 +258,13 @@ class FableCalculatorSpec:
     def __post_init__(self) -> None:
         parameters = tuple(self.parameters)
         selection_controls = tuple(self.selection_controls)
+        scenario_definition_tables = tuple(self.scenario_definition_tables)
         outputs = tuple(self.outputs)
         output_tables = tuple(self.output_tables)
         headline_series = tuple(self.headline_series)
         _require_unique("parameter", (parameter.name for parameter in parameters))
         _require_unique("selection control", (control.name for control in selection_controls))
+        _require_unique("scenario definition table", (table.name for table in scenario_definition_tables))
         _require_unique("output", (output.name for output in outputs))
         _require_unique("output table", (table.name for table in output_tables))
         _require_unique("headline series", (series.name for series in headline_series))
@@ -208,6 +273,7 @@ class FableCalculatorSpec:
             raise ValueError(f"parameter and selection control names overlap: {', '.join(sorted(overlap))}")
         object.__setattr__(self, "parameters", parameters)
         object.__setattr__(self, "selection_controls", selection_controls)
+        object.__setattr__(self, "scenario_definition_tables", scenario_definition_tables)
         object.__setattr__(self, "outputs", outputs)
         object.__setattr__(self, "output_tables", output_tables)
         object.__setattr__(self, "headline_series", headline_series)

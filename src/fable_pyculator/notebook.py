@@ -13,6 +13,7 @@ from typing import Any
 from fable_pyculator.discovery import (
     curate_default_headline_series,
     discover_output_tables,
+    discover_scenario_definition_tables,
     discover_selection_controls,
 )
 from fable_pyculator.spec import FableCalculatorSpec
@@ -70,6 +71,7 @@ def build_2020_notebook_spec(
     path = Path(workbook_path)
     return FableCalculatorSpec(
         selection_controls=discover_selection_controls(path),
+        scenario_definition_tables=discover_scenario_definition_tables(path),
         output_tables=discover_output_tables(path),
         headline_series=curate_default_headline_series(path),
         workbook_id=workbook_id,

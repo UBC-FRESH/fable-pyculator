@@ -61,11 +61,13 @@ Build The Spec
    spec = build_2020_notebook_spec("tmp/private-workbooks/2020_Open_FABLECalculator.xlsx")
 
    len(spec.selection_controls)
+   len(spec.scenario_definition_tables)
    len(spec.output_tables)
    len(spec.headline_series)
 
-The current 2020 contract discovers 16 high-level selection controls, output tables on the canonical
-output sheets, and four initial headline series for FOOD, LAND, GHG, and WATER.
+The current 2020 contract discovers 16 high-level selection controls, 28 native
+``SCENARIOS definition`` tables for inspection, output tables on the canonical output sheets, and
+four initial headline series for FOOD, LAND, GHG, and WATER.
 
 Choose Scenario Values
 ----------------------

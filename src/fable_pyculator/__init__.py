@@ -4,6 +4,7 @@ from fable_pyculator.discovery import (
     curate_default_headline_series,
     discover_output_tables,
     discover_scenario_parameters,
+    discover_scenario_definition_tables,
     discover_selection_controls,
 )
 from fable_pyculator.spec import (
@@ -13,6 +14,7 @@ from fable_pyculator.spec import (
     HeadlineSeries,
     OutputIndicator,
     OutputTable,
+    ScenarioDefinitionTable,
     ScenarioParameter,
     SelectionControl,
     SelectionOption,
@@ -39,6 +41,8 @@ from fable_pyculator.surface import (
     plot_headline,
     plot_outputs,
     run_scenario,
+    scenario_definition_table_frame,
+    scenario_definition_tables,
     scenario_frame,
 )
 
@@ -55,6 +59,7 @@ __all__ = [
     "OutputIndicator",
     "OutputTable",
     "ScenarioControlSurface",
+    "ScenarioDefinitionTable",
     "ScenarioParameter",
     "ScenarioRun",
     "SelectionControl",
@@ -62,6 +67,7 @@ __all__ = [
     "build_2020_notebook_spec",
     "curate_default_headline_series",
     "discover_output_tables",
+    "discover_scenario_definition_tables",
     "discover_scenario_parameters",
     "discover_selection_controls",
     "headline_frame",
@@ -75,5 +81,7 @@ __all__ = [
     "run_2020_notebook_loop",
     "run_notebook_loop",
     "run_scenario",
+    "scenario_definition_table_frame",
+    "scenario_definition_tables",
     "scenario_frame",
 ]

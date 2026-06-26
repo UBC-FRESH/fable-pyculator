@@ -16,6 +16,7 @@ from fable_pyculator.spec import (
     HeadlinePoint,
     HeadlineSeries,
     OutputTable,
+    ScenarioDefinitionTable,
     ScenarioParameter,
     SelectionControl,
     SelectionOption,
@@ -25,7 +26,7 @@ from fable_pyculator.spec import (
 SCENARIO_SHEET_HINTS = ("scenario", "scenarios")
 INPUT_LABEL_HINTS = ("scenario", "target", "assumption", "parameter", "select", "choice")
 OUTPUT_COLUMN_FLAVOUR_TAG_PATTERN = re.compile(
-    r"^(AUX|CALC|DIRECT|DATA\s*-\s*\d+(?:\.\d+)?|OUTPUT\s*-?\s*\d+(?:\s*,\s*\d+)*)$",
+    r"^(AUX|CALC|DIRECT|SCEN|DATA\s*-\s*\d+(?:\.\d+)?|OUTPUT\s*-?\s*\d+(?:\s*,\s*\d+)*)$",
     re.IGNORECASE,
 )
 
@@ -124,6 +125,64 @@ def discover_selection_controls(
             )
         )
     return sorted(controls, key=lambda control: _location_sort_key(control.location, control.table_name))
+
+
+def discover_scenario_definition_tables(
+    workbook_path: str | Path,
+    *,
+    sheet_name: str = "SCENARIOS definition",
+) -> list[ScenarioDefinitionTable]:
+    """Discover native Excel tables on the FABLE scenario definition sheet."""
+
+    workbook = load_workbook(workbook_path, data_only=False, read_only=False)
+    if sheet_name not in workbook.sheetnames:
+        return []
+    worksheet = workbook[sheet_name]
+    tables: list[ScenarioDefinitionTable] = []
+    for table_name in worksheet.tables.keys():
+        table = worksheet.tables[table_name]
+        min_col, min_row, max_col, max_row = range_boundaries(table.ref)
+        column_labels = tuple(
+            _column_label(worksheet.cell(min_row, column).value, column)
+            for column in range(min_col, max_col + 1)
+        )
+        flavour_tags, raw_flavour_tags, flavour_tag_refs = _output_column_flavour_tags(
+            worksheet,
+            min_col,
+            min_row,
+            max_col,
+        )
+        row_labels = tuple(
+            _row_label(worksheet.cell(row, min_col).value, row)
+            for row in range(min_row + 1, max_row + 1)
+        )
+        cell_refs = tuple(
+            tuple(
+                f"{worksheet.title}!{get_column_letter(column)}{row}"
+                for column in range(min_col, max_col + 1)
+            )
+            for row in range(min_row + 1, max_row + 1)
+        )
+        values = tuple(
+            tuple(worksheet.cell(row, column).value for column in range(min_col, max_col + 1))
+            for row in range(min_row + 1, max_row + 1)
+        )
+        tables.append(
+            ScenarioDefinitionTable(
+                name=_parameter_name(sheet_name, table_name),
+                sheet=worksheet.title,
+                range_ref=table.ref,
+                cell_refs=cell_refs,
+                row_labels=row_labels,
+                column_labels=column_labels,
+                values=values,
+                column_flavour_tags=flavour_tags,
+                raw_column_flavour_tags=raw_flavour_tags,
+                column_flavour_tag_refs=flavour_tag_refs,
+                label=table_name,
+            )
+        )
+    return sorted(tables, key=lambda definition_table: _range_sort_key(definition_table.range_ref))
 
 
 def discover_output_tables(
@@ -389,6 +448,11 @@ def _location_sort_key(location: str | None, fallback: str) -> tuple[int, str]:
         except ValueError:
             pass
     return 999, fallback
+
+
+def _range_sort_key(range_ref: str) -> tuple[int, int, str]:
+    min_col, min_row, *_ = range_boundaries(range_ref)
+    return min_row, min_col, range_ref
 
 
 def _column_label(value: object, column: int) -> str:

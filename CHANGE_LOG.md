@@ -79,3 +79,9 @@ This file records completed project work in chronological order.
   notebook with working wildcard flavour-filter examples.
 - Started post-Phase-3 polish issue #27 to make the 2020 example notebook's rendered output
   inspection cells clearer in GitHub preview.
+- Activated Phase 4 on `feature/p4-scenario-definition-table-discovery`, created parent issue #29
+  and child issues #30 through #33, and scoped the phase around discovering
+  `SCENARIOS definition` native tables as notebook-inspectable metadata before richer editing widgets.
+- Completed the Phase 4 implementation by adding typed scenario-definition table declarations,
+  workbook discovery, pandas inspection helpers, documentation, and synthetic plus opt-in
+  workbook-backed validation for the 2020/2021 definition-table inventory.

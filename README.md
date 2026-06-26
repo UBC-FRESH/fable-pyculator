@@ -86,9 +86,11 @@ from fable_pyculator import (
     ScenarioControlSurface,
     ScenarioParameter,
     discover_output_tables,
+    discover_scenario_definition_tables,
     discover_selection_controls,
     output_table_frame,
     run_scenario,
+    scenario_definition_table_frame,
 )
 
 spec = FableCalculatorSpec(
@@ -107,12 +109,20 @@ result = run_scenario(generated_model, spec, controls.values())
 result.outputs
 ```
 
-For real FABLE-C workbooks, discover the high-level selection controls and output tables:
+For real FABLE-C workbooks, discover the high-level selection controls, scenario-definition tables,
+and output tables:
 
 ```python
 selection_controls = discover_selection_controls("tmp/private-workbooks/2020_Open_FABLECalculator.xlsx")
+definition_tables = discover_scenario_definition_tables("tmp/private-workbooks/2020_Open_FABLECalculator.xlsx")
 output_tables = discover_output_tables("tmp/private-workbooks/2020_Open_FABLECalculator.xlsx")
-spec = FableCalculatorSpec(selection_controls=selection_controls, output_tables=output_tables)
+spec = FableCalculatorSpec(
+    selection_controls=selection_controls,
+    scenario_definition_tables=definition_tables,
+    output_tables=output_tables,
+)
+
+scenario_definition_table_frame(spec, "DietTarget")
 
 run = run_scenario(generated_model, spec, {"gdp_scen": "SSP1"})
 output_table_frame(run, "ghg_resultsghg")
