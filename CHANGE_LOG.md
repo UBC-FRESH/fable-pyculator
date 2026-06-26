@@ -77,3 +77,5 @@ This file records completed project work in chronological order.
 - Completed Phase 3 implementation by making notebook loops render all declared output tables and
   headline frames by default, preserving explicit subset rendering, and re-executing the 2020 example
   notebook with working wildcard flavour-filter examples.
+- Started post-Phase-3 polish issue #27 to make the 2020 example notebook's rendered output
+  inspection cells clearer in GitHub preview.

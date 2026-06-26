@@ -7,8 +7,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Phase 3 implementation is complete on branch `feature/p3-default-all-rendered-outputs`; open a PR
-  for issue #23, wait for CI, merge to `main`, and confirm docs deployment.
+- Post-Phase-3 polish issue #27 clarifies the 2020 notebook output inspection cells and rendered
+  GitHub preview.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -296,3 +296,9 @@ Verification evidence:
 - `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
 - Re-executed `examples/notebooks/fable-pyculator-2020-loop.ipynb` with repo `.venv`; saved 8
   executed code cells, 0 errors, 0 stream outputs, 5 HTML table outputs, and 1 PNG figure.
+
+Closeout evidence:
+
+- Phase 3 parent issue #23 is closed.
+- Phase 3 PR #26 merged to `main` with merge commit `9def97b`.
+- Post-merge Tests and Docs Pages workflows passed, and GitHub Pages deployed.
