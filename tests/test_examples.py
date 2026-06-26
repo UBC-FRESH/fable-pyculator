@@ -26,6 +26,10 @@ def test_fable_pyculator_2020_notebook_is_tracked_without_outputs() -> None:
     assert "expected_kernel_prefix" in code_source
     assert "active_prefix" in code_source
     assert "using_repo_venv" in code_source
+    assert "include_figures=False" in code_source
+    assert "display(result.output_tables" in code_source
+    assert "display(result.headline_frames" in code_source
+    assert "display(plot_headline" in code_source
     assert any(
         "run_notebook_loop" in "".join(cell["source"])
         for cell in payload["cells"]
