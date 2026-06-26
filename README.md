@@ -91,6 +91,7 @@ from fable_pyculator import (
     output_table_frame,
     run_scenario,
     scenario_definition_table_frame,
+    scenario_definition_tables_for_location,
 )
 
 spec = FableCalculatorSpec(
@@ -123,6 +124,7 @@ spec = FableCalculatorSpec(
 )
 
 scenario_definition_table_frame(spec, "DietTarget")
+scenario_definition_tables_for_location(spec, "S.3")
 
 run = run_scenario(generated_model, spec, {"gdp_scen": "SSP1"})
 output_table_frame(run, "ghg_resultsghg")

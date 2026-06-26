@@ -142,6 +142,29 @@ def scenario_definition_tables(spec: FableCalculatorSpec) -> dict[str, Any]:
     }
 
 
+def scenario_definition_tables_for_location(
+    spec: FableCalculatorSpec,
+    location: str,
+    *,
+    include_family: bool = True,
+) -> dict[str, Any]:
+    """Render scenario definition tables associated with a workbook scenario location."""
+
+    requested_location = _canonical_scenario_definition_location(location)
+    return {
+        table.name: _scenario_definition_table_frame(table)
+        for table in spec.scenario_definition_tables
+        if any(
+            _scenario_definition_location_matches(
+                table_location,
+                requested_location,
+                include_family=include_family,
+            )
+            for table_location in table.scenario_locations
+        )
+    }
+
+
 def headline_frame(run: ScenarioRun, series_name: str) -> Any:
     """Render one curated FABLE headline series as a tidy pandas DataFrame."""
 
@@ -282,13 +305,39 @@ def _scenario_definition_table_frame(table: ScenarioDefinitionTable) -> Any:
             "description": table.description,
             "sheet": table.sheet,
             "range_ref": table.range_ref,
-            "column_flavour_tags": list(table.column_flavour_tags),
-            "raw_column_flavour_tags": list(table.raw_column_flavour_tags),
-            "column_flavour_tag_refs": list(table.column_flavour_tag_refs),
+            "column_role_tags": list(table.column_role_tags),
+            "raw_column_role_tags": list(table.raw_column_role_tags),
+            "column_role_tag_refs": list(table.column_role_tag_refs),
+            "scenario_locations": list(table.scenario_locations),
+            "scenario_location_refs": list(table.scenario_location_refs),
             "cell_refs": [list(row) for row in table.cell_refs],
         }
     )
     return frame
+
+
+def _canonical_scenario_definition_location(location: str) -> str:
+    text = re.sub(r"\s+", "", str(location).strip()).upper().rstrip(".")
+    if not re.match(r"^S\.\d+(?:\.[A-Z])?$", text):
+        raise ValueError(f"unknown scenario definition location: {location!r}")
+    return text
+
+
+def _scenario_definition_location_matches(
+    table_location: str,
+    requested_location: str,
+    *,
+    include_family: bool,
+) -> bool:
+    if table_location == requested_location:
+        return True
+    return include_family and _is_scenario_definition_family(requested_location) and table_location.startswith(
+        f"{requested_location}."
+    )
+
+
+def _is_scenario_definition_family(location: str) -> bool:
+    return len(location.split(".")) == 2
 
 
 def _output_table_column_selection(

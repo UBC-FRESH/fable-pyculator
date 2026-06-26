@@ -252,11 +252,17 @@ Observed table-name inventory for the 2020 and 2021 public workbooks:
    PHLossTarget_def
    BiofuelScen_def
 
-Most 2020/2021 definition tables begin on row 28, while row 23 acts as a pre-header provenance tag
-band. Discovered column tags include ``AUX``, ``DIRECT``, ``SCEN``, ``CALC``, ``DATA-1``,
-``DATA-2``, ``DATA-3``, and ``DATA-4``. These tags are preserved beside the DataFrame-ready table
-declarations so notebook users can see which columns are scenario identifiers, direct workbook
-parameters, source data, or calculations.
+Most 2020/2021 definition tables begin on row 28, while row 23 acts as a pre-header role/source
+marker band. Discovered column role markers include ``AUX``, ``DIRECT``, ``SCEN``, ``CALC``,
+``DATA-1``, ``DATA-2``, ``DATA-3``, and ``DATA-4``. These markers are preserved beside the
+DataFrame-ready table declarations so notebook users can see which columns are scenario identifiers,
+direct workbook parameters, source data, or calculations. They are not the same API as output-sheet
+column flavour tags.
+
+The row above each table title also often carries a scenario-definition location marker such as
+``S.3.C`` or ``S.4.B``. These markers are useful for browsing related definition tables. They should
+not be treated as a complete one-to-one mapping to the 16 high-level ``SCENARIOS selection`` controls,
+because the definition sheet has additional markers beyond the current selection-control count.
 
 Known version differences:
 
@@ -273,6 +279,7 @@ surfaces:
        FableCalculatorSpec,
        discover_scenario_definition_tables,
        scenario_definition_table_frame,
+       scenario_definition_tables_for_location,
    )
 
    definition_tables = discover_scenario_definition_tables(
@@ -280,6 +287,7 @@ surfaces:
    )
    spec = FableCalculatorSpec(scenario_definition_tables=definition_tables)
    scenario_definition_table_frame(spec, "DietTarget")
+   scenario_definition_tables_for_location(spec, "S.3")
 
 ``Indextables`` should drive user-guide labeling and output grouping. It records table names, roles
 such as ``Scenario`` and ``Result Indicator``, table descriptions, and source/provenance text. It is
@@ -326,8 +334,8 @@ Package Mapping
 
 ``discover_selection_controls`` maps the S.1-S.16 tables into notebook dropdown declarations.
 ``discover_scenario_definition_tables`` maps native Excel tables on ``SCENARIOS definition`` into
-DataFrame-ready inspection tables with per-column flavour tags where the workbook pre-header row is
-present.
+DataFrame-ready inspection tables with per-column role/source markers and scenario-definition
+location markers where the workbook pre-header rows are present.
 ``discover_output_tables`` maps Excel tables on the seven canonical output data sheets into
 DataFrame-ready table declarations, including per-column flavour tags where the workbook pre-header
 row is present.

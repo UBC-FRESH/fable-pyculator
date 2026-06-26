@@ -43,6 +43,7 @@ from fable_pyculator.surface import (
     run_scenario,
     scenario_definition_table_frame,
     scenario_definition_tables,
+    scenario_definition_tables_for_location,
     scenario_frame,
 )
 
@@ -83,5 +84,6 @@ __all__ = [
     "run_scenario",
     "scenario_definition_table_frame",
     "scenario_definition_tables",
+    "scenario_definition_tables_for_location",
     "scenario_frame",
 ]

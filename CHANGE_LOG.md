@@ -87,3 +87,10 @@ This file records completed project work in chronological order.
   workbook-backed validation for the 2020/2021 definition-table inventory.
 - Closed Phase 4 after PR #34 merged to `main` and the post-merge Tests and Docs Pages workflows
   passed.
+- Activated Phase 5 on `feature/p5-scenario-definition-input-semantics`, created parent issue #35
+  and child issues #36 through #39, and scoped the phase around separating output-table flavour
+  metadata from scenario-definition role/source metadata while adding selection-location links.
+- Completed the Phase 5 implementation by renaming scenario-definition table metadata to
+  `column_role_*`, removing `SCEN` from output flavour-tag normalization, adding
+  scenario-definition location markers and `scenario_definition_tables_for_location`, and updating
+  docs/tests/planning evidence.

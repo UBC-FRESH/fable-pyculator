@@ -88,7 +88,8 @@ def test_build_2020_notebook_spec_includes_scenario_definition_tables() -> None:
     assert [table.name for table in spec.scenario_definition_tables] == [
         "scenarios_definition_diettarget"
     ]
-    assert spec.scenario_definition_tables[0].column_flavour_tags == ("DIRECT", "SCEN", "DATA-1")
+    assert spec.scenario_definition_tables[0].column_role_tags == ("DIRECT", "SCEN", "DATA-1")
+    assert spec.scenario_definition_tables[0].scenario_locations == ("S.3.C",)
 
 
 def test_run_notebook_loop_preserves_explicit_rendered_artifact_subsets() -> None:
@@ -166,10 +167,11 @@ def _synthetic_workbook_path(path: Path | None = None) -> Path:
     scenarios.add_table(Table(displayName="GDP_Scen", ref="A2:C4"))
 
     definition = workbook.create_sheet("SCENARIOS definition")
+    definition.append(["S.3.c", None, None])
     definition.append(["DIRECT", "SCEN", "DATA-1"])
     definition.append(["DietScen", "PROD_GROUP", "target"])
     definition.append(["Current", "CEREALS", 2500])
-    definition.add_table(Table(displayName="DietTarget", ref="A2:C3"))
+    definition.add_table(Table(displayName="DietTarget", ref="A3:C4"))
 
     indextables = workbook.create_sheet("Indextables")
     indextables.append(["Table", "Description"])

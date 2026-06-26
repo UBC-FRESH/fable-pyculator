@@ -70,7 +70,29 @@ def test_2020_scenario_definition_tables_preserve_direct_and_scen_tags() -> None
     food_loss = next(table for table in tables if table.label == "FoodLossTarget")
 
     assert diet_target.range_ref == "AA28:AE79"
-    assert diet_target.column_flavour_tags == ("DIRECT", "DIRECT", "CALC", "DATA-1", "CALC")
-    assert diet_target.column_flavour_tag_refs[0] == "SCENARIOS definition!AA23"
-    assert "SCEN" in food_loss.column_flavour_tags
-    assert "DIRECT" in food_loss.column_flavour_tags
+    assert diet_target.column_role_tags == ("DIRECT", "DIRECT", "CALC", "DATA-1", "CALC")
+    assert diet_target.column_role_tag_refs[0] == "SCENARIOS definition!AA23"
+    assert diet_target.scenario_locations == ("S.3.C",)
+    assert diet_target.scenario_location_refs == ("SCENARIOS definition!AA24",)
+    assert "SCEN" in food_loss.column_role_tags
+    assert "DIRECT" in food_loss.column_role_tags
+
+
+@pytest.mark.workbook
+def test_2020_and_2021_scenario_definition_location_links_match() -> None:
+    observed_2020 = _location_inventory(workbook_path("2020_Open_FABLECalculator.xlsx"))
+    observed_2021 = _location_inventory(workbook_path("2021_Open_FABLECalculator.xlsx"))
+
+    assert observed_2021 == observed_2020
+    assert observed_2020["S.3.C"] == ["DietTarget"]
+    assert observed_2020["S.3.D"] == ["DietScenDef"]
+    assert observed_2020["S.4.A"] == ["FLScenTarget"]
+    assert observed_2020["S.4.B"] == ["FoodLossTarget"]
+
+
+def _location_inventory(workbook_path: Path) -> dict[str, list[str]]:
+    inventory: dict[str, list[str]] = {}
+    for table in discover_scenario_definition_tables(workbook_path):
+        for location in table.scenario_locations:
+            inventory.setdefault(location, []).append(str(table.label))
+    return {location: sorted(labels) for location, labels in sorted(inventory.items())}

@@ -18,6 +18,7 @@ from fable_pyculator import (
     run_scenario,
     scenario_definition_table_frame,
     scenario_definition_tables,
+    scenario_definition_tables_for_location,
 )
 
 
@@ -213,6 +214,9 @@ def test_output_table_frame_reports_missing_or_unknown_column_flavour_tags() -> 
     with pytest.raises(KeyError, match="OUTPUT-9"):
         output_table_frame(unknown_tag_run, "ghg_results", column_flavour_tags="OUTPUT-9*")
 
+    with pytest.raises(ValueError, match="SCEN"):
+        output_table_frame(unknown_tag_run, "ghg_results", column_flavour_tags="SCEN")
+
 
 def test_scenario_definition_table_frame_renders_workbook_values() -> None:
     spec = FableCalculatorSpec(
@@ -232,13 +236,15 @@ def test_scenario_definition_table_frame_renders_workbook_values() -> None:
                 row_labels=("Current",),
                 column_labels=("DietScen", "PROD_GROUP", "target"),
                 values=(("Current", "CEREALS", 2500),),
-                column_flavour_tags=("DIRECT", "SCEN", "DATA-1"),
-                raw_column_flavour_tags=("DIRECT", "SCEN", "DATA - 1"),
-                column_flavour_tag_refs=(
+                column_role_tags=("DIRECT", "SCEN", "DATA-1"),
+                raw_column_role_tags=("DIRECT", "SCEN", "DATA - 1"),
+                column_role_tag_refs=(
                     "SCENARIOS definition!A1",
                     "SCENARIOS definition!B1",
                     "SCENARIOS definition!C1",
                 ),
+                scenario_locations=("S.3.C",),
+                scenario_location_refs=("SCENARIOS definition!A1",),
             )
         ]
     )
@@ -249,7 +255,8 @@ def test_scenario_definition_table_frame_renders_workbook_values() -> None:
     assert frame.loc["Current", "target"] == 2500
     assert frames["scenarios_definition_diettarget"].loc["Current", "PROD_GROUP"] == "CEREALS"
     assert frame.attrs["sheet"] == "SCENARIOS definition"
-    assert frame.attrs["column_flavour_tags"] == ["DIRECT", "SCEN", "DATA-1"]
+    assert frame.attrs["column_role_tags"] == ["DIRECT", "SCEN", "DATA-1"]
+    assert frame.attrs["scenario_locations"] == ["S.3.C"]
     assert frame.attrs["cell_refs"] == [
         [
             "SCENARIOS definition!A3",
@@ -257,6 +264,43 @@ def test_scenario_definition_table_frame_renders_workbook_values() -> None:
             "SCENARIOS definition!C3",
         ]
     ]
+
+
+def test_scenario_definition_tables_for_location_matches_family_and_exact_markers() -> None:
+    spec = FableCalculatorSpec(
+        scenario_definition_tables=[
+            ScenarioDefinitionTable(
+                name="scenarios_definition_diettarget",
+                label="DietTarget",
+                sheet="SCENARIOS definition",
+                range_ref="A2:B3",
+                cell_refs=(("SCENARIOS definition!A3", "SCENARIOS definition!B3"),),
+                row_labels=("Current",),
+                column_labels=("DietScen", "target"),
+                values=(("Current", 2500),),
+                scenario_locations=("S.3.C",),
+            ),
+            ScenarioDefinitionTable(
+                name="scenarios_definition_foodloss",
+                label="FoodLossTarget",
+                sheet="SCENARIOS definition",
+                range_ref="D2:E3",
+                cell_refs=(("SCENARIOS definition!D3", "SCENARIOS definition!E3"),),
+                row_labels=("Current",),
+                column_labels=("FoodLossScen", "target"),
+                values=(("Current", 0.1),),
+                scenario_locations=("S.4.B",),
+            ),
+        ]
+    )
+
+    family_frames = scenario_definition_tables_for_location(spec, "S.3")
+    exact_frames = scenario_definition_tables_for_location(spec, "S.3.c")
+    no_family_frames = scenario_definition_tables_for_location(spec, "S.3", include_family=False)
+
+    assert set(family_frames) == {"scenarios_definition_diettarget"}
+    assert set(exact_frames) == {"scenarios_definition_diettarget"}
+    assert no_family_frames == {}
 
 
 def test_headline_frame_renders_value_and_sum_series() -> None:

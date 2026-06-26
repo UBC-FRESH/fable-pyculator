@@ -69,6 +69,10 @@ The current 2020 contract discovers 16 high-level selection controls, 28 native
 ``SCENARIOS definition`` tables for inspection, output tables on the canonical output sheets, and
 four initial headline series for FOOD, LAND, GHG, and WATER.
 
+The definition tables expose separate role/source metadata and scenario-definition location markers.
+Those markers are for browsing the input-definition surface and are not the same as output-table
+column flavour tags.
+
 Choose Scenario Values
 ----------------------
 

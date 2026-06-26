@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import re
 from typing import Literal
 
 from modelwright.references import normalize_cell_reference
@@ -99,9 +100,11 @@ class ScenarioDefinitionTable:
     row_labels: tuple[str, ...]
     column_labels: tuple[str, ...]
     values: tuple[tuple[object, ...], ...] | list[list[object]] | list[tuple[object, ...]] = ()
-    column_flavour_tags: tuple[str | None, ...] | list[str | None] = ()
-    raw_column_flavour_tags: tuple[str | None, ...] | list[str | None] = ()
-    column_flavour_tag_refs: tuple[str | None, ...] | list[str | None] = ()
+    column_role_tags: tuple[str | None, ...] | list[str | None] = ()
+    raw_column_role_tags: tuple[str | None, ...] | list[str | None] = ()
+    column_role_tag_refs: tuple[str | None, ...] | list[str | None] = ()
+    scenario_locations: tuple[str, ...] | list[str] = ()
+    scenario_location_refs: tuple[str, ...] | list[str] = ()
     label: str | None = None
     description: str | None = None
 
@@ -112,9 +115,19 @@ class ScenarioDefinitionTable:
         object.__setattr__(self, "row_labels", tuple(self.row_labels))
         object.__setattr__(self, "column_labels", tuple(self.column_labels))
         object.__setattr__(self, "values", values)
-        object.__setattr__(self, "column_flavour_tags", tuple(self.column_flavour_tags))
-        object.__setattr__(self, "raw_column_flavour_tags", tuple(self.raw_column_flavour_tags))
-        object.__setattr__(self, "column_flavour_tag_refs", tuple(self.column_flavour_tag_refs))
+        object.__setattr__(self, "column_role_tags", tuple(self.column_role_tags))
+        object.__setattr__(self, "raw_column_role_tags", tuple(self.raw_column_role_tags))
+        object.__setattr__(self, "column_role_tag_refs", tuple(self.column_role_tag_refs))
+        object.__setattr__(
+            self,
+            "scenario_locations",
+            tuple(_normalize_scenario_definition_location(location) for location in self.scenario_locations),
+        )
+        object.__setattr__(
+            self,
+            "scenario_location_refs",
+            tuple(_normalize_full_cell_ref(cell_ref) for cell_ref in self.scenario_location_refs),
+        )
         row_count = len(self.row_labels)
         column_count = len(self.column_labels)
         if len(cell_refs) != row_count:
@@ -139,13 +152,18 @@ class ScenarioDefinitionTable:
                     f"scenario definition table {self.name!r} has a value row with {len(row)} "
                     f"values for {column_count} columns"
                 )
-        for field_name in ("column_flavour_tags", "raw_column_flavour_tags", "column_flavour_tag_refs"):
+        for field_name in ("column_role_tags", "raw_column_role_tags", "column_role_tag_refs"):
             field_values = getattr(self, field_name)
             if field_values and len(field_values) != column_count:
                 raise ValueError(
                     f"scenario definition table {self.name!r} has {len(field_values)} {field_name} "
                     f"values for {column_count} columns"
                 )
+        if self.scenario_location_refs and len(self.scenario_location_refs) != len(self.scenario_locations):
+            raise ValueError(
+                f"scenario definition table {self.name!r} has {len(self.scenario_location_refs)} "
+                f"scenario_location_refs for {len(self.scenario_locations)} scenario_locations"
+            )
 
 
 @dataclass(frozen=True)
@@ -304,6 +322,13 @@ def _normalize_full_cell_ref(cell_ref: str) -> str:
     if normalized.kind != "cell" or normalized.sheet is None:
         raise ValueError(f"expected a full cell reference like 'Sheet!A1', got {cell_ref!r}")
     return normalized.normalized
+
+
+def _normalize_scenario_definition_location(location: str) -> str:
+    text = re.sub(r"\s+", "", str(location).strip()).upper().rstrip(".")
+    if not re.match(r"^S\.\d+(?:\.[A-Z])?$", text):
+        raise ValueError(f"expected a scenario definition location like 'S.3' or 'S.3.C', got {location!r}")
+    return text
 
 
 def _require_unique(kind: str, names: object) -> None:

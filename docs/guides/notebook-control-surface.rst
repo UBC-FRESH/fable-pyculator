@@ -28,6 +28,7 @@ Minimal Example
        plot_headline,
        run_scenario,
        scenario_definition_table_frame,
+       scenario_definition_tables_for_location,
    )
 
    workbook_path = "tmp/private-workbooks/2020_Open_FABLECalculator.xlsx"
@@ -47,6 +48,7 @@ Minimal Example
 
    model_inputs = spec.input_mapping(surface.values())
    scenario_definition_table_frame(spec, "DietTarget")
+   scenario_definition_tables_for_location(spec, "S.3")
 
 When a generated Modelwright module is available, run the selected scenario and render a discovered
 output table:

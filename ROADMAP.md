@@ -7,8 +7,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Phase 4 issue #29 discovers `SCENARIOS definition` native tables as notebook-inspectable metadata
-  before richer scenario-definition editing widgets are attempted.
+- Phase 5 issue #35 corrects `SCENARIOS definition` metadata semantics and maps scenario-selection
+  locations to the relevant definition tables before richer editing widgets are attempted.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -251,7 +251,7 @@ GitHub parent issue: #23.
 
 Active branch: `feature/p3-default-all-rendered-outputs`.
 
-Status: active.
+Status: complete.
 
 Goal: make one generated-model run render every declared output table and every curated headline frame
 by default so notebook users can inspect additional outputs without rerunning a model that may take
@@ -309,7 +309,7 @@ GitHub parent issue: #29.
 
 Active branch: `feature/p4-scenario-definition-table-discovery`.
 
-Status: active.
+Status: complete.
 
 Goal: discover the FABLE-C `SCENARIOS definition` workbook surface as structured notebook metadata
 so users can inspect the parameter-definition tables behind the scenario-selection controls before
@@ -324,12 +324,13 @@ the project attempts richer editing widgets.
   - Status: complete.
   - [x] Add typed scenario-definition table declarations.
   - [x] Discover native Excel tables from `SCENARIOS definition`.
-  - [x] Preserve headers, cell refs, range refs, row/column labels, and flavour-tag provenance.
+  - [x] Preserve headers, cell refs, range refs, row/column labels, and role/source-marker
+        provenance.
   - [x] Include discovered tables in `build_2020_notebook_spec`.
 - [x] P4.3 Add notebook inspection helpers for definition tables. Child issue: #32.
   - Status: complete.
   - [x] Add pandas rendering helper(s) for one or all scenario-definition tables.
-  - [x] Include DataFrame attrs for workbook provenance and column flavour tags.
+  - [x] Include DataFrame attrs for workbook provenance and column metadata.
   - [x] Add focused synthetic tests.
 - [x] P4.4 Document and validate scenario definition discovery. Child issue: #33.
   - Status: complete.
@@ -343,7 +344,7 @@ Acceptance boundary:
 - May claim the inspected 2020 and 2021 public FABLE-C workbooks expose notebook-inspectable
   scenario-definition table metadata.
 - May claim definition table DataFrames preserve workbook headers, row labels, cell refs, and
-  column flavour provenance.
+  column role/source-marker provenance.
 - Must not claim full editable scenario-definition widgets, stable API compatibility, production
   readiness, or arbitrary country-calculator support.
 
@@ -373,3 +374,74 @@ Closeout evidence:
 - Phase 4 parent issue #29 is closed.
 - Phase 4 PR #34 merged to `main` with merge commit `862f964`.
 - Post-merge Tests and Docs Pages workflows passed, and GitHub Pages deployed.
+
+## Phase 5: Scenario Definition Input Semantics
+
+GitHub parent issue: #35.
+
+Active branch: `feature/p5-scenario-definition-input-semantics`.
+
+Status: active.
+
+Goal: correct the Phase 4 terminology and API boundary for `SCENARIOS definition`, keeping
+output-sheet column flavour metadata separate from scenario-definition role/source metadata, then
+add workbook-derived links from selection-control locations such as `S.3` to the relevant
+scenario-definition tables.
+
+- [x] P5.1 Separate definition role metadata from output flavour tags. Child issue: #36.
+  - Status: complete.
+  - [x] Rename scenario-definition table metadata away from `column_flavour_*`.
+  - [x] Keep output-sheet flavour tags scoped to output tables.
+  - [x] Remove `SCEN` from output flavour-tag normalization.
+  - [x] Add synthetic regression tests for the vocabulary separation.
+- [x] P5.2 Discover selection-location links for definition tables. Child issue: #37.
+  - Status: complete.
+  - [x] Discover `S.x` and `S.x.y` markers above native `SCENARIOS definition` tables.
+  - [x] Preserve marker source cell refs.
+  - [x] Add workbook-backed assertions for representative 2020/2021 links.
+- [x] P5.3 Add selection-to-definition lookup helpers. Child issue: #38.
+  - Status: complete.
+  - [x] Add helper(s) that return scenario-definition tables for a selection location.
+  - [x] Support family lookups such as `S.3` returning `S.3.a`, `S.3.b`, and `S.3.c` tables.
+  - [x] Add notebook-friendly DataFrame examples/tests.
+- [x] P5.4 Document and validate scenario definition semantics. Child issue: #39.
+  - Status: complete.
+  - [x] Update README and Sphinx guides.
+  - [x] Add/update planning notes.
+  - [x] Update roadmap and changelog evidence.
+  - [x] Run default verification and record results.
+
+Acceptance boundary:
+
+- May claim output-table flavour metadata and scenario-definition role/source metadata are separate
+  concepts in the public notebook API.
+- May claim discovered scenario-definition tables can be looked up by selection location/family for
+  the inspected 2020 and 2021 public workbook structures.
+- Must not claim full editable scenario-definition widgets, stable API compatibility, production
+  readiness, or arbitrary country-calculator support.
+
+Implementation evidence:
+
+- Renamed scenario-definition table metadata to `column_role_tags`, `raw_column_role_tags`, and
+  `column_role_tag_refs`.
+- Kept `OutputTable.column_flavour_*` and output flavour filtering scoped to canonical output sheets.
+- Removed `SCEN` from output flavour-tag normalization and added regression coverage.
+- Added `ScenarioDefinitionTable.scenario_locations` and `scenario_location_refs`.
+- Added `scenario_definition_tables_for_location` with exact and family matching.
+- Added `planning/phase-5-scenario-definition-input-semantics.md`.
+- Updated README and Sphinx docs to distinguish output flavour tags from scenario-definition
+  role/source markers.
+
+Verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 30 tests and 9 workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -q tests/test_fable_workbook_output_flavour_tags.py tests/test_fable_workbook_scenario_definition_tables.py`
+  passed with 5 tests against ignored local workbook artifacts.
+
+Closeout evidence:
+
+- Pending.

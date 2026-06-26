@@ -95,11 +95,12 @@ def test_discover_scenario_definition_tables_preserves_table_values_and_tags(tmp
     workbook = Workbook()
     worksheet = workbook.active
     worksheet.title = "SCENARIOS definition"
+    worksheet.append(["S.3.c", None, None, None])
     worksheet.append(["DIRECT", "SCEN", "DATA - 1", "CALC"])
     worksheet.append(["DietScen", "PROD_GROUP", "target", "diff"])
     worksheet.append(["Current", "CEREALS", 2500, "=C3-2400"])
     worksheet.append(["Ambitious", "CEREALS", 2600, "=C4-2400"])
-    worksheet.add_table(Table(displayName="DietTarget", ref="A2:D4"))
+    worksheet.add_table(Table(displayName="DietTarget", ref="A3:D5"))
     path = tmp_path / "fable.xlsx"
     workbook.save(path)
 
@@ -110,22 +111,24 @@ def test_discover_scenario_definition_tables_preserves_table_values_and_tags(tmp
     assert table.name == "scenarios_definition_diettarget"
     assert table.label == "DietTarget"
     assert table.sheet == "SCENARIOS definition"
-    assert table.range_ref == "A2:D4"
+    assert table.range_ref == "A3:D5"
     assert table.column_labels == ("DietScen", "PROD_GROUP", "target", "diff")
-    assert table.column_flavour_tags == ("DIRECT", "SCEN", "DATA-1", "CALC")
-    assert table.raw_column_flavour_tags == ("DIRECT", "SCEN", "DATA - 1", "CALC")
-    assert table.column_flavour_tag_refs == (
-        "SCENARIOS definition!A1",
-        "SCENARIOS definition!B1",
-        "SCENARIOS definition!C1",
-        "SCENARIOS definition!D1",
+    assert table.column_role_tags == ("DIRECT", "SCEN", "DATA-1", "CALC")
+    assert table.raw_column_role_tags == ("DIRECT", "SCEN", "DATA - 1", "CALC")
+    assert table.column_role_tag_refs == (
+        "SCENARIOS definition!A2",
+        "SCENARIOS definition!B2",
+        "SCENARIOS definition!C2",
+        "SCENARIOS definition!D2",
     )
+    assert table.scenario_locations == ("S.3.C",)
+    assert table.scenario_location_refs == ("SCENARIOS definition!A1",)
     assert table.row_labels == ("Current", "Ambitious")
     assert table.cell_refs[0] == (
-        "SCENARIOS definition!A3",
-        "SCENARIOS definition!B3",
-        "SCENARIOS definition!C3",
-        "SCENARIOS definition!D3",
+        "SCENARIOS definition!A4",
+        "SCENARIOS definition!B4",
+        "SCENARIOS definition!C4",
+        "SCENARIOS definition!D4",
     )
     assert table.values[1] == ("Ambitious", "CEREALS", 2600, "=C4-2400")
 
