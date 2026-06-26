@@ -381,7 +381,7 @@ GitHub parent issue: #35.
 
 Active branch: `feature/p5-scenario-definition-input-semantics`.
 
-Status: active.
+Status: complete.
 
 Goal: correct the Phase 4 terminology and API boundary for `SCENARIOS definition`, keeping
 output-sheet column flavour metadata separate from scenario-definition role/source metadata, then
@@ -444,4 +444,6 @@ Verification evidence:
 
 Closeout evidence:
 
-- Pending.
+- Phase 5 parent issue #35 is closed.
+- Phase 5 PR #40 merged to `main` with merge commit `2dfd65e`.
+- Post-merge Tests and Docs Pages workflows passed, and GitHub Pages deployed.

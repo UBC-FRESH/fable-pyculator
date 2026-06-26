@@ -94,3 +94,5 @@ This file records completed project work in chronological order.
   `column_role_*`, removing `SCEN` from output flavour-tag normalization, adding
   scenario-definition location markers and `scenario_definition_tables_for_location`, and updating
   docs/tests/planning evidence.
+- Closed Phase 5 after PR #40 merged to `main` and the post-merge Tests and Docs Pages workflows
+  passed.
