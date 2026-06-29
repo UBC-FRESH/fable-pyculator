@@ -7,10 +7,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Phase 8 is active on `feature/p8-validated-2021-generated-model`: validate and publish the 2021
-  FABLE-C generated Python model only if it reaches the same zero-mismatch comparable-output
-  standard used for the 2020 benchmark. Clean Phase 8 validation has passed; docs, notebook, tests,
-  PR/merge, and deployment closeout remain.
+- Phase 8 is closed: the validated 2021 FABLE-C generated model is published as a compressed repo
+  artifact, PR #60 merged, and post-merge Test and Docs Pages workflows passed.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -637,28 +635,28 @@ GitHub parent issue: #54.
 
 Active branch: `feature/p8-validated-2021-generated-model`.
 
-Status: active.
+Status: complete.
 
 Goal: add the public 2021 FABLE-C generated Python model to `fable-pyculator` with the same evidence
 discipline used for the 2020 Modelwright benchmark: generate from the public 2021 workbook, validate
 against cached workbook outputs, publish only an approved compressed generated-model artifact, and
 document the exact validation boundary.
 
-- [ ] P8.1 Define 2021 validation contract and output universe. Child issue: #59.
+- [x] P8.1 Define 2021 validation contract and output universe. Child issue: #59.
   - Status: complete.
   - [x] Derive the 2021 output universe from the public 2021 workbook using the same comparable-output
         contract as the 2020 benchmark.
   - [x] Record comparable output counts and any non-comparable cached blanks separately.
   - [x] Keep raw workbook extracts, output refs, generated JSON files, logs, and validation reports
         under ignored `tmp/`.
-- [ ] P8.2 Generate and validate the 2021 Modelwright Python model. Child issue: #58.
+- [x] P8.2 Generate and validate the 2021 Modelwright Python model. Child issue: #58.
   - Status: complete.
   - [x] Run Modelwright extraction, contract inference, code generation, execution, and cached-output
         validation from the 2021 workbook.
   - [x] Require status `pass`, zero mismatches, and match count equal to comparable output count before
         making any 2021 equivalence claim.
   - [x] If validation fails, record blocker taxonomy and do not publish an equivalence artifact.
-- [ ] P8.3 Publish compressed 2021 generated-model artifact. Child issue: #55.
+- [x] P8.3 Publish compressed 2021 generated-model artifact. Child issue: #55.
   - Status: complete.
   - [x] Track only `examples/fable_2021/generated_fable_2021_model.py.xz` as the approved compact
         generated-model artifact.
@@ -666,7 +664,7 @@ document the exact validation boundary.
         generation command outline, and artifact boundary.
   - [x] Keep source workbook, decompressed `.py`, generated JSON inputs, logs, and raw validation
         outputs ignored.
-- [ ] P8.4 Update 2021 notebook, docs, and Basecamp guidance. Child issue: #57.
+- [x] P8.4 Update 2021 notebook, docs, and Basecamp guidance. Child issue: #57.
   - Status: complete.
   - [x] Update the 2021 notebook to materialize the compressed 2021 generated model into the ignored
         `tmp/generated-models/fable-2021/` path.
@@ -674,14 +672,14 @@ document the exact validation boundary.
         notebook docs with the exact Phase 8 evidence.
   - [x] Update the Basecamp follow-up draft to point users to the published 2021 artifact and its
         validation boundary.
-- [ ] P8.5 Verify, merge, deploy docs, and close phase. Child issue: #56.
-  - Status: active.
+- [x] P8.5 Verify, merge, deploy docs, and close phase. Child issue: #56.
+  - Status: complete.
   - [x] Add tests for the compressed 2021 artifact, notebook artifact references, and release artifact
         allowlisting.
   - [x] Run lint, tests, opt-in workbook tests, docs, theme verification, checksum verification, release
         artifact checks, and `git diff --check`.
-  - [ ] Open and merge the Phase 8 PR only after CI passes.
-  - [ ] Confirm post-merge `Test` and `Docs Pages` workflows pass and the deployed docs show the
+  - [x] Open and merge the Phase 8 PR only after CI passes.
+  - [x] Confirm post-merge `Test` and `Docs Pages` workflows pass and the deployed docs show the
         updated 2021 validation claim before closing the parent issue.
 
 Acceptance boundary:
@@ -727,4 +725,9 @@ Verification evidence:
 
 Closeout evidence:
 
-- Pending.
+- Phase 8 child issues #59, #58, #55, #57, and #56 are closed.
+- Phase 8 PR #60 merged to `main` with merge commit `c073f4e`.
+- Post-merge `Test` workflow passed on `main`, including quality, pytest/docs, and release-artifact
+  jobs.
+- Post-merge `Docs Pages` workflow passed on `main`, including Sphinx build, Read the Docs theme
+  artifact verification, artifact upload, and GitHub Pages deployment.

@@ -137,3 +137,5 @@ This file records completed project work in chronological order.
   space.
 - Merged upstream Modelwright PR #204 at `c3734d3` to fix generated `VLOOKUP` `#N/A` propagation,
   then reran the 2021 generation/validation path and recorded the clean Phase 8 verification suite.
+- Closed Phase 8 after PR #60 merged to `main` at `c073f4e` and the post-merge Test and Docs Pages
+  workflows passed, including GitHub Pages deployment.
