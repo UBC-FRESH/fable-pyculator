@@ -7,8 +7,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Phase 7 issue #48 is active to address first-user feedback about 2021 notebook wiring and
-  generated-model artifact guidance.
+- Phase 7 is closed with explicit 2021 notebook wiring, generated-model artifact guidance, and
+  Modelwright follow-up issue #201 for contract materialization documentation/tooling.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -547,7 +547,7 @@ GitHub parent issue: #48.
 
 Active branch: `feature/p7-2021-artifact-wiring`.
 
-Status: active.
+Status: complete.
 
 Goal: address first-user feedback that the 2020 example notebook is easy to misuse with a 2021
 workbook and that the docs do not clearly explain where Modelwright generated-model artifacts come
@@ -579,7 +579,7 @@ from.
   - [x] Update roadmap and changelog.
   - [x] Run lint, tests, docs, release artifact checks, and workbook checksums.
   - [x] Record evidence.
-  - [ ] Close the phase through PR and docs deployment.
+  - [x] Close the phase through PR and docs deployment.
 
 Acceptance boundary:
 
@@ -622,4 +622,9 @@ Verification evidence:
 
 Closeout evidence:
 
-- Pending.
+- Phase 7 parent issue #48 is closed.
+- Phase 7 PR #53 merged to `main` with merge commit `c51af36`.
+- Post-merge `Test` workflow passed on `main`, including quality, pytest/docs, and release-artifact
+  jobs.
+- Post-merge `Docs Pages` workflow passed on `main`, including Sphinx build, Read the Docs theme
+  artifact verification, artifact upload, and GitHub Pages deployment.
