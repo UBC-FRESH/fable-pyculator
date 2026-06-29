@@ -7,9 +7,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 ## Current Next Steps
 
-- Phase 6 is closed with Modelwright-aligned `v0.1.0a1` alpha release workflow evidence.
-- Next release action, when approved by the maintainer: tag `v0.1.0a1` from `main`, run the release
-  workflow against TestPyPI, inspect the result, then publish to PyPI if the dry run is acceptable.
+- Phase 7 issue #48 is active to address first-user feedback about 2021 notebook wiring and
+  generated-model artifact guidance.
+- `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
+  version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -531,3 +532,94 @@ Closeout evidence:
   jobs.
 - Post-merge `Docs Pages` workflow passed on `main`, including Sphinx build, Read the Docs theme
   artifact verification, artifact upload, and GitHub Pages deployment.
+
+Release evidence:
+
+- Tag `v0.1.0a1` was pushed from closeout commit `b52057f`.
+- TestPyPI release workflow run `28271969238` passed, and a clean TestPyPI install smoke test
+  imported `fable_pyculator 0.1.0a1`.
+- PyPI release workflow run `28272354876` passed, and a clean PyPI install smoke test imported
+  `fable_pyculator 0.1.0a1`.
+
+## Phase 7: 2021 Notebook Artifact Wiring And Generated-Model Guidance
+
+GitHub parent issue: #48.
+
+Active branch: `feature/p7-2021-artifact-wiring`.
+
+Status: active.
+
+Goal: address first-user feedback that the 2020 example notebook is easy to misuse with a 2021
+workbook and that the docs do not clearly explain where Modelwright generated-model artifacts come
+from.
+
+- [x] P7.1 Add version-specific notebook loop helpers. Child issue: #50.
+  - Status: complete.
+  - [x] Add 2021 default workbook and generated-model paths.
+  - [x] Add `build_2021_notebook_spec`.
+  - [x] Add `run_2021_notebook_loop`.
+  - [x] Preserve 2020 helper behavior and exports.
+  - [x] Add unit tests for 2021 helper wiring.
+- [x] P7.2 Add 2021 example notebook without 2020 fallback. Child issue: #52.
+  - Status: complete.
+  - [x] Add a 2021 example notebook.
+  - [x] Use `tmp/private-workbooks/2021_Open_FABLECalculator.xlsx`.
+  - [x] Use `tmp/generated-models/fable-2021/generated_fable_2021_model.py`.
+  - [x] Do not decompress or reference the 2020 Modelwright generated model archive.
+  - [x] Add/update notebook tracking tests.
+- [x] P7.3 Document generated-model artifact boundary. Child issue: #51.
+  - Status: complete.
+  - [x] Explain that FABLE Pyculator wraps Modelwright generated models but does not create
+        generation contracts.
+  - [x] Explain what `contract.json`, `expressions.json`, and `constants.json` are for.
+  - [x] Document 2020 vs 2021 artifact paths and validation boundaries.
+  - [x] Link the generated-model guide from README and Sphinx docs.
+- [x] P7.4 Validate docs and close user-feedback loop. Child issue: #49.
+  - Status: complete.
+  - [x] Update roadmap and changelog.
+  - [x] Run lint, tests, docs, release artifact checks, and workbook checksums.
+  - [x] Record evidence.
+  - [ ] Close the phase through PR and docs deployment.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator has explicit 2020 and 2021 notebook wrapper artifact paths.
+- May claim 2021 workbook structure can be discovered by wrapper helpers.
+- Must not claim 2021 generated-model output equivalence until a matching 2021 generated model is
+  produced and validated.
+- Must not claim FABLE Pyculator can generate Modelwright `contract.json`, `expressions.json`, or
+  `constants.json` from a FABLE workbook.
+
+Implementation evidence:
+
+- Added version-specific 2021 notebook defaults and helpers: `DEFAULT_2021_WORKBOOK_PATH`,
+  `DEFAULT_2021_GENERATED_MODEL_PATH`, `build_2021_notebook_spec`, and `run_2021_notebook_loop`.
+- Added `build_notebook_spec` as the shared explicit workbook-spec builder used by 2020 and 2021
+  helpers.
+- Preserved the existing 2020 helper behavior while loading 2020 and 2021 generated models under
+  separate module names.
+- Added `examples/notebooks/fable-pyculator-2021-loop.ipynb` as an unexecuted wiring template that
+  checks for matching 2021 artifacts and never falls back to the 2020 generated model archive.
+- Added `docs/guides/generated-model-artifacts.rst` documenting the artifact boundary, 2020/2021
+  generated-model path contract, and Modelwright JSON generation inputs.
+- Linked generated-model artifact guidance from README, Sphinx index, notebook-control docs, the
+  2020 workflow guide, and validation-scope docs.
+- Hardened release artifact smoke checks so installed wheels expose the new 2021 helper API.
+- Created Modelwright follow-up issue UBC-FRESH/modelwright#201 for generated-model contract
+  materialization documentation/tooling.
+
+Verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 36 tests and 9 workbook-backed skips.
+- `.venv/bin/python -m pytest tests/test_notebook.py tests/test_examples.py tests/test_scripts.py -q`
+  passed with 13 tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `scripts/check_release_artifacts.sh` passed, including clean installed-wheel smoke checks for the
+  new 2021 exports.
+
+Closeout evidence:
+
+- Pending.

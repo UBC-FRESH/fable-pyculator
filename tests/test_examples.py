@@ -39,3 +39,28 @@ def test_fable_pyculator_2020_notebook_is_tracked_with_rendered_outputs() -> Non
         "run_notebook_loop" in "".join(cell["source"])
         for cell in code_cells
     )
+
+
+def test_fable_pyculator_2021_notebook_uses_2021_artifact_paths_only() -> None:
+    notebook_path = Path("examples/notebooks/fable-pyculator-2021-loop.ipynb")
+
+    payload = json.loads(notebook_path.read_text(encoding="utf-8"))
+    code_cells = [cell for cell in payload["cells"] if cell["cell_type"] == "code"]
+    code_source = "\n".join(
+        "".join(cell["source"])
+        for cell in code_cells
+    )
+
+    assert payload["nbformat"] == 4
+    assert payload["cells"]
+    assert "DEFAULT_2021_WORKBOOK_PATH" in code_source
+    assert "DEFAULT_2021_GENERATED_MODEL_PATH" in code_source
+    assert "build_2021_notebook_spec" in code_source
+    assert "run_2021_notebook_loop" in code_source
+    assert "tmp/generated-models/fable-2021/generated_fable_2021_model.py" in "".join(
+        "".join(cell["source"])
+        for cell in payload["cells"]
+    )
+    assert "modelwright_archive" not in code_source
+    assert "generated_fable_2020_model" not in code_source
+    assert "run_2020_notebook_loop" not in code_source

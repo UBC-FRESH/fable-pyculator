@@ -115,6 +115,31 @@ pieces:
    generated_model = load_generated_model("tmp/generated-models/fable-2020/generated_fable_2020_model.py")
    result = run_notebook_loop(generated_model, spec, {"gdp_scen": "SSP1"})
 
+2021 Notebook Loop
+------------------
+
+The 2021 convenience loop uses separate ignored local artifacts:
+
+- ``tmp/private-workbooks/2021_Open_FABLECalculator.xlsx``
+- ``tmp/generated-models/fable-2021/generated_fable_2021_model.py``
+
+Use ``run_2021_notebook_loop`` only after a matching 2021 generated model has been restored or
+created locally:
+
+- :download:`fable-pyculator-2021-loop.ipynb <../../examples/notebooks/fable-pyculator-2021-loop.ipynb>`
+
+.. code-block:: python
+
+   from fable_pyculator import run_2021_notebook_loop
+
+   result = run_2021_notebook_loop(
+       {"gdp_scen": "SSP1"},
+       include_figures=False,
+   )
+
+The 2021 helper intentionally does not fall back to the compressed 2020 generated model. For the
+generated-model artifact boundary, see :doc:`generated-model-artifacts`.
+
 Current Scope
 -------------
 

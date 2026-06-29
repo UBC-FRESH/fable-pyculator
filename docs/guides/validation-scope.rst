@@ -60,6 +60,8 @@ records its own execution evidence.
 The 2021 workbook is currently a generalizability check for wrapper structure, not a validated
 generated-model benchmark. The known near-term questions are:
 
+- Has a matching 2021 Modelwright-generated Python model been produced and placed under
+  ``tmp/generated-models/fable-2021/``?
 - Do the curated headline table names and columns remain stable across 2021?
 - Do country-specific variants preserve the S.1 through S.16 selection-control pattern?
 - Which defaults differ, beyond the observed ``Affor_scen`` default?
@@ -71,5 +73,6 @@ Claim Boundary
 --------------
 
 Current evidence supports an early 2020 FABLE-C notebook wrapper workflow for inspected public
-workbooks. It does not support claims of production readiness, arbitrary country-calculator support,
-or full generated-model equivalence inside this repository.
+workbooks and 2021 wrapper-structure discovery. It does not support claims of 2021 generated-model
+output equivalence, production readiness, arbitrary country-calculator support, or full
+generated-model equivalence inside this repository.

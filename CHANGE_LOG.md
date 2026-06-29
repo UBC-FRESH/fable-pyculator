@@ -105,3 +105,17 @@ This file records completed project work in chronological order.
   caveats.
 - Closed Phase 6 after PR #46 merged to `main` and the post-merge Tests and Docs Pages workflows
   passed, including the release-artifact job and GitHub Pages deployment.
+
+## 2026-06-29
+
+- Activated Phase 7 on `feature/p7-2021-artifact-wiring`, created parent issue #48 and child issues
+  #50, #52, #51, and #49, and scoped the phase around first-user feedback that 2021 workbook testing
+  could accidentally reuse the 2020 generated model and that generated-model artifact creation was
+  under-documented.
+- Completed the Phase 7 implementation by adding explicit 2021 workbook/generated-model defaults,
+  `build_2021_notebook_spec`, `run_2021_notebook_loop`, a shared `build_notebook_spec`, a 2021
+  notebook wiring template with no 2020 fallback, generated-model artifact documentation, and tests
+  guarding the 2020/2021 artifact boundary.
+- Created Modelwright follow-up issue UBC-FRESH/modelwright#201 to clarify how Modelwright
+  `contract.json`, `expressions.json`, and `constants.json` generation inputs are produced for new
+  production-sized workbook models.

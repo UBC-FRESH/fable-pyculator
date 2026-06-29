@@ -7,8 +7,13 @@ from openpyxl import Workbook
 from openpyxl.worksheet.table import Table
 
 from fable_pyculator import (
+    DEFAULT_2021_GENERATED_MODEL_PATH,
+    DEFAULT_2021_WORKBOOK_PATH,
+    build_2021_notebook_spec,
     build_2020_notebook_spec,
+    build_notebook_spec,
     load_generated_model,
+    run_2021_notebook_loop,
     run_2020_notebook_loop,
     run_notebook_loop,
 )
@@ -92,6 +97,20 @@ def test_build_2020_notebook_spec_includes_scenario_definition_tables() -> None:
     assert spec.scenario_definition_tables[0].scenario_locations == ("S.3.C",)
 
 
+def test_build_2021_notebook_spec_uses_2021_identity() -> None:
+    spec = build_2021_notebook_spec(_synthetic_workbook_path())
+
+    assert spec.workbook_id == "fable-c-2021"
+    assert spec.provenance.endswith("synthetic_fable.xlsx")
+    assert [control.name for control in spec.selection_controls] == ["gdp_scen"]
+
+
+def test_build_notebook_spec_accepts_explicit_workbook_identity() -> None:
+    spec = build_notebook_spec(_synthetic_workbook_path(), workbook_id="custom-fable")
+
+    assert spec.workbook_id == "custom-fable"
+
+
 def test_run_notebook_loop_preserves_explicit_rendered_artifact_subsets() -> None:
     spec = build_2020_notebook_spec(_synthetic_workbook_path())
 
@@ -153,6 +172,50 @@ def test_run_2020_notebook_loop_loads_ignored_model_path(tmp_path: Path) -> None
     }
     assert result.headline_frames["ghg_total_co2e"].loc[0, "value"] == 42
     assert list(result.output_tables["ghg_resultsghg"].columns) == ["Year", "TotalCO2e"]
+
+
+def test_run_2021_notebook_loop_loads_2021_model_path(tmp_path: Path) -> None:
+    workbook_path = _synthetic_workbook_path(tmp_path / "synthetic_fable_2021.xlsx")
+    model_path = tmp_path / "generated_fable_2021_model.py"
+    model_path.write_text(
+        "def calculate(inputs=None):\n"
+        "    return {\n"
+        "        'GHG!A3': 2030,\n"
+        "        'GHG!B3': 84,\n"
+        "        'FOOD!C3': 2600,\n"
+        "        'LAND!B3': 120,\n"
+        "        'WATER!C3': 2,\n"
+        "        'WATER!D3': 3,\n"
+        "        'WATER!E3': 4,\n"
+        "        'WATER!F3': 5,\n"
+        "        'WATER!G3': 6,\n"
+        "        'WATER!H3': 7,\n"
+        "    }\n",
+        encoding="utf-8",
+    )
+
+    result = run_2021_notebook_loop(
+        {"gdp_scen": "SSP1"},
+        workbook_path=workbook_path,
+        generated_model_path=model_path,
+        output_table_names=("ghg_resultsghg",),
+        headline_series_names=("ghg_total_co2e",),
+        include_figures=False,
+    )
+
+    assert result.run.spec.workbook_id == "fable-c-2021"
+    assert result.run.inputs == {
+        "SCENARIOS selection!A3": "x",
+        "SCENARIOS selection!A4": None,
+    }
+    assert result.headline_frames["ghg_total_co2e"].loc[0, "value"] == 84
+
+
+def test_2021_default_paths_are_separate_from_2020_artifacts() -> None:
+    assert DEFAULT_2021_WORKBOOK_PATH.as_posix() == "tmp/private-workbooks/2021_Open_FABLECalculator.xlsx"
+    assert DEFAULT_2021_GENERATED_MODEL_PATH.as_posix() == (
+        "tmp/generated-models/fable-2021/generated_fable_2021_model.py"
+    )
 
 
 def _synthetic_workbook_path(path: Path | None = None) -> Path:

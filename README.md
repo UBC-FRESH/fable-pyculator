@@ -150,6 +150,25 @@ result.headline_frames["ghg_total_co2e"]
 result.headline_figures["ghg_total_co2e"]
 ```
 
+The 2021 helper uses separate ignored local artifacts and does not fall back to the 2020 generated
+model:
+
+```text
+tmp/private-workbooks/2021_Open_FABLECalculator.xlsx
+tmp/generated-models/fable-2021/generated_fable_2021_model.py
+```
+
+```python
+from fable_pyculator import run_2021_notebook_loop
+
+result = run_2021_notebook_loop({"gdp_scen": "SSP1"}, include_figures=False)
+```
+
+FABLE Pyculator discovers wrapper metadata and renders notebook surfaces. It does not currently
+generate Modelwright `contract.json`, `expressions.json`, or `constants.json` files from a FABLE
+workbook. See `docs/guides/generated-model-artifacts.rst` for the generated-model artifact boundary
+and the 2020/2021 path contract.
+
 By default the loop renders every discovered output table and every curated headline frame from the
 single generated-model run. Pass `output_table_names` or `headline_series_names` only when you want a
 smaller rendered subset.
@@ -158,10 +177,12 @@ Tracked notebook example:
 
 ```text
 examples/notebooks/fable-pyculator-2020-loop.ipynb
+examples/notebooks/fable-pyculator-2021-loop.ipynb
 ```
 
-This notebook is intentionally committed after a successful 2020 benchmark run so GitHub can render
-the example tables and figure directly in the browser.
+The 2020 notebook is intentionally committed after a successful 2020 benchmark run so GitHub can
+render the example tables and figure directly in the browser. The 2021 notebook is a clean artifact
+wiring template and requires a matching local 2021 generated model before it can run the model.
 
 In VSCode, point the notebook kernel at the `.venv` created in the `fable-pyculator` repo root.
 The notebook setup cell prints the active environment prefix and warns if the selected kernel does

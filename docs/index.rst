@@ -12,6 +12,7 @@ Modelwright-generated Python models.
    guides/workbook-structure
    guides/notebook-control-surface
    guides/2020-notebook-workflow
+   guides/generated-model-artifacts
    guides/validation-scope
    guides/release-deployment
 

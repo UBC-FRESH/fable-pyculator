@@ -41,6 +41,10 @@ The workbook checksum is tracked under ``benchmarks/fable-calculator/checksums.s
 generated Python model is intentionally ignored; restore or generate it under ``tmp/`` before running
 the notebook loop.
 
+For the version-specific generated-model artifact contract, including why 2021 workbooks must use a
+matching 2021 generated model rather than the 2020 benchmark model, see
+:doc:`generated-model-artifacts`.
+
 The tracked notebook resolves the ``fable-pyculator`` repository root from the kernel's current
 working directory before constructing these paths. This matters in VSCode, where the notebook kernel
 may start in ``examples/notebooks/`` instead of the repository root. If the generated model is missing
