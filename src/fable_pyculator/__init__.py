@@ -51,6 +51,18 @@ from fable_pyculator.surface import (
     scenario_definition_tables_for_location,
     scenario_frame,
 )
+from fable_pyculator.workflows import (
+    DEFAULT_2021_ARTIFACT_DIR,
+    DEFAULT_2021_WORKFLOW_FILENAME,
+    FableFreshForgeBuildPaths,
+    build_cached_workbook_validation_scenario,
+    build_modelwright_freshforge_workflow,
+    derive_output_refs,
+    freshforge_2021_build_paths,
+    write_freshforge_workflow,
+    write_output_refs,
+    write_validation_scenario,
+)
 
 __version__ = "0.1.0a1"
 
@@ -61,8 +73,11 @@ __all__ = [
     "DEFAULT_2020_WORKBOOK_PATH",
     "DEFAULT_2021_GENERATED_MODEL_PATH",
     "DEFAULT_2021_WORKBOOK_PATH",
+    "DEFAULT_2021_ARTIFACT_DIR",
+    "DEFAULT_2021_WORKFLOW_FILENAME",
     "DEFAULT_HEADLINE_SERIES",
     "DEFAULT_OUTPUT_TABLES",
+    "FableFreshForgeBuildPaths",
     "HeadlinePoint",
     "HeadlineSeries",
     "NotebookLoopResult",
@@ -77,12 +92,16 @@ __all__ = [
     "__version__",
     "build_2021_notebook_spec",
     "build_2020_notebook_spec",
+    "build_cached_workbook_validation_scenario",
+    "build_modelwright_freshforge_workflow",
     "build_notebook_spec",
     "curate_default_headline_series",
     "discover_output_tables",
     "discover_scenario_definition_tables",
     "discover_scenario_parameters",
     "discover_selection_controls",
+    "derive_output_refs",
+    "freshforge_2021_build_paths",
     "headline_frame",
     "headline_frames",
     "output_table_frame",
@@ -99,4 +118,7 @@ __all__ = [
     "scenario_definition_tables",
     "scenario_definition_tables_for_location",
     "scenario_frame",
+    "write_freshforge_workflow",
+    "write_output_refs",
+    "write_validation_scenario",
 ]

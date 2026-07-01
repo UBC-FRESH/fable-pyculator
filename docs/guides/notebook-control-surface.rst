@@ -159,6 +159,35 @@ uses FreshForge to validate and plan the Modelwright workflow graph, and then sh
 commands that actually infer, generate, and execute the model. FreshForge planning is not execution;
 the build cell is gated behind ``RUN_BUILD = False`` by default.
 
+The notebook uses the public workflow helpers rather than hand-building the workflow in notebook
+cells:
+
+.. code-block:: python
+
+   from fable_pyculator import (
+       build_2021_notebook_spec,
+       build_modelwright_freshforge_workflow,
+       derive_output_refs,
+       freshforge_2021_build_paths,
+       write_freshforge_workflow,
+       write_output_refs,
+   )
+
+   paths = freshforge_2021_build_paths(repo_root=repo_root)
+   spec = build_2021_notebook_spec(paths.workbook_path)
+   output_refs = derive_output_refs(spec, column_flavour_tags="OUTPUT-*")
+   write_output_refs(paths.output_refs_path, output_refs)
+
+   workflow = build_modelwright_freshforge_workflow(
+       paths,
+       workdir=repo_root,
+       workflow_id="fable_2021_modelwright_run",
+       name="FABLE 2021 Modelwright FreshForge run",
+       description="FreshForge graph for rebuilding the 2021 FABLE generated model.",
+       module_name="generated_fable_2021_model",
+   )
+   write_freshforge_workflow(paths.workflow_path, workflow)
+
 2021 FreshForge Run Companion
 -----------------------------
 
@@ -171,6 +200,10 @@ The run remains gated behind ``RUN_FRESHFORGE = False`` because the full 2021 bu
 minutes. When enabled, the notebook writes the workflow under ``tmp/generated-models/fable-2021/``,
 calls ``freshforge.execution.run_workflow(...)``, and then loads the newly materialized
 ``generated_fable_2021_model.py`` into FABLE Pyculator for output-table inspection.
+
+Phase 12 keeps the notebooks as the teaching surface while moving the reusable output-ref and
+workflow construction logic into tested package APIs. The next planned phase will add a
+one-command 2021 rebuild script on top of these helpers.
 
 Current Scope
 -------------

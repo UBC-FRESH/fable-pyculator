@@ -167,3 +167,12 @@ This file records completed project work in chronological order.
   then reran the 2021 generation/validation path and recorded the clean Phase 8 verification suite.
 - Closed Phase 8 after PR #60 merged to `main` at `c073f4e` and the post-merge Test and Docs Pages
   workflows passed, including GitHub Pages deployment.
+- Created FreshForge deployment parent issues #75 through #79 for FABLE Pyculator Phases 12 through
+  16, created active Phase 12 child issues #80 through #83, and opened
+  `feature/p12-output-ref-workflow-builder-apis` to extract notebook-local output-ref/workflow logic
+  into tested package helpers before adding a one-command 2021 rebuild workflow.
+- Implemented the Phase 12 helper extraction by adding `fable_pyculator.workflows`, public output-ref
+  derivation, version-specific FreshForge build paths, stable output-ref/workflow/validation JSON
+  writers, cached-workbook validation-scenario generation, and Modelwright FreshForge workflow
+  construction; updated the 2021 FreshForge notebooks and Sphinx API docs to use the new package
+  helpers.

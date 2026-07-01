@@ -97,14 +97,16 @@ def test_fable_pyculator_2021_freshforge_build_plan_notebook_is_static_template(
     assert all(cell.get("execution_count") is None for cell in code_cells)
     assert not any(cell.get("outputs") for cell in code_cells)
     assert "build_2021_notebook_spec" in code_source
-    assert "modelwright.model_infer_contract" in code_source
-    assert "modelwright.validation_evaluate" in code_source
+    assert "derive_output_refs" in code_source
+    assert "build_modelwright_freshforge_workflow" in code_source
+    assert "write_freshforge_workflow" in code_source
+    assert "workflow_document = build_modelwright_freshforge_workflow" in code_source
     assert "freshforge" in code_source.casefold()
     assert "RUN_BUILD = False" in code_source
-    assert "output_refs.json" in code_source
-    assert "validation-scenario.json" in code_source
-    assert "evaluation-report.json" in code_source
-    assert "generated_fable_2021_model.py" in code_source
+    assert "output_refs_path" in code_source
+    assert "validation_scenario_path" in code_source
+    assert "evaluation_report_path" in code_source
+    assert "generated_model_path" in code_source
     assert "tmp/generated-models/fable-2021" in markdown_source
     assert "FreshForge planning is not execution" in markdown_source
     assert "generated_fable_2020_model" not in code_source
@@ -128,13 +130,16 @@ def test_fable_pyculator_2021_freshforge_run_notebook_is_static_template() -> No
     assert all(cell.get("execution_count") is None for cell in code_cells)
     assert not any(cell.get("outputs") for cell in code_cells)
     assert "build_2021_notebook_spec" in code_source
+    assert "derive_output_refs" in code_source
+    assert "build_modelwright_freshforge_workflow" in code_source
+    assert "write_freshforge_workflow" in code_source
     assert "freshforge.execution" in code_source
     assert "run_workflow" in code_source
     assert "RUN_FRESHFORGE = False" in code_source
-    assert "output_refs.json" in code_source
-    assert "validation-scenario.json" in code_source
-    assert "evaluation-report.json" in code_source
-    assert "generated_fable_2021_model.py" in code_source
+    assert "output_refs_path" in code_source
+    assert "validation_scenario_path" in code_source
+    assert "evaluation_report_path" in code_source
+    assert "generated_model_path" in code_source
     assert "tmp/generated-models/fable-2021" in markdown_source
     assert "Generated model not found yet" in code_source
     assert "generated_fable_2020_model" not in code_source

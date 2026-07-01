@@ -898,3 +898,100 @@ Closeout evidence:
   jobs.
 - Post-merge `Docs Pages` workflow passed on `main`, including Sphinx build, Read the Docs theme
   artifact verification, artifact upload, and GitHub Pages deployment.
+
+## Phase 12: Output-Ref Derivation And FreshForge Workflow-Builder APIs
+
+GitHub parent issue: #75.
+
+Active branch: `feature/p12-output-ref-workflow-builder-apis`.
+
+Status: active.
+
+Goal: extract the 2021 FreshForge notebook's output-ref derivation and workflow JSON assembly into
+tested FABLE Pyculator helper APIs.
+
+- [x] P12.1 Add output-ref derivation helpers. Child issue: #80.
+  - [x] Add a public helper that derives output refs from a FABLE Pyculator spec.
+  - [x] Support flavour filters such as `OUTPUT-*` and optional table-name restriction.
+  - [x] Write stable sorted output-ref JSON.
+  - [x] Add synthetic unit tests.
+- [x] P12.2 Add FreshForge Modelwright workflow builder. Child issue: #81.
+  - [x] Add a small artifact-path helper for version-specific build directories.
+  - [x] Build the Modelwright FreshForge workflow document for infer, generate, execute, and evaluate.
+  - [x] Write deterministic workflow JSON.
+  - [x] Add tests for required nodes and artifact paths.
+- [x] P12.3 Update 2021 FreshForge notebooks and docs. Child issue: #82.
+  - [x] Update the 2021 build-plan notebook to use package helpers.
+  - [x] Update the 2021 run notebook to use package helpers.
+  - [x] Keep `RUN_FRESHFORGE = False` and avoid 2020 fallback references.
+  - [x] Document the helper APIs in Sphinx docs.
+- [ ] P12.4 Verify, PR, deploy docs, and close phase. Child issue: #83.
+  - [x] Run Ruff, pytest, Sphinx docs, docs theme verification, checksum verification, release
+        artifact checks, and `git diff --check`.
+  - [ ] Open PR from `feature/p12-output-ref-workflow-builder-apis` to `main`.
+  - [ ] Merge only after CI passes.
+  - [ ] Confirm post-merge `Test` and `Docs Pages` workflows before closing parent #75.
+
+Acceptance boundary:
+
+- May claim reusable output-ref derivation and FreshForge workflow-builder APIs for FABLE
+  generated-model workflows.
+- Must not add the one-command 2021 rebuild script, scenario-bundle automation, or CI benchmark
+  execution in this phase.
+
+Implementation evidence:
+
+- Added `fable_pyculator.workflows` with `derive_output_refs`, stable JSON writers,
+  `freshforge_2021_build_paths`, cached-workbook validation-scenario generation, and a Modelwright
+  FreshForge workflow builder for infer, generate, execute, and evaluate stages.
+- Exported the workflow helpers from the package facade and documented them in the API reference.
+- Updated the 2021 FreshForge build-plan and run notebooks to use the package helpers instead of
+  hand-building output refs, validation scenarios, and workflow JSON inline.
+- Added `tests/test_workflows.py` and strengthened static notebook tests to require helper usage.
+
+Verification evidence:
+
+- `.venv/bin/python -m pytest tests/test_workflows.py tests/test_examples.py -q` passed with 11 tests.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 45 tests and 9 workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `scripts/check_release_artifacts.sh` passed.
+- `git diff --check` passed.
+
+## Phase 13: One-Command 2021 FreshForge Rebuild Workflow
+
+GitHub parent issue: #76.
+
+Status: planned backlog.
+
+Goal: add a script-style one-command path for planning and optionally running the 2021 generated-model
+rebuild through FreshForge.
+
+## Phase 14: Version-General FABLE Build Workflows And Output-Ref Strategy Comparison
+
+GitHub parent issue: #77.
+
+Status: planned backlog.
+
+Goal: generalize FreshForge build helpers across FABLE workbook versions and support named output-ref
+strategies such as headline-only, one-table, all `OUTPUT-*` columns, and selected flavour tags.
+
+## Phase 15: Scenario-Bundle Automation And Rendered Result Artifacts
+
+GitHub parent issue: #78.
+
+Status: planned backlog.
+
+Goal: define and pilot scenario-bundle automation for FABLE notebook workflows, including reusable
+result table and figure artifact writers.
+
+## Phase 16: Validation Evidence Packaging And Opt-In Benchmark Workflow
+
+GitHub parent issue: #79.
+
+Status: planned backlog.
+
+Goal: package compact validation evidence for FABLE generated-model runs and add an opt-in benchmark
+workflow when source workbooks are available locally.

@@ -40,3 +40,9 @@ Rendering And Execution
 
 .. automodule:: fable_pyculator.surface
    :members:
+
+FreshForge Workflow Helpers
+---------------------------
+
+.. automodule:: fable_pyculator.workflows
+   :members:
