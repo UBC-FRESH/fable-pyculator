@@ -217,6 +217,93 @@ def test_run_fable_scenario_bundle_script_reports_missing_generated_model(
     assert "generated model not found" in payload["error"]
 
 
+def test_package_fable_validation_evidence_script_help_documents_artifact_modes() -> None:
+    script = Path("scripts/package_fable_validation_evidence.py")
+
+    result = subprocess.run(
+        [str(script), "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert os.access(script, os.X_OK)
+    assert "--workbook-version" in result.stdout
+    assert "--artifact-dir" in result.stdout
+    assert "--require-artifacts" in result.stdout
+
+
+def test_package_fable_validation_evidence_script_skips_missing_artifacts(tmp_path: Path) -> None:
+    script = Path("scripts/package_fable_validation_evidence.py")
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(tmp_path), "--workbook-version", "2022", "--json"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["evidence_status"] == "skipped"
+    assert payload["equivalence_status"] == "incomplete"
+    assert "inference_result" in payload["missing_artifacts"]
+
+
+def test_package_fable_validation_evidence_script_requires_missing_artifacts(tmp_path: Path) -> None:
+    script = Path("scripts/package_fable_validation_evidence.py")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--repo-root",
+            str(tmp_path),
+            "--workbook-version",
+            "2022",
+            "--require-artifacts",
+            "--json",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    payload = json.loads(result.stderr)
+    assert result.returncode == 1
+    assert payload["ok"] is False
+    assert "missing validation artifact" in payload["error"]
+
+
+def test_package_fable_validation_evidence_script_accepts_custom_dirs(tmp_path: Path) -> None:
+    script = Path("scripts/package_fable_validation_evidence.py")
+    artifact_dir = tmp_path / "artifacts"
+    output_dir = tmp_path / "evidence"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--repo-root",
+            str(tmp_path),
+            "--workbook-version",
+            "2022",
+            "--artifact-dir",
+            str(artifact_dir),
+            "--output-dir",
+            str(output_dir),
+            "--json",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    payload = json.loads(result.stdout)
+    assert payload["summary_json"] == str(output_dir / "summary.json")
+    assert (output_dir / "summary.json").exists()
+
+
 def _load_script_module(module_name: str, script: Path) -> ModuleType:
     spec = importlib.util.spec_from_file_location(module_name, script)
     assert spec is not None and spec.loader is not None

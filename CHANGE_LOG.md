@@ -4,6 +4,23 @@ This file records completed project work in chronological order.
 
 ## 2026-07-01
 
+- Activated Phase 16 on `feature/p16-validation-evidence-packaging`, created child issues #112,
+  #110, #111, #113, and #114 under parent issue #79, and scoped the phase around compact validation
+  evidence summaries from restored local artifacts plus an extraction-only opt-in benchmark workflow.
+- Added `fable_pyculator.validation` with compact validation-evidence path helpers, sanitized
+  summary extraction, conservative pass/fail/incomplete equivalence classification, and stable JSON
+  plus Markdown writers that avoid copying raw workbook, generated source, and generated-value
+  payloads.
+- Added `scripts/package_fable_validation_evidence.py` and a manual-only
+  `.github/workflows/benchmark-evidence.yml` workflow so restored local generated-model artifacts can
+  be summarized and uploaded as compact sanitized evidence without running full model generation by
+  default.
+- Added Sphinx documentation for validation-evidence packaging and linked it from README,
+  validation-scope, generated-model artifact, docs index, and API reference pages.
+- Verified the Phase 16 local implementation with Ruff, pytest, Sphinx warning-as-error docs, Read
+  the Docs theme verification, workbook checksums, release artifact checks, whitespace checks, and a
+  real local 2021 evidence-packaging smoke test that correctly reported incomplete equivalence when
+  explicit comparison counts were unavailable.
 - Activated Phase 15 on `feature/p15-scenario-bundles-result-artifacts`, created child issues
   #104, #106, #105, #107, and #108 under parent issue #78, and scoped the phase around
   selection-control scenario bundles plus rendered result artifacts under ignored `tmp/`.

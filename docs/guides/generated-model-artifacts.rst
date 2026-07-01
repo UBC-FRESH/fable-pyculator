@@ -104,3 +104,12 @@ model artifact:
 The 2021 claim is limited to the public 2021 FABLE-C workbook and the compressed generated model
 artifact in ``examples/fable_2021/``. It is not a claim about arbitrary country calculators,
 production readiness, or FABLE-P Canada equivalence.
+
+Compact Evidence Summaries
+--------------------------
+
+After running a local Modelwright/FreshForge generated-model workflow, use
+``scripts/package_fable_validation_evidence.py`` to summarize restored artifacts under
+``tmp/generated-models/fable-YYYY/``. The command writes compact summaries under
+``tmp/validation-evidence/fable-YYYY/`` and reports incomplete evidence unless explicit comparison
+counts are present. See :doc:`validation-evidence-packaging`.

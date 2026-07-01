@@ -16,6 +16,7 @@ Modelwright-generated Python models.
    guides/generated-model-artifacts
    guides/freshforge-provider-integration
    guides/2021-freshforge-rebuild-command
+   guides/validation-evidence-packaging
    guides/validation-scope
    guides/release-deployment
 

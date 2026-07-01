@@ -21,6 +21,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 15 is closed: scenario-bundle automation and rendered result artifacts are tracked, PR #109
   merged, and post-merge Test and Docs Pages workflows passed.
+- Phase 16 is active on `feature/p16-validation-evidence-packaging`: package compact validation
+  evidence from restored local artifacts and add an opt-in extraction-only benchmark evidence
+  workflow.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -1271,7 +1274,71 @@ Local verification evidence:
 
 GitHub parent issue: #79.
 
-Status: planned backlog.
+Active branch: `feature/p16-validation-evidence-packaging`.
+
+Status: active.
 
 Goal: package compact validation evidence for FABLE generated-model runs and add an opt-in benchmark
 workflow when source workbooks are available locally.
+
+- [x] P16.1 Define compact validation-evidence schema. Child issue: #112.
+  - Status: complete.
+  - [x] Define sanitized summary records.
+  - [x] Record artifact presence, stage statuses, diagnostics counts, and comparison status.
+  - [x] Claim `pass` only with explicit comparable/match/mismatch counts.
+- [x] P16.2 Add evidence extraction and writers. Child issue: #110.
+  - Status: complete.
+  - [x] Add `fable_pyculator.validation`.
+  - [x] Extract compact evidence from existing local artifacts.
+  - [x] Write stable JSON and Markdown summaries.
+  - [x] Support missing-artifact skipped/incomplete behavior.
+- [x] P16.3 Add script interface and opt-in workflow. Child issue: #111.
+  - Status: complete.
+  - [x] Add `scripts/package_fable_validation_evidence.py`.
+  - [x] Add manual `benchmark-evidence.yml`.
+  - [x] Upload only sanitized evidence summaries.
+- [x] P16.4 Update docs and tests. Child issue: #113.
+  - Status: complete.
+  - [x] Add Sphinx validation-evidence packaging guide.
+  - [x] Update README, validation-scope, generated-model-artifacts, and API docs.
+  - [x] Add focused unit/script/workflow tests.
+- [ ] P16.5 Verify, merge, deploy docs, and close phase. Child issue: #114.
+  - Status: active.
+  - [x] Run full local verification.
+  - [x] Run local evidence packaging smoke test if artifacts are restored.
+  - [ ] Open and merge PR after CI passes.
+  - [ ] Confirm post-merge Test and Docs Pages workflows pass.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator can package compact validation evidence from restored local artifacts.
+- Must report incomplete evidence unless explicit comparable-output, match, and mismatch counts are
+  available.
+- Must not download workbooks, run full FreshForge generation, upload raw reports, or claim new
+  equivalence evidence by default.
+
+Local implementation evidence:
+
+- Added `fable_pyculator.validation` with compact evidence path, summary, extraction, and writer
+  helpers.
+- Added `scripts/package_fable_validation_evidence.py` for JSON/human evidence packaging from
+  restored local artifacts.
+- Added manual `.github/workflows/benchmark-evidence.yml`, which uploads only sanitized evidence
+  summaries under `tmp/validation-evidence/**`.
+- Added the Sphinx validation-evidence packaging guide and linked it from README, validation-scope,
+  generated-model artifact, docs index, and API reference pages.
+- Added focused unit, script, and workflow tests for pass/fail/incomplete/skipped evidence,
+  sanitized output writing, CLI behavior, and manual workflow artifact boundaries.
+
+Local verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 81 passed and 9 workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `scripts/check_release_artifacts.sh` passed.
+- `git diff --check` passed.
+- `.venv/bin/python scripts/package_fable_validation_evidence.py --json` passed against restored
+  local 2021 artifacts and correctly reported incomplete equivalence because explicit
+  comparable/match/mismatch counts were unavailable.
