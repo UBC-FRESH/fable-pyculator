@@ -240,10 +240,12 @@ The Sphinx guide expands this into a full workflow under
 `docs/guides/2020-notebook-workflow.rst`, with validation boundaries recorded in
 `docs/guides/validation-scope.rst`.
 
-`fable-pyculator` is pre-release. The current alpha line is `0.1.0a1`; alpha releases must not be
+`fable-pyculator` is pre-release. The current alpha line is `0.1.0a2`; alpha releases must not be
 described as stable public API compatibility, full editable scenario-definition widgets, production
 readiness, or arbitrary country-calculator support. Generated-model equivalence claims are limited
-to the exact 2020 and 2021 public FABLE-C validation evidence recorded in the docs.
+to the exact 2020 and 2021 public FABLE-C validation evidence recorded in the docs. The `0.1.0a2`
+line adds the current FABLE workflow automation surface: FreshForge planning/run examples,
+version-general build helpers, scenario bundles, and compact validation-evidence packaging.
 
 The public API is intentionally small while the FABLE-specific conventions are being discovered from
 real country calculators.

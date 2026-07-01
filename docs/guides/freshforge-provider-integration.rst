@@ -34,7 +34,7 @@ workflow planning:
 
 .. code-block:: bash
 
-   python -m pip install "freshforge @ git+https://github.com/UBC-FRESH/freshforge.git@v0.1.0a1"
+   python -m pip install "freshforge @ git+https://github.com/UBC-FRESH/freshforge.git@v0.1.0a2"
 
 Confirm that FreshForge can see the FABLE Pyculator provider before validating the example:
 
