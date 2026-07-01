@@ -44,6 +44,27 @@ class FableFreshForgeBuildPaths:
     evaluation_report_path: Path
 
 
+@dataclass(frozen=True)
+class FableFreshForgeRebuildPlan:
+    """Prepared artifacts for a FABLE Modelwright/FreshForge rebuild.
+
+    The plan records the ignored local paths and JSON payloads produced before FreshForge execution.
+    It is intentionally not an execution result: callers may inspect these files, run
+    ``freshforge plan``, or explicitly opt into a long ``freshforge run`` after review.
+    """
+
+    paths: FableFreshForgeBuildPaths
+    output_refs: tuple[str, ...]
+    validation_scenario: dict[str, Any]
+    workflow: dict[str, Any]
+
+    @property
+    def comparable_output_count(self) -> int:
+        """Return the count of nonblank cached workbook outputs in the validation scenario."""
+
+        return len(self.validation_scenario.get("outputs", ()))
+
+
 def freshforge_2021_build_paths(
     *,
     repo_root: str | Path = ".",
@@ -73,6 +94,86 @@ def freshforge_2021_build_paths(
         generated_values_path=artifact_root / "generated-values.json",
         validation_scenario_path=artifact_root / "validation-scenario.json",
         evaluation_report_path=artifact_root / "evaluation-report.json",
+    )
+
+
+def prepare_2021_freshforge_rebuild(
+    *,
+    repo_root: str | Path = ".",
+    workbook_path: str | Path = "tmp/private-workbooks/2021_Open_FABLECalculator.xlsx",
+    artifact_dir: str | Path = DEFAULT_2021_ARTIFACT_DIR,
+    workflow_filename: str = DEFAULT_2021_WORKFLOW_FILENAME,
+    column_flavour_tags: str | Sequence[str] | None = "OUTPUT-*",
+    table_names: Sequence[str] | None = None,
+    module_name: str = "generated_fable_2021_model",
+    workflow_id: str = "fable_2021_modelwright_run",
+    workflow_name: str = "FABLE 2021 Modelwright FreshForge run",
+    workflow_description: str = "FreshForge graph for rebuilding the 2021 FABLE generated model.",
+    scenario_id: str = "fable-c-2021-freshforge-rebuild",
+    scenario_description: str = "Cached-workbook validation slice derived from FABLE Pyculator output refs.",
+    numeric_tolerance: float = 1e-9,
+    spec: FableCalculatorSpec | None = None,
+) -> FableFreshForgeRebuildPlan:
+    """Prepare the default 2021 FABLE FreshForge rebuild artifacts.
+
+    This helper performs the deterministic setup work shared by notebooks and scripts:
+
+    - build or receive the 2021 notebook spec;
+    - derive output refs from FABLE output-table flavour metadata;
+    - write ``output_refs.json``;
+    - write a cached-workbook validation scenario;
+    - write the downstream Modelwright FreshForge workflow JSON.
+
+    It does not run FreshForge or Modelwright. The source workbook must already exist at the
+    configured ignored local path.
+    """
+
+    root = Path(repo_root).resolve()
+    paths = freshforge_2021_build_paths(
+        repo_root=root,
+        workbook_path=workbook_path,
+        artifact_dir=artifact_dir,
+        workflow_filename=workflow_filename,
+    )
+    if not paths.workbook_path.exists():
+        raise FileNotFoundError(f"2021 FABLE workbook not found: {paths.workbook_path}")
+
+    if spec is None:
+        from fable_pyculator.notebook import build_2021_notebook_spec
+
+        spec = build_2021_notebook_spec(paths.workbook_path)
+
+    output_refs = derive_output_refs(
+        spec,
+        column_flavour_tags=column_flavour_tags,
+        table_names=table_names,
+    )
+    write_output_refs(paths.output_refs_path, output_refs)
+    validation_scenario = build_cached_workbook_validation_scenario(
+        paths.workbook_path,
+        output_refs,
+        generated_model_path=paths.generated_model_path,
+        scenario_id=scenario_id,
+        description=scenario_description,
+        source_workbook=paths.workbook_path.relative_to(root),
+        generated_model=paths.generated_model_path.relative_to(root),
+        numeric_tolerance=numeric_tolerance,
+    )
+    write_validation_scenario(paths.validation_scenario_path, validation_scenario)
+    workflow = build_modelwright_freshforge_workflow(
+        paths,
+        workdir=root,
+        workflow_id=workflow_id,
+        name=workflow_name,
+        description=workflow_description,
+        module_name=module_name,
+    )
+    write_freshforge_workflow(paths.workflow_path, workflow)
+    return FableFreshForgeRebuildPlan(
+        paths=paths,
+        output_refs=output_refs,
+        validation_scenario=validation_scenario,
+        workflow=workflow,
     )
 
 
@@ -132,7 +233,7 @@ def build_cached_workbook_validation_scenario(
     the supplied tolerance; text, boolean, and spreadsheet error values use exact matching.
     """
 
-    cached_workbook = load_workbook(workbook_path, data_only=True, read_only=True)
+    cached_workbook = load_workbook(workbook_path, data_only=True, read_only=False)
     validation_outputs: list[dict[str, Any]] = []
     for cell_ref in output_refs:
         sheet_name, coordinate = cell_ref.split("!", maxsplit=1)

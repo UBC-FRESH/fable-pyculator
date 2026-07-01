@@ -12,6 +12,7 @@ from fable_pyculator import (
     build_modelwright_freshforge_workflow,
     derive_output_refs,
     freshforge_2021_build_paths,
+    prepare_2021_freshforge_rebuild,
     write_freshforge_workflow,
     write_output_refs,
     write_validation_scenario,
@@ -113,6 +114,32 @@ def test_workflow_and_validation_json_writers_are_stable(tmp_path: Path) -> None
     assert scenario_path.read_text(encoding="utf-8").endswith("\n")
     assert json.loads(workflow_path.read_text(encoding="utf-8")) == workflow
     assert json.loads(scenario_path.read_text(encoding="utf-8")) == scenario
+
+
+def test_prepare_2021_freshforge_rebuild_writes_plan_artifacts(tmp_path: Path) -> None:
+    workbook_path = tmp_path / "tmp" / "private-workbooks" / "2021_Open_FABLECalculator.xlsx"
+    workbook_path.parent.mkdir(parents=True)
+    workbook = Workbook()
+    ghg = workbook.active
+    ghg.title = "GHG"
+    ghg["B3"] = 42
+    ghg["D3"] = 84
+    land = workbook.create_sheet("LAND")
+    land["B3"] = 12
+    workbook.save(workbook_path)
+
+    plan = prepare_2021_freshforge_rebuild(repo_root=tmp_path, spec=_spec())
+
+    assert plan.output_refs == ("GHG!B3", "GHG!D3", "LAND!B3")
+    assert plan.comparable_output_count == 3
+    assert json.loads(plan.paths.output_refs_path.read_text(encoding="utf-8")) == [
+        "GHG!B3",
+        "GHG!D3",
+        "LAND!B3",
+    ]
+    assert plan.paths.validation_scenario_path.exists()
+    assert plan.paths.workflow_path.exists()
+    assert plan.workflow["nodes"][0]["provider"] == "modelwright.model_infer_contract"
 
 
 def _spec() -> FableCalculatorSpec:

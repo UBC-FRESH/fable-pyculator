@@ -15,6 +15,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 11 is closed: the Abdulateef-facing 2021 FreshForge-run notebook is tracked, PR #74 merged,
   and post-merge Test and Docs Pages workflows passed.
+- Phase 13 is active on `feature/p13-one-command-2021-freshforge-rebuild`: extract the 2021
+  FreshForge rebuild path into a script-style command that defaults to plan-only preparation and
+  requires an explicit run switch before invoking FreshForge.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -1035,10 +1038,72 @@ Closeout evidence:
 
 GitHub parent issue: #76.
 
-Status: planned backlog.
+Active branch: `feature/p13-one-command-2021-freshforge-rebuild`.
+
+Status: active.
 
 Goal: add a script-style one-command path for planning and optionally running the 2021 generated-model
 rebuild through FreshForge.
+
+- [x] P13.1 Define one-command rebuild boundary. Child issue: #91.
+  - Status: complete.
+  - [x] Keep the command focused on the 2021 public FABLE-C workbook path contract.
+  - [x] Default to plan-only behavior.
+  - [x] Require an explicit run switch before invoking FreshForge execution.
+  - [x] Keep source workbooks and generated artifacts under ignored `tmp/` paths.
+- [x] P13.2 Add 2021 FreshForge rebuild script. Child issue: #93.
+  - Status: complete.
+  - [x] Add `scripts/build_fable_2021_model.py`.
+  - [x] Build the 2021 notebook spec from the configured workbook path.
+  - [x] Derive output refs using Phase 12 helper APIs.
+  - [x] Write output refs, validation scenario, and Modelwright FreshForge workflow JSON.
+  - [x] Print a concise artifact summary for plan-only use.
+  - [x] Invoke FreshForge only when explicitly requested.
+- [x] P13.3 Document one-command rebuild workflow. Child issue: #92.
+  - Status: complete.
+  - [x] Add Sphinx documentation for plan-only and explicit-run usage.
+  - [x] Link the guide from relevant FreshForge/generated-model docs.
+  - [x] Update README with the plan-first command.
+  - [x] Confirm docs build warning-free.
+- [x] P13.4 Add tests and verification evidence. Child issue: #94.
+  - Status: complete.
+  - [x] Test script help, missing-workbook failure behavior, and plan-mode summary output.
+  - [x] Test package-level rebuild artifact preparation against a synthetic workbook/spec.
+  - [x] Run full Phase 13 verification.
+  - [x] Record verification evidence in roadmap, changelog, and issue comments.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator has a one-command 2021 rebuild preparation path that writes output refs,
+  cached-workbook validation scenario JSON, and a Modelwright FreshForge workflow under ignored
+  local artifacts.
+- May claim users can opt into FreshForge execution with `--run` when FreshForge and Modelwright are
+  installed in the active environment.
+- Must not claim the script changes the 2021 validation standard, supports arbitrary workbook
+  versions, or replaces the tracked compressed validated 2021 generated-model artifact.
+
+Implementation evidence:
+
+- Added `FableFreshForgeRebuildPlan` and `prepare_2021_freshforge_rebuild`.
+- Added `scripts/build_fable_2021_model.py` with plan-only default behavior, `--json`, output-ref
+  filter options, and explicit `--run` FreshForge execution.
+- Added `docs/guides/2021-freshforge-rebuild-command.rst` and linked it from the Sphinx index,
+  generated-model artifact guide, and README.
+- Optimized cached-workbook validation-scenario preparation away from `openpyxl` read-only random
+  access after a real 2021 smoke test exposed slow selected-output lookup.
+
+Verification evidence:
+
+- `.venv/bin/python scripts/build_fable_2021_model.py --json` passed against the local 2021 public
+  workbook artifact, producing 16,478 `OUTPUT-*` refs and 16,478 comparable cached outputs under
+  ignored `tmp/generated-models/fable-2021/`.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 55 tests and 9 workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `scripts/check_release_artifacts.sh` passed.
+- `git diff --check` passed.
 
 ## Phase 14: Version-General FABLE Build Workflows And Output-Ref Strategy Comparison
 

@@ -2,6 +2,28 @@
 
 This file records completed project work in chronological order.
 
+## 2026-07-01
+
+- Activated Phase 13 on `feature/p13-one-command-2021-freshforge-rebuild`, created child issues #91
+  through #94 under parent issue #76, and scoped the tranche around a plan-first one-command 2021
+  FreshForge/Modelwright rebuild path.
+- Added `prepare_2021_freshforge_rebuild` and `FableFreshForgeRebuildPlan` to consolidate the
+  notebook-local 2021 output-ref derivation, cached-workbook validation scenario writing, and
+  Modelwright FreshForge workflow construction into tested package APIs.
+- Added executable script `scripts/build_fable_2021_model.py`, which defaults to plan-only artifact
+  preparation under `tmp/generated-models/fable-2021/`, prints a concise summary, supports
+  output-table/tag filtering options, and requires `--run` before invoking FreshForge execution.
+- Switched cached-workbook validation-scenario preparation to indexed workbook access after the real
+  2021 smoke test exposed pathological random access through `openpyxl` read-only worksheets.
+- Added focused tests for the package rebuild preparation helper and script help, missing-workbook,
+  and plan-mode behavior.
+- Added Sphinx documentation for the 2021 FreshForge rebuild command and linked it from the generated
+  model artifact guide and README.
+- Verified the Phase 13 slice with the real 2021 plan-only command, which wrote 16,478 `OUTPUT-*`
+  refs and 16,478 comparable cached outputs under ignored `tmp/generated-models/fable-2021/`, plus
+  Ruff, pytest, Sphinx warning-as-error docs, Read the Docs theme verification, workbook checksum
+  verification, release-artifact checks, and `git diff --check`.
+
 ## 2026-06-25
 
 - Added FreshForge orchestration roadmap placeholders: Phase 9 for a future plan-only FABLE Pyculator
