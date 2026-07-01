@@ -29,6 +29,9 @@ This file records completed project work in chronological order.
   and `git diff --check`.
 - Merged Phase 11 PR #74, verified PR checks and post-merge Docs Pages deployment, and closed the
   Phase 11 issue set.
+- Added `planning/freshforge_modelwright_fable_deployment_targets.md` to collect next-step
+  FreshForge workflow automation targets for the narrower Modelwright + FABLE Pyculator lane within
+  the CLEWs-C2020 project context, including upstream functional caveats.
 - Bootstrapped the `fable-pyculator` package scaffold as a FABLE Calculator-specific notebook layer on
   top of Modelwright-generated Python models.
 - Added typed scenario parameter, selection control, output indicator, and output table declarations
