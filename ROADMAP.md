@@ -15,9 +15,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 11 is closed: the Abdulateef-facing 2021 FreshForge-run notebook is tracked, PR #74 merged,
   and post-merge Test and Docs Pages workflows passed.
-- Phase 13 is active on `feature/p13-one-command-2021-freshforge-rebuild`: extract the 2021
-  FreshForge rebuild path into a script-style command that defaults to plan-only preparation and
-  requires an explicit run switch before invoking FreshForge.
+- Phase 13 is closed: the one-command 2021 FreshForge rebuild path is tracked, PR #95 merged, and
+  post-merge Test and Docs Pages workflows passed.
+- Next planned FABLE Pyculator tranche is Phase 14: version-general FABLE build workflows and
+  output-ref strategy comparison.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -1040,7 +1041,7 @@ GitHub parent issue: #76.
 
 Active branch: `feature/p13-one-command-2021-freshforge-rebuild`.
 
-Status: active.
+Status: complete.
 
 Goal: add a script-style one-command path for planning and optionally running the 2021 generated-model
 rebuild through FreshForge.
@@ -1104,6 +1105,14 @@ Verification evidence:
 - `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
 - `scripts/check_release_artifacts.sh` passed.
 - `git diff --check` passed.
+
+Closeout evidence:
+
+- Phase 13 PR #95 merged to `main` with commit `7dd6371`.
+- Post-merge `Test` workflow passed on `main`, including quality, pytest, docs build, and release
+  artifact jobs.
+- Post-merge `Docs Pages` workflow passed on `main`, including Sphinx build, Read the Docs theme
+  verification, artifact upload, and GitHub Pages deployment.
 
 ## Phase 14: Version-General FABLE Build Workflows And Output-Ref Strategy Comparison
 
