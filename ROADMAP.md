@@ -9,8 +9,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 - Phase 8 is closed: the validated 2021 FABLE-C generated model is published as a compressed repo
   artifact, PR #60 merged, and post-merge Test and Docs Pages workflows passed.
-- Phase 10 is active on `feature/p10-2021-freshforge-build-notebook` to add an Abdulateef-facing
-  2021 FreshForge build-plan notebook now that Modelwright Phase 33 provider evidence exists.
+- Phase 10 is closed: the Abdulateef-facing 2021 FreshForge build-plan notebook is tracked, PR #67
+  merged, and post-merge Test and Docs Pages workflows passed.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -764,7 +764,7 @@ GitHub parent issue: #62.
 
 Active branch: `feature/p10-2021-freshforge-build-notebook`.
 
-Status: active.
+Status: complete.
 
 Goal: add a plan-only FreshForge workflow example that composes FABLE Pyculator workbook-surface
 discovery with Modelwright generated-model inference, generation, execution, and validation planning.
@@ -783,13 +783,13 @@ discovery with Modelwright generated-model inference, generation, execution, and
   - [x] Confirm no 2020 generated-model fallback is referenced.
   - [x] Preserve source workbook and raw generated artifacts under ignored `tmp` paths.
 - [ ] P10.3 Verify and close FreshForge build-plan slice. Child issue: #66.
-  - Status: active.
+  - Status: complete.
   - [x] Run Ruff, pytest, Sphinx docs, docs theme verification, checksum verification, release artifact
         checks, and `git diff --check`.
-  - [ ] Open PR from `feature/p10-2021-freshforge-build-notebook` to `main`.
-  - [ ] Merge only after CI passes.
-  - [ ] Confirm post-merge Test and Docs Pages workflows pass.
-  - [ ] Close parent #62 after deployment evidence is recorded.
+  - [x] Open PR from `feature/p10-2021-freshforge-build-notebook` to `main`.
+  - [x] Merge only after CI passes.
+  - [x] Confirm post-merge Test and Docs Pages workflows pass.
+  - [x] Close parent #62 after deployment evidence is recorded.
 
 Acceptance boundary:
 
@@ -819,3 +819,13 @@ Verification evidence:
   2021 workbook artifacts.
 - `scripts/check_release_artifacts.sh` passed.
 - `git diff --check` passed.
+
+Closeout evidence:
+
+- Phase 10 child issues #64 and #65 are closed; child issue #66 closed after PR and deployment
+  evidence.
+- Phase 10 PR #67 merged to `main` with merge commit `812ef39`.
+- Post-merge `Test` workflow passed on `main`, including quality, pytest/docs, and release-artifact
+  jobs.
+- Post-merge `Docs Pages` workflow passed on `main`, including Sphinx build, Read the Docs theme
+  artifact verification, artifact upload, and GitHub Pages deployment.
