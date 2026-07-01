@@ -21,6 +21,8 @@ This file records completed project work in chronological order.
   the Docs theme verification, workbook checksums, release artifact checks, whitespace checks, and a
   real local 2021 evidence-packaging smoke test that correctly reported incomplete equivalence when
   explicit comparison counts were unavailable.
+- Merged Phase 16 through PR #115 and confirmed post-merge Test workflow run #28539084681 plus Docs
+  Pages workflow run #28539084645 passed, including GitHub Pages deployment.
 - Activated Phase 15 on `feature/p15-scenario-bundles-result-artifacts`, created child issues
   #104, #106, #105, #107, and #108 under parent issue #78, and scoped the phase around
   selection-control scenario bundles plus rendered result artifacts under ignored `tmp/`.

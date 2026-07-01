@@ -21,9 +21,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 15 is closed: scenario-bundle automation and rendered result artifacts are tracked, PR #109
   merged, and post-merge Test and Docs Pages workflows passed.
-- Phase 16 is active on `feature/p16-validation-evidence-packaging`: package compact validation
-  evidence from restored local artifacts and add an opt-in extraction-only benchmark evidence
-  workflow.
+- Phase 16 is closed: validation evidence packaging and the opt-in benchmark evidence workflow are
+  tracked, PR #115 merged, and post-merge Test and Docs Pages workflows passed.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -1276,7 +1275,7 @@ GitHub parent issue: #79.
 
 Active branch: `feature/p16-validation-evidence-packaging`.
 
-Status: active.
+Status: complete.
 
 Goal: package compact validation evidence for FABLE generated-model runs and add an opt-in benchmark
 workflow when source workbooks are available locally.
@@ -1302,12 +1301,12 @@ workflow when source workbooks are available locally.
   - [x] Add Sphinx validation-evidence packaging guide.
   - [x] Update README, validation-scope, generated-model-artifacts, and API docs.
   - [x] Add focused unit/script/workflow tests.
-- [ ] P16.5 Verify, merge, deploy docs, and close phase. Child issue: #114.
-  - Status: active.
+- [x] P16.5 Verify, merge, deploy docs, and close phase. Child issue: #114.
+  - Status: complete.
   - [x] Run full local verification.
   - [x] Run local evidence packaging smoke test if artifacts are restored.
-  - [ ] Open and merge PR after CI passes.
-  - [ ] Confirm post-merge Test and Docs Pages workflows pass.
+  - [x] Open and merge PR after CI passes.
+  - [x] Confirm post-merge Test and Docs Pages workflows pass.
 
 Acceptance boundary:
 
@@ -1342,3 +1341,6 @@ Local verification evidence:
 - `.venv/bin/python scripts/package_fable_validation_evidence.py --json` passed against restored
   local 2021 artifacts and correctly reported incomplete equivalence because explicit
   comparable/match/mismatch counts were unavailable.
+- PR #115 merged to `main` at merge commit `675c0ae`.
+- Post-merge `Test` workflow run #28539084681 passed.
+- Post-merge `Docs Pages` workflow run #28539084645 passed and deployed.
