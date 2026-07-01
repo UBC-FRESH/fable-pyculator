@@ -176,3 +176,6 @@ This file records completed project work in chronological order.
   writers, cached-workbook validation-scenario generation, and Modelwright FreshForge workflow
   construction; updated the 2021 FreshForge notebooks and Sphinx API docs to use the new package
   helpers.
+- Closed Phase 12 after PR #84 merged to `main`, post-merge Test and Docs Pages workflows passed,
+  and live docs verification confirmed the new workflow-helper API and notebook-control guide content
+  were deployed.

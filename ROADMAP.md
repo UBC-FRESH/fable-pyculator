@@ -905,7 +905,7 @@ GitHub parent issue: #75.
 
 Active branch: `feature/p12-output-ref-workflow-builder-apis`.
 
-Status: active.
+Status: complete.
 
 Goal: extract the 2021 FreshForge notebook's output-ref derivation and workflow JSON assembly into
 tested FABLE Pyculator helper APIs.
@@ -925,12 +925,12 @@ tested FABLE Pyculator helper APIs.
   - [x] Update the 2021 run notebook to use package helpers.
   - [x] Keep `RUN_FRESHFORGE = False` and avoid 2020 fallback references.
   - [x] Document the helper APIs in Sphinx docs.
-- [ ] P12.4 Verify, PR, deploy docs, and close phase. Child issue: #83.
+- [x] P12.4 Verify, PR, deploy docs, and close phase. Child issue: #83.
   - [x] Run Ruff, pytest, Sphinx docs, docs theme verification, checksum verification, release
         artifact checks, and `git diff --check`.
-  - [ ] Open PR from `feature/p12-output-ref-workflow-builder-apis` to `main`.
-  - [ ] Merge only after CI passes.
-  - [ ] Confirm post-merge `Test` and `Docs Pages` workflows before closing parent #75.
+  - [x] Open PR from `feature/p12-output-ref-workflow-builder-apis` to `main`.
+  - [x] Merge only after CI passes.
+  - [x] Confirm post-merge `Test` and `Docs Pages` workflows before closing parent #75.
 
 Acceptance boundary:
 
@@ -959,6 +959,17 @@ Verification evidence:
 - `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
 - `scripts/check_release_artifacts.sh` passed.
 - `git diff --check` passed.
+
+Closeout evidence:
+
+- Phase 12 child issues #80, #81, #82, and #83 are closed.
+- Phase 12 PR #84 merged to `main` with merge commit `9f09c1d`.
+- Post-merge `Test` workflow passed on `main`, including quality, pytest/docs, and release-artifact
+  jobs.
+- Post-merge `Docs Pages` workflow passed on `main`, including Sphinx build, Read the Docs theme
+  artifact verification, artifact upload, and GitHub Pages deployment.
+- Live docs verification confirmed `reference/api.html` includes `fable_pyculator.workflows` and
+  `guides/notebook-control-surface.html` includes the Phase 12 helper example.
 
 ## Phase 13: One-Command 2021 FreshForge Rebuild Workflow
 
