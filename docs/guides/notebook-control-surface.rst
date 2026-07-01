@@ -146,6 +146,19 @@ The 2021 helper intentionally does not fall back to the compressed 2020 generate
 validated the tracked 2021 artifact with 281,922 comparable outputs, 281,922 matches, and 0
 mismatches. For the generated-model artifact boundary, see :doc:`generated-model-artifacts`.
 
+2021 FreshForge Build Plan
+--------------------------
+
+The FreshForge build-plan notebook shows how to rebuild a 2021 generated model from a restored source
+workbook while keeping the orchestration boundary visible:
+
+- :download:`fable-pyculator-2021-freshforge-build-plan.ipynb <../../examples/notebooks/fable-pyculator-2021-freshforge-build-plan.ipynb>`
+
+The notebook uses FABLE Pyculator to derive explicit ``OUTPUT-*`` output refs from the 2021 workbook,
+uses FreshForge to validate and plan the Modelwright workflow graph, and then shows the Modelwright
+commands that actually infer, generate, and execute the model. FreshForge planning is not execution;
+the build cell is gated behind ``RUN_BUILD = False`` by default.
+
 Current Scope
 -------------
 

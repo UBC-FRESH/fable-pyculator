@@ -7,6 +7,14 @@ This file records completed project work in chronological order.
 - Added FreshForge orchestration roadmap placeholders: Phase 9 for a future plan-only FABLE Pyculator
   provider and Phase 10 for a future cross-package FABLE Pyculator plus Modelwright workflow example,
   with GitHub parent issues #61 and #62 and planning notes under `planning/`.
+- Activated Phase 10 on `feature/p10-2021-freshforge-build-notebook`, created child issues #64
+  through #66, and added an Abdulateef-facing
+  `examples/notebooks/fable-pyculator-2021-freshforge-build-plan.ipynb` template that uses FABLE
+  Pyculator to derive 2021 output refs, FreshForge to plan the Modelwright workflow graph, and gated
+  Modelwright commands to infer, generate, and execute the 2021 model from ignored local artifacts.
+- Verified the Phase 10 notebook slice with targeted example tests, Ruff, full pytest, Sphinx
+  warning-as-error docs, Read the Docs theme verification, workbook checksum verification, release
+  artifact checks, and `git diff --check`.
 - Bootstrapped the `fable-pyculator` package scaffold as a FABLE Calculator-specific notebook layer on
   top of Modelwright-generated Python models.
 - Added typed scenario parameter, selection control, output indicator, and output table declarations
