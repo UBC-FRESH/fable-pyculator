@@ -19,6 +19,8 @@ This file records completed project work in chronological order.
   verification, workbook checksums, release artifact checks, whitespace checks, and real 2021
   plan-mode smoke tests for default output columns, headline-only refs, and the `ghg_resultsghg`
   table strategy.
+- Merged Phase 14 through PR #103 and confirmed post-merge Test workflow run #28535828270 plus Docs
+  Pages workflow run #28535828354 passed, including GitHub Pages deployment.
 - Activated Phase 13 on `feature/p13-one-command-2021-freshforge-rebuild`, created child issues #91
   through #94 under parent issue #76, and scoped the tranche around a plan-first one-command 2021
   FreshForge/Modelwright rebuild path.

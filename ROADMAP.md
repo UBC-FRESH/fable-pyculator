@@ -17,9 +17,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   and post-merge Test and Docs Pages workflows passed.
 - Phase 13 is closed: the one-command 2021 FreshForge rebuild path is tracked, PR #95 merged, and
   post-merge Test and Docs Pages workflows passed.
-- Phase 14 is active on `feature/p14-version-general-fable-build-workflows`: local implementation
-  and verification are complete; open/merge the PR and confirm post-merge Test and Docs Pages
-  workflows before closing parent issue #77.
+- Phase 14 is closed: version-general FABLE build workflow helpers and scripts are tracked, PR #103
+  merged, and post-merge Test and Docs Pages workflows passed.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -1119,9 +1118,9 @@ Closeout evidence:
 
 GitHub parent issue: #77.
 
-Active branch: `feature/p14-version-general-fable-build-workflows`.
+Active branch: merged via PR #103.
 
-Status: active.
+Status: complete.
 
 Goal: generalize FreshForge build helpers across FABLE workbook versions and support named output-ref
 strategies such as headline-only, one-table, all `OUTPUT-*` columns, and selected flavour tags.
@@ -1151,12 +1150,12 @@ strategies such as headline-only, one-table, all `OUTPUT-*` columns, and selecte
   - [x] Update README.
   - [x] Add/update script and workflow tests.
   - [x] Keep claims narrow around workflow preparation and boundary comparison.
-- [ ] P14.5 Verify, merge, deploy docs, and close phase. Child issue: #98.
-  - Status: local verification complete; PR/merge/docs deployment pending.
+- [x] P14.5 Verify, merge, deploy docs, and close phase. Child issue: #98.
+  - Status: complete.
   - [x] Run full local verification.
   - [x] Run real local smoke tests for 2021 strategy variants.
-  - [ ] Open and merge PR after CI passes.
-  - [ ] Confirm post-merge Test and Docs Pages workflows pass.
+  - [x] Open and merge PR after CI passes.
+  - [x] Confirm post-merge Test and Docs Pages workflows pass.
 
 Local implementation evidence:
 
@@ -1181,6 +1180,9 @@ Local verification evidence:
 - `git diff --check` passed.
 - Real 2021 plan-mode smoke tests passed for default `output-columns`, `headline-only`, and
   `ghg_resultsghg` table-only strategies with benign OpenPyXL warnings suppressed.
+- PR #103 merged to `main` at merge commit `e5a7576`.
+- Post-merge `Test` workflow run #28535828270 passed.
+- Post-merge `Docs Pages` workflow run #28535828354 passed and deployed.
 
 Acceptance boundary:
 
