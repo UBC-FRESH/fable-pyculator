@@ -33,7 +33,8 @@ classifiers = [
 dependencies = [
   "modelwright[notebook]>=0.1.0a6",
   "openpyxl>=3.1",
-  "pandas>=2"
+  "pandas>=2",
+  "PyYAML>=6"
 ]
 
 [project.optional-dependencies]

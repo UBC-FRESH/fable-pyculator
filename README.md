@@ -193,6 +193,19 @@ By default the loop renders every discovered output table and every curated head
 single generated-model run. Pass `output_table_names` or `headline_series_names` only when you want a
 smaller rendered subset.
 
+To repeat that loop across named selection-control scenarios, use a JSON or YAML scenario bundle:
+
+```bash
+.venv/bin/python scripts/run_fable_scenario_bundle.py \
+  --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml \
+  --dry-run \
+  --json
+```
+
+Remove `--dry-run` after the matching workbook and generated model are restored locally. Bundle
+outputs are written under ignored `tmp/scenario-runs/fable-YYYY/<bundle-id>/` paths. See
+`docs/guides/scenario-bundles.rst` for the bundle schema and artifact layout.
+
 Tracked notebook example:
 
 ```text

@@ -4,6 +4,19 @@ This file records completed project work in chronological order.
 
 ## 2026-07-01
 
+- Activated Phase 15 on `feature/p15-scenario-bundles-result-artifacts`, created child issues
+  #104, #106, #105, #107, and #108 under parent issue #78, and scoped the phase around
+  selection-control scenario bundles plus rendered result artifacts under ignored `tmp/`.
+- Added `fable_pyculator.scenarios` with JSON/YAML scenario-bundle loading, selection-control
+  validation, bundle execution through the existing notebook loop, and deterministic rendered
+  artifact writers for normalized bundle metadata, manifests, CSV frames, and optional headline
+  figures.
+- Added `scripts/run_fable_scenario_bundle.py`, public-safe JSON/YAML example bundles, and Sphinx
+  documentation for running named scenario bundles against existing generated models without
+  expanding generated-model equivalence claims.
+- Verified the Phase 15 slice with Ruff, pytest, Sphinx warning-as-error docs, Read the Docs theme
+  verification, workbook checksums, release artifact checks, whitespace checks, and a real 2021
+  scenario-bundle dry-run smoke test against the restored local workbook.
 - Activated Phase 14 on `feature/p14-version-general-fable-build-workflows`, created child issues
   #99, #101, #100, #102, and #98 under parent issue #77, and scoped the phase around
   version-general FABLE build workflows plus output-ref strategy comparison.
