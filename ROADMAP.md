@@ -11,9 +11,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   artifact, PR #60 merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 10 is closed: the Abdulateef-facing 2021 FreshForge build-plan notebook is tracked, PR #67
   merged, and post-merge Test and Docs Pages workflows passed.
-- Phase 11 is active on `feature/p11-freshforge-2021-run-notebook`: add the companion notebook that
-  uses FreshForge's serial runner and Modelwright's executable provider to rebuild the 2021 generated
-  model from source workbook artifacts.
+- Phase 11 is closed: the Abdulateef-facing 2021 FreshForge-run notebook is tracked, PR #74 merged,
+  and post-merge Test and Docs Pages workflows passed.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -544,7 +543,7 @@ GitHub parent issue: #69.
 
 Active branch: `feature/p11-freshforge-2021-run-notebook`.
 
-Status: active.
+Status: complete.
 
 Goal: add an Abdulateef-facing notebook that derives 2021 output refs with FABLE Pyculator, writes a
 FreshForge workflow, and optionally runs the Modelwright generated-model build through FreshForge's
@@ -563,10 +562,10 @@ serial local runner.
   - [x] Link the notebook from `examples/notebooks/README.md`.
   - [x] Link the notebook from the Sphinx notebook-control guide.
   - [x] Record Phase 11 evidence in roadmap and changelog.
-- [ ] P11.4 Verify, PR, deploy docs, and close phase. Child issue: #73.
+- [x] P11.4 Verify, PR, deploy docs, and close phase. Child issue: #73.
   - [x] Run full local verification.
-  - [ ] Open PR and verify CI/docs.
-  - [ ] Confirm post-merge docs deployment.
+  - [x] Open PR and verify CI/docs.
+  - [x] Confirm post-merge docs deployment.
 
 Acceptance boundary:
 
@@ -598,6 +597,12 @@ Verification evidence:
   2021 workbook artifacts.
 - `scripts/check_release_artifacts.sh` passed.
 - `git diff --check` passed.
+
+Closeout evidence:
+
+- Phase 11 PR #74 merged to `main`.
+- PR checks passed for quality, pytest/docs, and release artifacts.
+- Post-merge Docs Pages workflow passed and deployed the new notebook download.
 
 Release evidence:
 
