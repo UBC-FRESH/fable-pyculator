@@ -38,6 +38,9 @@ That archive is the only tracked generated-model exception in this repository. S
 decompressed generated models, raw generation JSON files, and validation reports still belong under
 ignored ``tmp/`` paths.
 
+To prepare or explicitly run a local 2021 rebuild from the public source workbook, see
+:doc:`2021-freshforge-rebuild-command`.
+
 Spec Discovery Versus Model Generation
 --------------------------------------
 
