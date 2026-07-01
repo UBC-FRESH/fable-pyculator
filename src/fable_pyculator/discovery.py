@@ -11,7 +11,6 @@ from collections.abc import Iterable
 from pathlib import Path
 import re
 
-from openpyxl import load_workbook
 from openpyxl.cell.cell import Cell
 from openpyxl.utils.cell import get_column_letter, range_boundaries
 from openpyxl.worksheet.worksheet import Worksheet
@@ -26,6 +25,7 @@ from fable_pyculator.spec import (
     SelectionControl,
     SelectionOption,
 )
+from fable_pyculator.workbook import load_fable_workbook
 
 
 SCENARIO_SHEET_HINTS = ("scenario", "scenarios")
@@ -56,7 +56,7 @@ def discover_scenario_parameters(
     committed spec before treating it as a stable user interface.
     """
 
-    workbook = load_workbook(workbook_path, data_only=False, read_only=True)
+    workbook = load_fable_workbook(workbook_path, data_only=False, read_only=True)
     lowered_sheet_hints = tuple(hint.casefold() for hint in sheet_hints)
     lowered_label_hints = tuple(hint.casefold() for hint in label_hints)
     parameters: list[ScenarioParameter] = []
@@ -100,7 +100,7 @@ def discover_selection_controls(
     value passed to :meth:`fable_pyculator.SelectionControl.input_mapping`.
     """
 
-    workbook = load_workbook(workbook_path, data_only=False, read_only=False)
+    workbook = load_fable_workbook(workbook_path, data_only=False, read_only=False)
     worksheet = workbook[sheet_name]
     controls: list[SelectionControl] = []
     for table_name in worksheet.tables.keys():
@@ -154,7 +154,7 @@ def discover_scenario_definition_tables(
     and later curation; they are not yet automatically exposed as editable widgets.
     """
 
-    workbook = load_workbook(workbook_path, data_only=False, read_only=False)
+    workbook = load_fable_workbook(workbook_path, data_only=False, read_only=False)
     if sheet_name not in workbook.sheetnames:
         return []
     worksheet = workbook[sheet_name]
@@ -224,7 +224,7 @@ def discover_output_tables(
     flavour metadata powers output DataFrame filtering in :func:`fable_pyculator.output_table_frame`.
     """
 
-    workbook = load_workbook(workbook_path, data_only=False, read_only=False)
+    workbook = load_fable_workbook(workbook_path, data_only=False, read_only=False)
     tables: list[OutputTable] = []
     for sheet_name in sheet_names:
         if sheet_name not in workbook.sheetnames:
@@ -279,7 +279,7 @@ def curate_default_headline_series(workbook_path: str | Path) -> list[HeadlineSe
     sheets into notebook-ready time series.
     """
 
-    workbook = load_workbook(workbook_path, data_only=False, read_only=False)
+    workbook = load_fable_workbook(workbook_path, data_only=False, read_only=False)
     descriptions = (
         _indextable_descriptions(workbook["Indextables"])
         if "Indextables" in workbook.sheetnames

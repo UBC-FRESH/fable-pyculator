@@ -23,6 +23,12 @@ Workbook Discovery
 .. automodule:: fable_pyculator.discovery
    :members:
 
+Workbook Loading
+----------------
+
+.. automodule:: fable_pyculator.workbook
+   :members:
+
 Notebook Controls
 -----------------
 

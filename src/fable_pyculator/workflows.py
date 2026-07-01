@@ -16,9 +16,8 @@ from pathlib import Path
 import re
 from typing import Any
 
-from openpyxl import load_workbook
-
 from fable_pyculator.spec import FableCalculatorSpec
+from fable_pyculator.workbook import load_fable_workbook
 
 
 DEFAULT_2021_ARTIFACT_DIR = Path("tmp/generated-models/fable-2021")
@@ -233,7 +232,7 @@ def build_cached_workbook_validation_scenario(
     the supplied tolerance; text, boolean, and spreadsheet error values use exact matching.
     """
 
-    cached_workbook = load_workbook(workbook_path, data_only=True, read_only=False)
+    cached_workbook = load_fable_workbook(workbook_path, data_only=True, read_only=False)
     validation_outputs: list[dict[str, Any]] = []
     for cell_ref in output_refs:
         sheet_name, coordinate = cell_ref.split("!", maxsplit=1)
