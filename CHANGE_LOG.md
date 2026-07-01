@@ -23,6 +23,10 @@ This file records completed project work in chronological order.
   refs and 16,478 comparable cached outputs under ignored `tmp/generated-models/fable-2021/`, plus
   Ruff, pytest, Sphinx warning-as-error docs, Read the Docs theme verification, workbook checksum
   verification, release-artifact checks, and `git diff --check`.
+- Addressed issue #96 by adding narrow suppression for known-benign `openpyxl` warnings about
+  unsupported WMF images and data-validation extension metadata during FABLE workbook loads. These
+  workbook features are not part of FABLE Pyculator's scenario, output, notebook, or rebuild
+  surfaces.
 
 ## 2026-06-25
 

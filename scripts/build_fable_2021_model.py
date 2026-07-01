@@ -146,6 +146,7 @@ def _repo_root(value: Path | None) -> Path:
 
 def _run_freshforge(workflow_path: Path, *, workdir: Path) -> dict[str, Any]:
     try:
+        from fable_pyculator.workbook import suppress_benign_openpyxl_warnings
         from freshforge.execution import run_workflow
         from freshforge.loading import load_workflow
     except ImportError as exc:
@@ -156,7 +157,8 @@ def _run_freshforge(workflow_path: Path, *, workdir: Path) -> dict[str, Any]:
     spec, diagnostics = load_workflow(workflow_path)
     if spec is None:
         return {"ok": False, "run": None, "diagnostics": [diagnostic.to_dict() for diagnostic in diagnostics]}
-    result = run_workflow(spec, diagnostics=diagnostics, workdir=workdir)
+    with suppress_benign_openpyxl_warnings():
+        result = run_workflow(spec, diagnostics=diagnostics, workdir=workdir)
     return {"ok": result.ok, "run": result.to_dict()}
 
 
