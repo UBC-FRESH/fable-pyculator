@@ -9,6 +9,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 
 - Phase 8 is closed: the validated 2021 FABLE-C generated model is published as a compressed repo
   artifact, PR #60 merged, and post-merge Test and Docs Pages workflows passed.
+- Phase 9 and Phase 10 FreshForge orchestration placeholders are created as planned backlog issues
+  #61 and #62; implementation should wait for Modelwright Phase 33 provider evidence.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -731,3 +733,48 @@ Closeout evidence:
   jobs.
 - Post-merge `Docs Pages` workflow passed on `main`, including Sphinx build, Read the Docs theme
   artifact verification, artifact upload, and GitHub Pages deployment.
+
+## Phase 9: FreshForge Provider Pilot For FABLE Notebook Workflows
+
+GitHub parent issue: #61.
+
+Status: planned backlog.
+
+Goal: add a plan-only FreshForge provider for FABLE Pyculator notebook workflow stages after the
+Modelwright FreshForge provider pilot exists. The provider should expose FABLE-specific workbook
+surface discovery and notebook-loop planning while keeping generic generated-model inference,
+generation, execution, and validation in Modelwright.
+
+- [ ] P9.1 Define FABLE Pyculator FreshForge provider boundary.
+- [ ] P9.2 Add plan-only FABLE notebook workflow node vocabulary.
+- [ ] P9.3 Add public-safe FABLE notebook workflow example.
+- [ ] P9.4 Add docs and tests for provider discovery/planning.
+- [ ] P9.5 Verify, PR, and close phase.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator exposes FABLE-specific workflow planning metadata to FreshForge.
+- Must not claim FreshForge executes FABLE notebook loops or materializes artifacts.
+- Must not move generic Modelwright conversion logic into FABLE Pyculator.
+- Must not claim additional FABLE country-calculator compatibility from this planning layer alone.
+
+## Phase 10: Cross-Package FreshForge Workflow Example
+
+GitHub parent issue: #62.
+
+Status: planned backlog.
+
+Goal: add a plan-only FreshForge workflow example that composes FABLE Pyculator workbook-surface
+discovery with Modelwright generated-model inference, generation, execution, and validation planning.
+
+- [ ] P10.1 Define cross-package workflow boundary and artifact policy.
+- [ ] P10.2 Add public-safe workflow example using both providers.
+- [ ] P10.3 Document the FABLE-to-Modelwright orchestration path.
+- [ ] P10.4 Add validation/planning smoke tests.
+- [ ] P10.5 Verify, PR, and close phase.
+
+Acceptance boundary:
+
+- May claim the cross-package graph explains the intended orchestration path.
+- Must not claim FreshForge execution, artifact materialization, or new generated-model equivalence.
+- Must keep source workbooks, raw generated models, logs, and validation reports ignored under `tmp/`.

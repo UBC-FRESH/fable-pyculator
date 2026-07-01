@@ -4,6 +4,9 @@ This file records completed project work in chronological order.
 
 ## 2026-06-25
 
+- Added FreshForge orchestration roadmap placeholders: Phase 9 for a future plan-only FABLE Pyculator
+  provider and Phase 10 for a future cross-package FABLE Pyculator plus Modelwright workflow example,
+  with GitHub parent issues #61 and #62 and planning notes under `planning/`.
 - Bootstrapped the `fable-pyculator` package scaffold as a FABLE Calculator-specific notebook layer on
   top of Modelwright-generated Python models.
 - Added typed scenario parameter, selection control, output indicator, and output table declarations
