@@ -14,7 +14,7 @@ import fnmatch
 import json
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, Literal
 
 from fable_pyculator.spec import FableCalculatorSpec
 from fable_pyculator.workbook import load_fable_workbook
@@ -22,6 +22,8 @@ from fable_pyculator.workbook import load_fable_workbook
 
 DEFAULT_2021_ARTIFACT_DIR = Path("tmp/generated-models/fable-2021")
 DEFAULT_2021_WORKFLOW_FILENAME = "freshforge-modelwright-run-workflow.json"
+DEFAULT_WORKFLOW_FILENAME = DEFAULT_2021_WORKFLOW_FILENAME
+OutputRefStrategy = Literal["output-columns", "headline-only", "table", "flavour-tags", "all-columns"]
 
 
 @dataclass(frozen=True)
@@ -77,10 +79,37 @@ def freshforge_2021_build_paths(
     from the repository root while still writing artifacts to the same ignored ``tmp/`` location.
     """
 
+    return fable_freshforge_build_paths(
+        workbook_version="2021",
+        repo_root=repo_root,
+        workbook_path=workbook_path,
+        artifact_dir=artifact_dir,
+        workflow_filename=workflow_filename,
+    )
+
+
+def fable_freshforge_build_paths(
+    *,
+    workbook_version: str,
+    repo_root: str | Path = ".",
+    workbook_path: str | Path | None = None,
+    artifact_dir: str | Path | None = None,
+    workflow_filename: str = DEFAULT_WORKFLOW_FILENAME,
+) -> FableFreshForgeBuildPaths:
+    """Return version-specific FABLE FreshForge build artifact paths by convention."""
+
+    version = _normalize_workbook_version(workbook_version)
     root = Path(repo_root)
-    artifact_root = root / artifact_dir
+    workbook = (
+        Path(workbook_path)
+        if workbook_path is not None
+        else Path(f"tmp/private-workbooks/{version}_Open_FABLECalculator.xlsx")
+    )
+    artifact = Path(artifact_dir) if artifact_dir is not None else Path(f"tmp/generated-models/fable-{version}")
+    workbook_full_path = workbook if workbook.is_absolute() else root / workbook
+    artifact_root = artifact if artifact.is_absolute() else root / artifact
     return FableFreshForgeBuildPaths(
-        workbook_path=root / workbook_path,
+        workbook_path=workbook_full_path,
         artifact_dir=artifact_root,
         output_refs_path=artifact_root / "output_refs.json",
         workflow_path=artifact_root / workflow_filename,
@@ -89,10 +118,96 @@ def freshforge_2021_build_paths(
         constants_path=artifact_root / "constants.json",
         inference_result_path=artifact_root / "inference-result.json",
         generation_result_path=artifact_root / "generation-result.json",
-        generated_model_path=artifact_root / "generated_fable_2021_model.py",
+        generated_model_path=artifact_root / f"generated_fable_{version}_model.py",
         generated_values_path=artifact_root / "generated-values.json",
         validation_scenario_path=artifact_root / "validation-scenario.json",
         evaluation_report_path=artifact_root / "evaluation-report.json",
+    )
+
+
+def prepare_freshforge_rebuild(
+    *,
+    workbook_version: str,
+    repo_root: str | Path = ".",
+    workbook_path: str | Path | None = None,
+    artifact_dir: str | Path | None = None,
+    workflow_filename: str = DEFAULT_WORKFLOW_FILENAME,
+    output_ref_strategy: OutputRefStrategy = "output-columns",
+    column_flavour_tags: str | Sequence[str] | None = "OUTPUT-*",
+    table_names: Sequence[str] | None = None,
+    module_name: str | None = None,
+    workflow_id: str | None = None,
+    workflow_name: str | None = None,
+    workflow_description: str | None = None,
+    scenario_id: str | None = None,
+    scenario_description: str = "Cached-workbook validation slice derived from FABLE Pyculator output refs.",
+    numeric_tolerance: float = 1e-9,
+    spec: FableCalculatorSpec | None = None,
+) -> FableFreshForgeRebuildPlan:
+    """Prepare version-specific FABLE FreshForge rebuild artifacts.
+
+    This helper performs the deterministic setup work shared by notebooks and scripts:
+
+    - build or receive the notebook spec;
+    - derive output refs using a named strategy;
+    - write ``output_refs.json``;
+    - write a cached-workbook validation scenario;
+    - write the downstream Modelwright FreshForge workflow JSON.
+
+    It does not run FreshForge or Modelwright. The source workbook must already exist at the
+    configured ignored local path.
+    """
+
+    version = _normalize_workbook_version(workbook_version)
+    root = Path(repo_root).resolve()
+    paths = fable_freshforge_build_paths(
+        workbook_version=version,
+        repo_root=root,
+        workbook_path=workbook_path,
+        artifact_dir=artifact_dir,
+        workflow_filename=workflow_filename,
+    )
+    if not paths.workbook_path.exists():
+        raise FileNotFoundError(f"{version} FABLE workbook not found: {paths.workbook_path}")
+
+    if spec is None:
+        from fable_pyculator.notebook import build_notebook_spec
+
+        spec = build_notebook_spec(paths.workbook_path, workbook_id=f"fable-c-{version}")
+
+    output_refs = derive_output_refs_for_strategy(
+        spec,
+        strategy=output_ref_strategy,
+        column_flavour_tags=column_flavour_tags,
+        table_names=table_names,
+    )
+    resolved_module_name = module_name or f"generated_fable_{version}_model"
+    write_output_refs(paths.output_refs_path, output_refs)
+    validation_scenario = build_cached_workbook_validation_scenario(
+        paths.workbook_path,
+        output_refs,
+        generated_model_path=paths.generated_model_path,
+        scenario_id=scenario_id or f"fable-c-{version}-freshforge-rebuild",
+        description=scenario_description,
+        source_workbook=paths.workbook_path.relative_to(root),
+        generated_model=paths.generated_model_path.relative_to(root),
+        numeric_tolerance=numeric_tolerance,
+    )
+    write_validation_scenario(paths.validation_scenario_path, validation_scenario)
+    workflow = build_modelwright_freshforge_workflow(
+        paths,
+        workdir=root,
+        workflow_id=workflow_id or f"fable_{version}_modelwright_run",
+        name=workflow_name or f"FABLE {version} Modelwright FreshForge run",
+        description=workflow_description or f"FreshForge graph for rebuilding the {version} FABLE generated model.",
+        module_name=resolved_module_name,
+    )
+    write_freshforge_workflow(paths.workflow_path, workflow)
+    return FableFreshForgeRebuildPlan(
+        paths=paths,
+        output_refs=output_refs,
+        validation_scenario=validation_scenario,
+        workflow=workflow,
     )
 
 
@@ -102,6 +217,7 @@ def prepare_2021_freshforge_rebuild(
     workbook_path: str | Path = "tmp/private-workbooks/2021_Open_FABLECalculator.xlsx",
     artifact_dir: str | Path = DEFAULT_2021_ARTIFACT_DIR,
     workflow_filename: str = DEFAULT_2021_WORKFLOW_FILENAME,
+    output_ref_strategy: OutputRefStrategy = "output-columns",
     column_flavour_tags: str | Sequence[str] | None = "OUTPUT-*",
     table_names: Sequence[str] | None = None,
     module_name: str = "generated_fable_2021_model",
@@ -113,67 +229,50 @@ def prepare_2021_freshforge_rebuild(
     numeric_tolerance: float = 1e-9,
     spec: FableCalculatorSpec | None = None,
 ) -> FableFreshForgeRebuildPlan:
-    """Prepare the default 2021 FABLE FreshForge rebuild artifacts.
+    """Prepare the default 2021 FABLE FreshForge rebuild artifacts."""
 
-    This helper performs the deterministic setup work shared by notebooks and scripts:
-
-    - build or receive the 2021 notebook spec;
-    - derive output refs from FABLE output-table flavour metadata;
-    - write ``output_refs.json``;
-    - write a cached-workbook validation scenario;
-    - write the downstream Modelwright FreshForge workflow JSON.
-
-    It does not run FreshForge or Modelwright. The source workbook must already exist at the
-    configured ignored local path.
-    """
-
-    root = Path(repo_root).resolve()
-    paths = freshforge_2021_build_paths(
-        repo_root=root,
+    return prepare_freshforge_rebuild(
+        workbook_version="2021",
+        repo_root=repo_root,
         workbook_path=workbook_path,
         artifact_dir=artifact_dir,
         workflow_filename=workflow_filename,
-    )
-    if not paths.workbook_path.exists():
-        raise FileNotFoundError(f"2021 FABLE workbook not found: {paths.workbook_path}")
-
-    if spec is None:
-        from fable_pyculator.notebook import build_2021_notebook_spec
-
-        spec = build_2021_notebook_spec(paths.workbook_path)
-
-    output_refs = derive_output_refs(
-        spec,
+        output_ref_strategy=output_ref_strategy,
         column_flavour_tags=column_flavour_tags,
         table_names=table_names,
-    )
-    write_output_refs(paths.output_refs_path, output_refs)
-    validation_scenario = build_cached_workbook_validation_scenario(
-        paths.workbook_path,
-        output_refs,
-        generated_model_path=paths.generated_model_path,
-        scenario_id=scenario_id,
-        description=scenario_description,
-        source_workbook=paths.workbook_path.relative_to(root),
-        generated_model=paths.generated_model_path.relative_to(root),
-        numeric_tolerance=numeric_tolerance,
-    )
-    write_validation_scenario(paths.validation_scenario_path, validation_scenario)
-    workflow = build_modelwright_freshforge_workflow(
-        paths,
-        workdir=root,
-        workflow_id=workflow_id,
-        name=workflow_name,
-        description=workflow_description,
         module_name=module_name,
+        workflow_id=workflow_id,
+        workflow_name=workflow_name,
+        workflow_description=workflow_description,
+        scenario_id=scenario_id,
+        scenario_description=scenario_description,
+        numeric_tolerance=numeric_tolerance,
+        spec=spec,
     )
-    write_freshforge_workflow(paths.workflow_path, workflow)
-    return FableFreshForgeRebuildPlan(
-        paths=paths,
-        output_refs=output_refs,
-        validation_scenario=validation_scenario,
-        workflow=workflow,
-    )
+
+
+def derive_output_refs_for_strategy(
+    spec: FableCalculatorSpec,
+    *,
+    strategy: OutputRefStrategy,
+    column_flavour_tags: str | Sequence[str] | None = "OUTPUT-*",
+    table_names: Sequence[str] | None = None,
+) -> tuple[str, ...]:
+    """Derive sorted output refs using a named FABLE build strategy."""
+
+    if strategy == "output-columns":
+        return derive_output_refs(spec, column_flavour_tags="OUTPUT-*", table_names=table_names)
+    if strategy == "headline-only":
+        return _headline_output_refs(spec)
+    if strategy == "table":
+        if not table_names:
+            raise ValueError("the 'table' output-ref strategy requires at least one table name")
+        return derive_output_refs(spec, column_flavour_tags=column_flavour_tags, table_names=table_names)
+    if strategy == "flavour-tags":
+        return derive_output_refs(spec, column_flavour_tags=column_flavour_tags, table_names=table_names)
+    if strategy == "all-columns":
+        return derive_output_refs(spec, column_flavour_tags=None, table_names=table_names)
+    raise ValueError(f"unknown output-ref strategy: {strategy!r}")
 
 
 def derive_output_refs(
@@ -422,3 +521,23 @@ def _cached_value_kind(value: object) -> str:
     if isinstance(value, str) and value.startswith("#"):
         return "error"
     return "text"
+
+
+def _headline_output_refs(spec: FableCalculatorSpec) -> tuple[str, ...]:
+    return tuple(
+        sorted(
+            {
+                cell_ref
+                for series in spec.headline_series
+                for point in series.points
+                for cell_ref in point.cell_refs
+            }
+        )
+    )
+
+
+def _normalize_workbook_version(workbook_version: str) -> str:
+    text = str(workbook_version).strip()
+    if not text:
+        raise ValueError("workbook_version must not be empty")
+    return text

@@ -171,14 +171,18 @@ The 2021 example notebook can materialize
 Phase 8 validated that generated model against the public 2021 workbook with 281,922 comparable
 outputs, 281,922 matches, and 0 mismatches.
 
-To rebuild the 2021 generated model from the local source workbook with the FreshForge/Modelwright
-workflow, start with plan-only preparation:
+To rebuild a generated model from a local source workbook with the FreshForge/Modelwright workflow,
+start with plan-only preparation. The generic command defaults to the public 2021 path convention:
 
 ```bash
-.venv/bin/python scripts/build_fable_2021_model.py
+.venv/bin/python scripts/build_fable_model.py
 ```
 
-Use `--run` only after reviewing the generated `tmp/generated-models/fable-2021/` workflow artifacts.
+Use `--workbook-version 2020` or `--workbook-version 2021` to choose a workbook version by
+convention, and use `--output-ref-strategy headline-only`, `--table-name ghg_resultsghg`, or
+`--column-flavour-tag OUTPUT-8` to compare smaller generated-model boundaries. The older
+`scripts/build_fable_2021_model.py` command remains a 2021 shortcut. Use `--run` only after
+reviewing the generated `tmp/generated-models/fable-YYYY/` workflow artifacts.
 
 FABLE Pyculator discovers wrapper metadata and renders notebook surfaces. It does not currently
 generate Modelwright `contract.json`, `expressions.json`, or `constants.json` files from a FABLE

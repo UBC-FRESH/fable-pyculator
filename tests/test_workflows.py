@@ -7,11 +7,16 @@ from openpyxl import Workbook
 
 from fable_pyculator import (
     FableCalculatorSpec,
+    HeadlinePoint,
+    HeadlineSeries,
     OutputTable,
     build_cached_workbook_validation_scenario,
     build_modelwright_freshforge_workflow,
     derive_output_refs,
+    derive_output_refs_for_strategy,
+    fable_freshforge_build_paths,
     freshforge_2021_build_paths,
+    prepare_freshforge_rebuild,
     prepare_2021_freshforge_rebuild,
     write_freshforge_workflow,
     write_output_refs,
@@ -28,6 +33,53 @@ def test_derive_output_refs_filters_by_wildcard_and_table_name() -> None:
         "GHG!D3",
     )
     assert derive_output_refs(spec, column_flavour_tags="DATA*") == ("GHG!C3",)
+
+
+def test_fable_freshforge_build_paths_are_version_general(tmp_path: Path) -> None:
+    paths_2020 = fable_freshforge_build_paths(workbook_version="2020", repo_root=tmp_path)
+    paths_2021 = fable_freshforge_build_paths(workbook_version="2021", repo_root=tmp_path)
+    paths_2022 = fable_freshforge_build_paths(workbook_version="2022", repo_root=tmp_path)
+
+    assert paths_2020.workbook_path == tmp_path / "tmp/private-workbooks/2020_Open_FABLECalculator.xlsx"
+    assert paths_2020.artifact_dir == tmp_path / "tmp/generated-models/fable-2020"
+    assert paths_2020.generated_model_path.name == "generated_fable_2020_model.py"
+    assert paths_2021 == freshforge_2021_build_paths(repo_root=tmp_path)
+    assert paths_2022.generated_model_path == tmp_path / "tmp/generated-models/fable-2022/generated_fable_2022_model.py"
+
+
+def test_derive_output_refs_for_named_strategies() -> None:
+    spec = _spec()
+
+    assert derive_output_refs_for_strategy(spec, strategy="output-columns") == ("GHG!B3", "GHG!D3", "LAND!B3")
+    assert derive_output_refs_for_strategy(spec, strategy="headline-only") == ("GHG!B3", "LAND!B3")
+    assert derive_output_refs_for_strategy(
+        spec,
+        strategy="table",
+        table_names=("ghg_resultsghg",),
+    ) == ("GHG!B3", "GHG!D3")
+    assert derive_output_refs_for_strategy(spec, strategy="flavour-tags", column_flavour_tags="DATA*") == ("GHG!C3",)
+    assert derive_output_refs_for_strategy(spec, strategy="all-columns", table_names=("land_resultsland",)) == (
+        "LAND!A3",
+        "LAND!B3",
+    )
+
+
+def test_derive_output_refs_for_strategy_rejects_invalid_requests() -> None:
+    spec = _spec()
+
+    try:
+        derive_output_refs_for_strategy(spec, strategy="table")
+    except ValueError as error:
+        assert "requires at least one table name" in str(error)
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected ValueError")
+
+    try:
+        derive_output_refs_for_strategy(spec, strategy="missing")  # type: ignore[arg-type]
+    except ValueError as error:
+        assert "unknown output-ref strategy" in str(error)
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected ValueError")
 
 
 def test_derive_output_refs_rejects_unknown_table_name() -> None:
@@ -142,6 +194,26 @@ def test_prepare_2021_freshforge_rebuild_writes_plan_artifacts(tmp_path: Path) -
     assert plan.workflow["nodes"][0]["provider"] == "modelwright.model_infer_contract"
 
 
+def test_prepare_freshforge_rebuild_uses_version_specific_defaults(tmp_path: Path) -> None:
+    workbook_path = tmp_path / "tmp" / "private-workbooks" / "2022_Open_FABLECalculator.xlsx"
+    workbook_path.parent.mkdir(parents=True)
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "GHG"
+    sheet["B3"] = 42
+    sheet["D3"] = 84
+    land = workbook.create_sheet("LAND")
+    land["B3"] = 12
+    workbook.save(workbook_path)
+
+    plan = prepare_freshforge_rebuild(workbook_version="2022", repo_root=tmp_path, spec=_spec())
+
+    assert plan.paths.workflow_path == tmp_path / "tmp/generated-models/fable-2022/freshforge-modelwright-run-workflow.json"
+    assert plan.paths.generated_model_path.name == "generated_fable_2022_model.py"
+    assert plan.workflow["nodes"][0]["parameters"]["module_name"] == "generated_fable_2022_model"
+    assert plan.validation_scenario["scenario_id"] == "fable-c-2022-freshforge-rebuild"
+
+
 def _spec() -> FableCalculatorSpec:
     return FableCalculatorSpec(
         output_tables=(
@@ -163,5 +235,23 @@ def _spec() -> FableCalculatorSpec:
                 column_labels=("Year", "Area"),
                 column_flavour_tags=("DIRECT", "OUTPUT-4"),
             ),
-        )
+        ),
+        headline_series=(
+            HeadlineSeries(
+                name="ghg_total_co2e",
+                label="Total GHG emissions",
+                group="GHG",
+                sheet="GHG",
+                table_name="ResultsGHG",
+                points=(HeadlinePoint(year=2030, cell_refs=("GHG!B3",)),),
+            ),
+            HeadlineSeries(
+                name="land_total_area",
+                label="Total land area",
+                group="LAND",
+                sheet="LAND",
+                table_name="ResultsLand",
+                points=(HeadlinePoint(year=2030, cell_refs=("LAND!B3",)),),
+            ),
+        ),
     )
