@@ -11,6 +11,7 @@ Modelwright-generated Python models.
    guides/artifacts
    guides/workbook-structure
    guides/notebook-control-surface
+   guides/scenario-bundles
    guides/2020-notebook-workflow
    guides/generated-model-artifacts
    guides/freshforge-provider-integration

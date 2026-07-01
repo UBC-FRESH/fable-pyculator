@@ -19,6 +19,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   post-merge Test and Docs Pages workflows passed.
 - Phase 14 is closed: version-general FABLE build workflow helpers and scripts are tracked, PR #103
   merged, and post-merge Test and Docs Pages workflows passed.
+- Phase 15 is active on `feature/p15-scenario-bundles-result-artifacts`: add a bounded
+  selection-control scenario-bundle pilot with rendered result artifacts under ignored `tmp/`.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -1197,10 +1199,70 @@ Acceptance boundary:
 
 GitHub parent issue: #78.
 
-Status: planned backlog.
+Active branch: `feature/p15-scenario-bundles-result-artifacts`.
+
+Status: active.
 
 Goal: define and pilot scenario-bundle automation for FABLE notebook workflows, including reusable
 result table and figure artifact writers.
+
+- [x] P15.1 Define scenario-bundle schema and artifact path contract. Child issue: #104.
+  - Status: complete locally.
+  - [x] Define JSON/YAML bundle schema v1.
+  - [x] Require path-safe `bundle_id` and `scenario_id`.
+  - [x] Keep execution scoped to selection-control overrides.
+  - [x] Define ignored artifact paths under `tmp/scenario-runs/fable-{version}/{bundle_id}/`.
+- [x] P15.2 Add scenario-bundle runner and rendered artifact writers. Child issue: #106.
+  - Status: complete locally.
+  - [x] Add public dataclasses/helpers in `fable_pyculator.scenarios`.
+  - [x] Validate selections against `FableCalculatorSpec`.
+  - [x] Run each scenario through existing notebook-loop helpers.
+  - [x] Write normalized bundle, manifest, CSV tables/frames, and optional PNG figures.
+- [x] P15.3 Add script interface and public-safe examples. Child issue: #105.
+  - Status: complete locally.
+  - [x] Add `scripts/run_fable_scenario_bundle.py`.
+  - [x] Add dry-run JSON summary and explicit path/render overrides.
+  - [x] Add public-safe JSON and YAML example bundles.
+- [x] P15.4 Update docs and tests. Child issue: #107.
+  - Status: complete locally.
+  - [x] Add a Sphinx scenario-bundle guide.
+  - [x] Link README, notebook-control docs, docs index, and API reference.
+  - [x] Add focused unit/script tests.
+- [ ] P15.5 Verify, merge, deploy docs, and close phase. Child issue: #108.
+  - Status: local verification complete; PR/merge/docs deployment pending.
+  - [x] Run full local verification.
+  - [ ] Open and merge PR after CI passes.
+  - [ ] Confirm post-merge Test and Docs Pages workflows pass.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator can run named scenario bundles against an already available matching
+  generated model and write rendered result artifacts.
+- Must keep bundle execution limited to existing selection-control overrides.
+- Must not claim scenario-definition table editing, FreshForge run matrices, or new generated-model
+  equivalence evidence.
+
+Local implementation evidence:
+
+- Added `fable_pyculator.scenarios` with JSON/YAML bundle loading, validation, bundle execution, and
+  result artifact writing.
+- Added `scripts/run_fable_scenario_bundle.py` with dry-run, JSON output, path overrides, and render
+  overrides.
+- Added public-safe JSON and YAML 2021 SSP demo bundles.
+- Added a Sphinx scenario-bundle guide and linked it from README, notebook-control docs, docs index,
+  and API reference.
+
+Local verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `scripts/check_release_artifacts.sh` passed.
+- `git diff --check` passed.
+- Real 2021 scenario-bundle dry-run smoke test passed for
+  `examples/scenario-bundles/fable_2021_ssp_demo.yaml`.
 
 ## Phase 16: Validation Evidence Packaging And Opt-In Benchmark Workflow
 

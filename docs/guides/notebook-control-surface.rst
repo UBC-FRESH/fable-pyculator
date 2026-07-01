@@ -146,6 +146,22 @@ The 2021 helper intentionally does not fall back to the compressed 2020 generate
 validated the tracked 2021 artifact with 281,922 comparable outputs, 281,922 matches, and 0
 mismatches. For the generated-model artifact boundary, see :doc:`generated-model-artifacts`.
 
+Scenario Bundles
+----------------
+
+For repeated runs against an existing matching generated model, use a JSON or YAML scenario bundle
+instead of copying the same notebook-loop call by hand. Bundles currently automate discovered
+``SCENARIOS selection`` controls only; they do not edit ``SCENARIOS definition`` tables.
+
+.. code-block:: bash
+
+   .venv/bin/python scripts/run_fable_scenario_bundle.py \
+     --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml \
+     --dry-run \
+     --json
+
+See :doc:`scenario-bundles` for the bundle schema, result artifact layout, and run command.
+
 2021 FreshForge Build Plan
 --------------------------
 

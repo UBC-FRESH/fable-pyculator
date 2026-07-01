@@ -47,6 +47,12 @@ Rendering And Execution
 .. automodule:: fable_pyculator.surface
    :members:
 
+Scenario Bundles
+----------------
+
+.. automodule:: fable_pyculator.scenarios
+   :members:
+
 FreshForge Workflow Helpers
 ---------------------------
 

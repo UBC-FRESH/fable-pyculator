@@ -1,0 +1,21 @@
+version: 1
+bundle_id: fable-2021-ssp-demo
+workbook_version: "2021"
+description: Public-safe demo bundle for repeated 2021 FABLE Pyculator notebook-loop runs.
+render:
+  output_table_names:
+    - ghg_resultsghg
+  output_table_column_flavour_tags: OUTPUT-*
+  include_context_columns: true
+  headline_series_names:
+    - ghg_total_co2e
+  include_figures: false
+scenarios:
+  - scenario_id: ssp1
+    label: SSP1
+    selections:
+      gdp_scen: SSP1
+  - scenario_id: ssp2
+    label: SSP2
+    selections:
+      gdp_scen: SSP2
