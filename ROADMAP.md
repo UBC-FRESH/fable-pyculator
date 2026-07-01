@@ -11,6 +11,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   artifact, PR #60 merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 10 is closed: the Abdulateef-facing 2021 FreshForge build-plan notebook is tracked, PR #67
   merged, and post-merge Test and Docs Pages workflows passed.
+- Phase 11 is active on `feature/p11-freshforge-2021-run-notebook`: add the companion notebook that
+  uses FreshForge's serial runner and Modelwright's executable provider to rebuild the 2021 generated
+  model from source workbook artifacts.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -534,6 +537,67 @@ Closeout evidence:
   jobs.
 - Post-merge `Docs Pages` workflow passed on `main`, including Sphinx build, Read the Docs theme
   artifact verification, artifact upload, and GitHub Pages deployment.
+
+## Phase 11: FreshForge-Run 2021 Model Build Notebook
+
+GitHub parent issue: #69.
+
+Active branch: `feature/p11-freshforge-2021-run-notebook`.
+
+Status: active.
+
+Goal: add an Abdulateef-facing notebook that derives 2021 output refs with FABLE Pyculator, writes a
+FreshForge workflow, and optionally runs the Modelwright generated-model build through FreshForge's
+serial local runner.
+
+- [x] P11.1 Add FreshForge-run notebook template. Child issue: #70.
+  - [x] Add `examples/notebooks/fable-pyculator-2021-freshforge-run.ipynb`.
+  - [x] Derive `OUTPUT-*` output refs from the 2021 workbook structure.
+  - [x] Write the Modelwright FreshForge workflow under ignored `tmp/generated-models/fable-2021/`.
+  - [x] Gate execution behind `RUN_FRESHFORGE = False`.
+- [x] P11.2 Add notebook static tests and artifact hygiene checks. Child issue: #71.
+  - [x] Test that the notebook is unexecuted by default.
+  - [x] Test that it uses FreshForge run APIs and only 2021 generated-model paths.
+  - [x] Test that it contains no 2020 generated-model fallback.
+- [x] P11.3 Update docs, README, roadmap, and changelog. Child issue: #72.
+  - [x] Link the notebook from `examples/notebooks/README.md`.
+  - [x] Link the notebook from the Sphinx notebook-control guide.
+  - [x] Record Phase 11 evidence in roadmap and changelog.
+- [ ] P11.4 Verify, PR, deploy docs, and close phase. Child issue: #73.
+  - [x] Run full local verification.
+  - [ ] Open PR and verify CI/docs.
+  - [ ] Confirm post-merge docs deployment.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator has a gated notebook showing how to run the 2021 Modelwright build
+  through FreshForge.
+- Must not claim a new generated-model equivalence result beyond the existing Phase 8 validation
+  evidence.
+- Must keep source workbooks, decompressed generated models, raw reports, and run artifacts under
+  ignored `tmp/` paths.
+
+Implementation evidence:
+
+- Added `examples/notebooks/fable-pyculator-2021-freshforge-run.ipynb`.
+- The notebook derives FABLE `OUTPUT-*` refs, writes `output_refs.json`, prepares cached-workbook
+  validation, writes a FreshForge workflow, validates/plans it, and gates `run_workflow(...)` behind
+  `RUN_FRESHFORGE = False`.
+- The notebook ends by loading the newly generated 2021 model, when present, and rendering FABLE
+  Pyculator output tables/headline frames.
+- Linked the notebook from examples and Sphinx docs.
+
+Verification evidence:
+
+- `.venv/bin/python -m pytest tests/test_examples.py` passed with 5 tests.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 39 tests and 9 workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed and copied the new notebook download.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for local 2019, 2020, and
+  2021 workbook artifacts.
+- `scripts/check_release_artifacts.sh` passed.
+- `git diff --check` passed.
 
 Release evidence:
 

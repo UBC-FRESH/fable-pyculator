@@ -185,12 +185,16 @@ Tracked notebook example:
 ```text
 examples/notebooks/fable-pyculator-2020-loop.ipynb
 examples/notebooks/fable-pyculator-2021-loop.ipynb
+examples/notebooks/fable-pyculator-2021-freshforge-build-plan.ipynb
+examples/notebooks/fable-pyculator-2021-freshforge-run.ipynb
 ```
 
 The 2020 notebook is intentionally committed after a successful 2020 benchmark run so GitHub can
 render the example tables and figure directly in the browser. The 2021 notebook is a runnable
 artifact-wiring template: it still requires the ignored local workbook, but it can restore the
-validated generated model from the tracked compressed 2021 archive.
+validated generated model from the tracked compressed 2021 archive. The FreshForge notebooks show
+how to rebuild that model from the source workbook: one notebook plans the graph, and the run
+companion gates the full FreshForge/Modelwright build behind `RUN_FRESHFORGE = False`.
 
 In VSCode, point the notebook kernel at the `.venv` created in the `fable-pyculator` repo root.
 The notebook setup cell prints the active environment prefix and warns if the selected kernel does

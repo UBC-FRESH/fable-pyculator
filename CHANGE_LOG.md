@@ -17,6 +17,16 @@ This file records completed project work in chronological order.
   artifact checks, and `git diff --check`.
 - Merged Phase 10 PR #67, verified post-merge Test and Docs Pages workflows, confirmed GitHub Pages
   deployment, and closed the Phase 10 issue set.
+- Activated Phase 11 on `feature/p11-freshforge-2021-run-notebook`, created parent issue #69 and
+  child issues #70 through #73, and scoped the phase around an Abdulateef-facing companion notebook
+  that runs the 2021 Modelwright build through FreshForge's serial local runner.
+- Added `examples/notebooks/fable-pyculator-2021-freshforge-run.ipynb`, which derives 2021
+  `OUTPUT-*` output refs, prepares cached-workbook validation, writes a Modelwright FreshForge
+  workflow, validates/plans it, gates `run_workflow(...)` behind `RUN_FRESHFORGE = False`, and loads
+  the newly generated 2021 model for FABLE Pyculator output inspection when present.
+- Verified Phase 11 locally with targeted example tests, Ruff, full pytest, Sphinx warning-as-error
+  docs, Read the Docs theme verification, workbook checksum verification, release-artifact checks,
+  and `git diff --check`.
 - Bootstrapped the `fable-pyculator` package scaffold as a FABLE Calculator-specific notebook layer on
   top of Modelwright-generated Python models.
 - Added typed scenario parameter, selection control, output indicator, and output table declarations

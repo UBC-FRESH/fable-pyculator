@@ -109,3 +109,33 @@ def test_fable_pyculator_2021_freshforge_build_plan_notebook_is_static_template(
     assert "FreshForge planning is not execution" in markdown_source
     assert "generated_fable_2020_model" not in code_source
     assert "run_2020_notebook_loop" not in code_source
+
+
+def test_fable_pyculator_2021_freshforge_run_notebook_is_static_template() -> None:
+    notebook_path = Path("examples/notebooks/fable-pyculator-2021-freshforge-run.ipynb")
+
+    payload = json.loads(notebook_path.read_text(encoding="utf-8"))
+    code_cells = [cell for cell in payload["cells"] if cell["cell_type"] == "code"]
+    code_source = "\n".join("".join(cell["source"]) for cell in code_cells)
+    markdown_source = "\n".join(
+        "".join(cell["source"])
+        for cell in payload["cells"]
+        if cell["cell_type"] == "markdown"
+    )
+
+    assert payload["nbformat"] == 4
+    assert payload["cells"]
+    assert all(cell.get("execution_count") is None for cell in code_cells)
+    assert not any(cell.get("outputs") for cell in code_cells)
+    assert "build_2021_notebook_spec" in code_source
+    assert "freshforge.execution" in code_source
+    assert "run_workflow" in code_source
+    assert "RUN_FRESHFORGE = False" in code_source
+    assert "output_refs.json" in code_source
+    assert "validation-scenario.json" in code_source
+    assert "evaluation-report.json" in code_source
+    assert "generated_fable_2021_model.py" in code_source
+    assert "tmp/generated-models/fable-2021" in markdown_source
+    assert "Generated model not found yet" in code_source
+    assert "generated_fable_2020_model" not in code_source
+    assert "run_2020_notebook_loop" not in code_source

@@ -159,6 +159,19 @@ uses FreshForge to validate and plan the Modelwright workflow graph, and then sh
 commands that actually infer, generate, and execute the model. FreshForge planning is not execution;
 the build cell is gated behind ``RUN_BUILD = False`` by default.
 
+2021 FreshForge Run Companion
+-----------------------------
+
+The FreshForge run companion notebook uses the same FABLE-specific output-ref derivation, then runs
+the supported Modelwright generated-model stages through FreshForge's serial local runner:
+
+- :download:`fable-pyculator-2021-freshforge-run.ipynb <../../examples/notebooks/fable-pyculator-2021-freshforge-run.ipynb>`
+
+The run remains gated behind ``RUN_FRESHFORGE = False`` because the full 2021 build can take several
+minutes. When enabled, the notebook writes the workflow under ``tmp/generated-models/fable-2021/``,
+calls ``freshforge.execution.run_workflow(...)``, and then loads the newly materialized
+``generated_fable_2021_model.py`` into FABLE Pyculator for output-table inspection.
+
 Current Scope
 -------------
 

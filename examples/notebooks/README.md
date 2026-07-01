@@ -11,3 +11,6 @@ here. Put local working artifacts under `tmp/`.
 - `fable-pyculator-2021-freshforge-build-plan.ipynb`: plan-first workflow showing how FABLE
   Pyculator, FreshForge, and Modelwright fit together when rebuilding the 2021 generated model from
   the source workbook.
+- `fable-pyculator-2021-freshforge-run.ipynb`: run-oriented companion notebook that derives 2021
+  output refs, writes the FreshForge workflow, and gates the full Modelwright build behind
+  `RUN_FRESHFORGE = False`.
