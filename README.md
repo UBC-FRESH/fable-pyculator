@@ -206,6 +206,16 @@ Remove `--dry-run` after the matching workbook and generated model are restored 
 outputs are written under ignored `tmp/scenario-runs/fable-YYYY/<bundle-id>/` paths. See
 `docs/guides/scenario-bundles.rst` for the bundle schema and artifact layout.
 
+To package compact validation evidence from existing local generated-model artifacts, use:
+
+```bash
+.venv/bin/python scripts/package_fable_validation_evidence.py --json
+```
+
+This writes sanitized summaries under `tmp/validation-evidence/fable-YYYY/`. Missing local artifacts
+produce a skipped summary by default; use `--require-artifacts` when absence should fail. See
+`docs/guides/validation-evidence-packaging.rst` for the evidence status and claim boundary.
+
 Tracked notebook example:
 
 ```text

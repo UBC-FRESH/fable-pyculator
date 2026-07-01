@@ -62,6 +62,13 @@ from fable_pyculator.surface import (
     scenario_definition_tables_for_location,
     scenario_frame,
 )
+from fable_pyculator.validation import (
+    ValidationEvidencePaths,
+    ValidationEvidenceSummary,
+    extract_validation_evidence,
+    fable_validation_evidence_paths,
+    write_validation_evidence,
+)
 from fable_pyculator.workflows import (
     DEFAULT_2021_ARTIFACT_DIR,
     DEFAULT_2021_WORKFLOW_FILENAME,
@@ -110,6 +117,8 @@ __all__ = [
     "ScenarioRun",
     "SelectionControl",
     "SelectionOption",
+    "ValidationEvidencePaths",
+    "ValidationEvidenceSummary",
     "__version__",
     "build_2021_notebook_spec",
     "build_2020_notebook_spec",
@@ -121,10 +130,12 @@ __all__ = [
     "discover_scenario_definition_tables",
     "discover_scenario_parameters",
     "discover_selection_controls",
+    "extract_validation_evidence",
     "derive_output_refs",
     "derive_output_refs_for_strategy",
     "fable_freshforge_build_paths",
     "fable_scenario_bundle_artifact_paths",
+    "fable_validation_evidence_paths",
     "freshforge_2021_build_paths",
     "headline_frame",
     "headline_frames",
@@ -150,5 +161,6 @@ __all__ = [
     "write_output_refs",
     "write_scenario_bundle_artifacts",
     "write_validation_scenario",
+    "write_validation_evidence",
     "validate_scenario_bundle",
 ]

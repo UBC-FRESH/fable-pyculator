@@ -39,6 +39,18 @@ Workbook-backed checks are opt-in because they require ignored local workbook ar
      tests/test_fable_workbook_selection_controls.py \
      tests/test_fable_workbook_headline_series.py
 
+Compact Evidence Packaging
+--------------------------
+
+Phase 16 adds compact evidence packaging for already restored generated-model artifacts under
+``tmp/generated-models/``. Packaging writes sanitized JSON and Markdown summaries under
+``tmp/validation-evidence/`` and never copies raw generated source, raw generated values, source
+workbooks, or full raw reports. See :doc:`validation-evidence-packaging`.
+
+These summaries are conservative: they report ``pass`` only when explicit comparable-output, match,
+and mismatch counts prove zero mismatches. Current-style execution artifacts without those counts are
+reported as incomplete evidence.
+
 Modelwright 2020 Benchmark Evidence
 -----------------------------------
 
