@@ -15,6 +15,8 @@ This file records completed project work in chronological order.
 - Verified the Phase 10 notebook slice with targeted example tests, Ruff, full pytest, Sphinx
   warning-as-error docs, Read the Docs theme verification, workbook checksum verification, release
   artifact checks, and `git diff --check`.
+- Merged Phase 10 PR #67, verified post-merge Test and Docs Pages workflows, confirmed GitHub Pages
+  deployment, and closed the Phase 10 issue set.
 - Bootstrapped the `fable-pyculator` package scaffold as a FABLE Calculator-specific notebook layer on
   top of Modelwright-generated Python models.
 - Added typed scenario parameter, selection control, output indicator, and output table declarations
