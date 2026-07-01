@@ -18,6 +18,11 @@ This file records completed project work in chronological order.
   sdist records, smoke-tested a clean PyPI install that imported `fable_pyculator 0.1.0a2` with
   `modelwright 0.1.0a7`, created the GitHub prerelease, and recorded post-merge Test plus Docs Pages
   workflow success for PR #121.
+- Created planned backlog parent issues #122, #123, and #124 for post-alpha output-ref strategy
+  comparison workflows, FreshForge-backed scenario-bundle orchestration, and opt-in benchmark
+  workflow upgrades; updated the roadmap and deployment-target planning note to align these phases
+  with FreshForge Phase 7/8 and Modelwright Phase 35/36 dependencies while deferring child issues
+  until each phase is activated.
 - Activated Phase 16 on `feature/p16-validation-evidence-packaging`, created child issues #112,
   #110, #111, #113, and #114 under parent issue #79, and scoped the phase around compact validation
   evidence summaries from restored local artifacts plus an extraction-only opt-in benchmark workflow.

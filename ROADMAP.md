@@ -25,6 +25,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   tracked, PR #115 merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 17 is closed: `v0.1.0a2` is published to PyPI and GitHub as the FABLE workflow automation
   alpha, PR #121 merged, and post-merge Test and Docs Pages workflows passed.
+- Phases 18, 19, and 20 are planned backlog phases for post-alpha automation: output-ref strategy
+  comparison workflows, FreshForge-backed scenario-bundle orchestration, and opt-in benchmark
+  workflow upgrades. Child issues will be created only when each phase is activated.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1424,3 +1427,72 @@ Local verification evidence:
 - Clean PyPI install of `fable-pyculator[notebook]==0.1.0a2` imported `fable_pyculator 0.1.0a2`
   with `modelwright 0.1.0a7`.
 - GitHub prerelease published at `https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a2`.
+
+## Phase 18: Output-Ref Strategy Comparison Workflows
+
+GitHub parent issue: #122.
+
+Status: planned backlog.
+
+Goal: compare FABLE output-ref strategies as explicit generated-model workflow boundaries before
+choosing validation or modelling targets.
+
+Child issues: create only when this phase is activated.
+
+Dependencies:
+
+- FreshForge Phase 7 for run namespaces and workflow-run summaries.
+- Modelwright Phase 35 for generated-model stage summaries and provider diagnostics.
+
+Acceptance boundary:
+
+- May compare `output-columns`, `headline-only`, `table`, `flavour-tags`, and `all-columns`
+  strategies with compact counts, artifacts, diagnostics, and validation-boundary summaries.
+- Must not claim new generated-model equivalence from strategy comparison alone.
+
+## Phase 19: FreshForge-Backed Scenario-Bundle Orchestration
+
+GitHub parent issue: #123.
+
+Status: planned backlog.
+
+Goal: upgrade existing FABLE Pyculator scenario bundles so repeated bundle runs can be orchestrated
+and summarized cleanly through FreshForge.
+
+Child issues: create only when this phase is activated.
+
+Dependencies:
+
+- FreshForge Phase 7 for run namespaces and summaries.
+- FreshForge Phase 8 if the implementation needs generic matrix expansion.
+- Modelwright Phase 35 summaries if bundle workflows include generated-model rebuild stages.
+
+Acceptance boundary:
+
+- May orchestrate and summarize repeated selection-control scenario-bundle runs.
+- Must keep FABLE scenario semantics in FABLE Pyculator.
+- Must not add scenario-definition table editing, remote execution, or production scheduling.
+
+## Phase 20: Opt-In Benchmark Workflow Upgrade
+
+GitHub parent issue: #124.
+
+Status: planned backlog.
+
+Goal: upgrade the existing manual benchmark evidence workflow from extraction-only summaries toward
+repeatable benchmark execution when restored public workbook artifacts are available.
+
+Child issues: create only when this phase is activated.
+
+Dependencies:
+
+- Modelwright Phase 36 for compact generated-model validation evidence extraction.
+- FreshForge Phase 7 run summaries and, optionally, FreshForge Phase 8 matrices.
+- FABLE Pyculator Phase 18/19 if benchmark workflows compare strategies or scenario bundles.
+
+Acceptance boundary:
+
+- May run manual/opt-in benchmark workflows and upload sanitized summary evidence.
+- Must not run by default on every PR.
+- Must not upload source workbooks, raw generated models, raw validation reports, or unsupported
+  equivalence claims.

@@ -1,10 +1,10 @@
-# FreshForge Deployment Targets For Modelwright + FABLE Pyculator
+# Post-v0.1.0a2 FreshForge Deployment Targets For Modelwright + FABLE Pyculator
 
 Date: 2026-07-01
 
-Purpose: collect plausible next-step FreshForge workflow automation targets for the narrower
-Modelwright + FABLE Pyculator lane inside the CLEWs-C2020 project context. These are planning inputs,
-not current capability claims.
+Purpose: track the remaining FreshForge workflow automation targets for the narrower Modelwright +
+FABLE Pyculator lane inside the CLEWs-C2020 project context after the `v0.1.0a2` FABLE workflow
+automation alpha. These are planning inputs, not current capability claims.
 
 Related planning:
 
@@ -31,55 +31,24 @@ The current FABLE Pyculator notebooks demonstrate two cross-package workflows:
 - `fable-pyculator-2021-freshforge-run.ipynb`: derive output refs, write a workflow graph, and gate
   a FreshForge-run Modelwright build behind `RUN_FRESHFORGE = False`.
 
-## Candidate Deployment Targets
+## Completed Since This Note Was First Drafted
 
-### 1. One-Command 2021 Model Rebuild
+The `v0.1.0a2` alpha line completed several original deployment targets:
 
-Goal: make the notebook workflow available as a repeatable script or CLI command that rebuilds the
-2021 generated model from the public workbook into ignored local artifacts.
+- one-command 2021 model rebuild preparation;
+- version-general FABLE build workflow helpers and scripts;
+- named output-ref strategies;
+- selection-control scenario bundles with rendered result artifacts;
+- compact FABLE-side validation evidence packaging;
+- opt-in extraction-only benchmark evidence workflow.
 
-Potential workflow:
+The remaining work is less about extracting notebook-local helper code and more about making repeated
+runs comparable, namespaced, and compactly summarized across FreshForge, Modelwright, and FABLE
+Pyculator.
 
-1. Confirm the 2021 workbook checksum.
-2. Derive `OUTPUT-*` refs with FABLE Pyculator.
-3. Write `output_refs.json`.
-4. Write the FreshForge Modelwright workflow.
-5. Run FreshForge.
-6. Summarize generated-model, generated-values, and validation-report artifacts.
+## Remaining Candidate Deployment Targets
 
-Upstream caveats:
-
-- FABLE Pyculator needs a public helper for output-ref derivation instead of notebook-local
-  comprehension code.
-- The generated workflow writer should become a small tested API rather than notebook-only JSON
-  assembly.
-- Modelwright/FreshForge should expose stable enough run-result JSON for a script to summarize
-  failures cleanly.
-- The command must keep source workbooks, generated `.py`, and raw reports under ignored `tmp/`.
-
-### 2. Version-General FABLE Build Workflow
-
-Goal: support `year=2020`, `year=2021`, and future public FABLE workbook versions with one
-version-specific workflow builder.
-
-Potential workflow:
-
-1. Select workbook version and expected local paths.
-2. Build a workbook-derived FABLE spec.
-3. Derive output refs using an explicit strategy, such as all `OUTPUT-*`, one output sheet, one table,
-   or curated headline refs.
-4. Build and run the Modelwright FreshForge workflow.
-5. Validate and record a version-specific summary.
-
-Upstream caveats:
-
-- FABLE Pyculator needs a durable artifact path registry for workbook version, generated-model path,
-  module name, workbook ID, and validation-output strategy.
-- FABLE Pyculator should expose output-ref strategies as named options rather than ad hoc code.
-- Validation claims must stay version-specific and tied to comparable-output counts.
-- New workbook versions may change output-table names, column tags, or scenario surfaces.
-
-### 3. Output-Ref Strategy Comparison
+### 1. Output-Ref Strategy Comparison
 
 Goal: compare different generated-model boundaries before choosing a production validation target.
 
@@ -99,17 +68,21 @@ Potential workflow:
    comparable-output count, and mismatches.
 4. Pick the smallest boundary that answers the modelling question.
 
+Roadmap phase: FABLE Pyculator Phase 18, parent issue #122.
+
 Upstream caveats:
 
-- FABLE Pyculator needs reusable output-ref derivation helpers with provenance metadata.
-- Modelwright run summaries should expose compact counts without requiring users to open large raw
-  JSON reports.
-- FreshForge may need clearer run namespace support so multiple strategies do not overwrite each
+- FreshForge Phase 7 should provide run namespaces so multiple strategies do not overwrite each
   other under `tmp/`.
+- Modelwright Phase 35 should expose compact stage summaries so users do not need to open large raw
+  JSON reports.
+- Strategy comparison must not create new equivalence claims unless validation evidence supports
+  them.
 
-### 4. Scenario Bundle Automation
+### 2. FreshForge-Backed Scenario Bundle Orchestration
 
-Goal: automate repeated FABLE Pyculator runs for named scenario bundles once a generated model exists.
+Goal: upgrade existing FABLE Pyculator scenario bundles so repeated bundle runs can be orchestrated
+and summarized cleanly through FreshForge once a generated model exists.
 
 Potential workflow:
 
@@ -119,17 +92,16 @@ Potential workflow:
 4. Save selected output tables/headline frames.
 5. Render comparison tables/figures.
 
+Roadmap phase: FABLE Pyculator Phase 19, parent issue #123.
+
 Upstream caveats:
 
-- FABLE Pyculator needs a durable scenario-bundle schema for selection-control overrides.
-- Scenario definition table inputs are currently inspectable, but not yet a full editable/validated
-  parameter surface.
-- FABLE Pyculator should define output artifact formats for rendered DataFrames/figures before
-  automating report output.
-- FreshForge needs either FABLE Pyculator executable provider nodes or a small workflow script that
-  calls FABLE Pyculator APIs.
+- FreshForge Phase 7 should provide run namespaces/summaries.
+- FreshForge Phase 8 may provide generic matrix expansion if bundle orchestration needs grid
+  expansion rather than simple repeated runs.
+- Scenario definition table inputs remain out of scope until a later FABLE-specific editing phase.
 
-### 5. Build-And-Run Notebook Smoke Test
+### 3. Build-And-Run Notebook Smoke Test
 
 Goal: provide a lightweight smoke workflow for onboarding users without asking them to run the full
 multi-minute generated-model build immediately.
@@ -148,10 +120,10 @@ Upstream caveats:
 - If the smoke output uses cached values, the documentation must explain cached-workbook validation
   boundaries.
 
-### 6. Validation Evidence Packaging
+### 4. Validation Evidence Packaging
 
-Goal: produce compact, shareable validation evidence from a FreshForge run without tracking raw
-generated models or full reports.
+Goal: shift generic compact validation evidence extraction toward Modelwright while preserving
+FABLE-specific publication/rendering guidance in FABLE Pyculator.
 
 Potential workflow:
 
@@ -160,14 +132,15 @@ Potential workflow:
 3. Write a compact validation summary Markdown/JSON artifact.
 4. Optionally update a planning note or docs page after maintainer review.
 
+Roadmap phases: Modelwright Phase 36, parent issue #221; FABLE Pyculator Phase 20, parent issue #124.
+
 Upstream caveats:
 
-- Need a small summary extractor in FABLE Pyculator or Modelwright.
-- Must preserve private/raw artifact hygiene.
-- Must avoid claiming equivalence unless comparable-output counts, match counts, mismatch counts, and
-  validation boundaries are recorded.
+- Modelwright should own generic generated-model validation evidence extraction.
+- FABLE Pyculator should consume that evidence for FABLE-facing summaries and benchmark workflows.
+- Both packages must preserve private/raw artifact hygiene.
 
-### 7. GitHub Actions Opt-In Benchmark Workflow
+### 5. GitHub Actions Opt-In Benchmark Workflow
 
 Goal: make benchmark runs repeatable in CI-like environments when public workbook artifacts are
 available.
@@ -179,6 +152,8 @@ Potential workflow:
 3. Run FABLE Pyculator output rendering smoke checks.
 4. Upload sanitized summary artifacts.
 
+Roadmap phase: FABLE Pyculator Phase 20, parent issue #124.
+
 Upstream caveats:
 
 - Full FABLE generation and validation may be too slow or memory-heavy for default CI.
@@ -186,31 +161,30 @@ Upstream caveats:
 - Workbook download/checksum materialization must be robust before CI use.
 - Generated raw artifacts must not be uploaded unless explicitly approved.
 
-## Likely Implementation Order
+## Coordinated Implementation Order
 
-1. Extract notebook-local output-ref derivation into tested FABLE Pyculator helper APIs.
-2. Extract notebook-local FreshForge workflow JSON assembly into a tested helper.
-3. Add a small CLI or script for the 2021 rebuild workflow.
-4. Add strategy comparison support for output-ref boundaries.
-5. Add scenario-bundle automation once scenario selection and scenario definition input surfaces are
-   clearer.
-6. Add compact validation-summary extraction before any CI benchmark automation.
+1. FreshForge Phase 7: run namespaces and workflow-run summaries.
+2. Modelwright Phase 35: generated-model workflow summaries and provider diagnostics.
+3. Modelwright Phase 36: compact validation evidence extraction.
+4. FABLE Pyculator Phase 18: output-ref strategy comparison workflows.
+5. FreshForge Phase 8: run matrices and scenario-grid workflow expansion.
+6. FABLE Pyculator Phase 19: FreshForge-backed scenario-bundle orchestration.
+7. FABLE Pyculator Phase 20: opt-in benchmark workflow upgrade.
 
 ## Functional Expansion Watchlist
 
 FABLE Pyculator:
 
-- Public output-ref derivation helpers.
-- Version-specific artifact path registry.
-- Scenario-bundle schema and validation.
+- Output-ref strategy comparison records and examples.
+- FreshForge-backed scenario-bundle orchestration.
 - Editable scenario-definition parameter surface.
-- Result artifact writers for tables, figures, and summaries.
-- Compact validation-summary extraction.
+- Benchmark workflow upgrade using sanitized compact evidence.
 
 Modelwright:
 
 - Stable generated-model workflow summaries.
 - Better compact failure diagnostics for inference/generation/evaluation.
+- Generic compact validation evidence extraction.
 - Continued performance/memory guardrails for full FABLE-scale runs.
 - Public API stability for the payload helpers currently mirrored by CLI behavior.
 
