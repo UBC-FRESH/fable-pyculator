@@ -17,8 +17,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   and post-merge Test and Docs Pages workflows passed.
 - Phase 13 is closed: the one-command 2021 FreshForge rebuild path is tracked, PR #95 merged, and
   post-merge Test and Docs Pages workflows passed.
-- Next planned FABLE Pyculator tranche is Phase 14: version-general FABLE build workflows and
-  output-ref strategy comparison.
+- Phase 14 is active on `feature/p14-version-general-fable-build-workflows`: local implementation
+  and verification are complete; open/merge the PR and confirm post-merge Test and Docs Pages
+  workflows before closing parent issue #77.
 - `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
   version.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -1118,10 +1119,77 @@ Closeout evidence:
 
 GitHub parent issue: #77.
 
-Status: planned backlog.
+Active branch: `feature/p14-version-general-fable-build-workflows`.
+
+Status: active.
 
 Goal: generalize FreshForge build helpers across FABLE workbook versions and support named output-ref
 strategies such as headline-only, one-table, all `OUTPUT-*` columns, and selected flavour tags.
+
+- [ ] P14.1 Define version-general build path contract. Child issue: #99.
+- [x] P14.1 Define version-general build path contract. Child issue: #99.
+  - Status: complete locally.
+  - [x] Add a generic path builder for FABLE workbook versions.
+  - [x] Preserve the 2021 compatibility wrapper.
+  - [x] Keep generated artifacts under ignored `tmp/` paths.
+  - [x] Record version/path assumptions in docs and issue evidence.
+- [x] P14.2 Add named output-ref strategies. Child issue: #101.
+  - Status: complete locally.
+  - [x] Add `output-columns`, `headline-only`, `table`, `flavour-tags`, and `all-columns`.
+  - [x] Preserve lower-level `derive_output_refs` behavior.
+  - [x] Reject unknown strategies clearly.
+  - [x] Add focused unit tests.
+- [x] P14.3 Generalize rebuild preparation and script interface. Child issue: #100.
+  - Status: complete locally.
+  - [x] Add generic `prepare_freshforge_rebuild`.
+  - [x] Preserve `prepare_2021_freshforge_rebuild` compatibility.
+  - [x] Add `scripts/build_fable_model.py`.
+  - [x] Keep `scripts/build_fable_2021_model.py` as a 2021 shortcut.
+- [x] P14.4 Update docs, examples, and tests. Child issue: #102.
+  - Status: complete locally.
+  - [x] Update Sphinx docs with version-general paths and strategy examples.
+  - [x] Update README.
+  - [x] Add/update script and workflow tests.
+  - [x] Keep claims narrow around workflow preparation and boundary comparison.
+- [ ] P14.5 Verify, merge, deploy docs, and close phase. Child issue: #98.
+  - Status: local verification complete; PR/merge/docs deployment pending.
+  - [x] Run full local verification.
+  - [x] Run real local smoke tests for 2021 strategy variants.
+  - [ ] Open and merge PR after CI passes.
+  - [ ] Confirm post-merge Test and Docs Pages workflows pass.
+
+Local implementation evidence:
+
+- Added `fable_freshforge_build_paths`, `prepare_freshforge_rebuild`, and
+  `derive_output_refs_for_strategy` as version-general workflow helpers.
+- Kept `freshforge_2021_build_paths`, `prepare_2021_freshforge_rebuild`, and
+  `scripts/build_fable_2021_model.py` as compatibility shortcuts.
+- Added `scripts/build_fable_model.py` with plan-first defaults, `--workbook-version`,
+  `--output-ref-strategy`, `--table-name`, `--column-flavour-tag`, `--all-columns`, `--json`,
+  and explicit `--run` execution.
+- Updated README and Sphinx docs for version-general path conventions, named output-ref strategies,
+  and 2021 examples.
+
+Local verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `scripts/check_release_artifacts.sh` passed.
+- `git diff --check` passed.
+- Real 2021 plan-mode smoke tests passed for default `output-columns`, `headline-only`, and
+  `ghg_resultsghg` table-only strategies with benign OpenPyXL warnings suppressed.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator can prepare version-aware FreshForge/Modelwright rebuild artifacts by
+  workbook-version convention.
+- May claim output-ref boundaries can be derived through named strategies for comparison and
+  workflow preparation.
+- Must not claim new generated-model equivalence, new country-calculator support, or scenario-bundle
+  automation in this phase.
 
 ## Phase 15: Scenario-Bundle Automation And Rendered Result Artifacts
 

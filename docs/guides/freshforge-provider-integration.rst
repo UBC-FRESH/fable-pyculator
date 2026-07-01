@@ -74,8 +74,10 @@ The provider id is ``fable_pyculator``. Phase 9 exposes these plan-only node typ
 
 The node vocabulary maps to the public workflow helper APIs documented in
 :mod:`fable_pyculator.workflows`, including ``derive_output_refs``,
-``build_cached_workbook_validation_scenario``, ``freshforge_2021_build_paths``, and
-``build_modelwright_freshforge_workflow``.
+``derive_output_refs_for_strategy``, ``fable_freshforge_build_paths``,
+``build_cached_workbook_validation_scenario``, ``prepare_freshforge_rebuild``, and
+``build_modelwright_freshforge_workflow``. The 2021-specific helper names remain available as
+compatibility shortcuts for existing notebooks and scripts.
 
 Example
 -------

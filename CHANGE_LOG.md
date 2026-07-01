@@ -4,6 +4,21 @@ This file records completed project work in chronological order.
 
 ## 2026-07-01
 
+- Activated Phase 14 on `feature/p14-version-general-fable-build-workflows`, created child issues
+  #99, #101, #100, #102, and #98 under parent issue #77, and scoped the phase around
+  version-general FABLE build workflows plus output-ref strategy comparison.
+- Added version-general FreshForge build helpers, including `fable_freshforge_build_paths`,
+  `prepare_freshforge_rebuild`, and named output-ref strategies for output columns, headline-only
+  slices, named tables, explicit flavour tags, and all columns, while preserving the 2021
+  compatibility wrappers.
+- Added `scripts/build_fable_model.py` as the version-general plan-first rebuild command and kept
+  `scripts/build_fable_2021_model.py` as a 2021 shortcut.
+- Updated README and Sphinx docs to describe version conventions, strategy choices, and 2021
+  examples without expanding generated-model equivalence claims.
+- Verified Phase 14 locally with Ruff, pytest, Sphinx warning-as-error docs, Read the Docs theme
+  verification, workbook checksums, release artifact checks, whitespace checks, and real 2021
+  plan-mode smoke tests for default output columns, headline-only refs, and the `ghg_resultsghg`
+  table strategy.
 - Activated Phase 13 on `feature/p13-one-command-2021-freshforge-rebuild`, created child issues #91
   through #94 under parent issue #76, and scoped the tranche around a plan-first one-command 2021
   FreshForge/Modelwright rebuild path.

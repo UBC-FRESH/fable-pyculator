@@ -201,9 +201,10 @@ minutes. When enabled, the notebook writes the workflow under ``tmp/generated-mo
 calls ``freshforge.execution.run_workflow(...)``, and then loads the newly materialized
 ``generated_fable_2021_model.py`` into FABLE Pyculator for output-table inspection.
 
-Phase 12 keeps the notebooks as the teaching surface while moving the reusable output-ref and
-workflow construction logic into tested package APIs. The next planned phase will add a
-one-command 2021 rebuild script on top of these helpers.
+Phase 12 kept the notebooks as the teaching surface while moving reusable output-ref and workflow
+construction logic into tested package APIs. Phase 13 added the one-command 2021 rebuild path, and
+Phase 14 generalized that command around workbook-version conventions and named output-ref
+strategies.
 
 Current Scope
 -------------
