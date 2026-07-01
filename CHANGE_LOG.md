@@ -4,6 +4,16 @@ This file records completed project work in chronological order.
 
 ## 2026-07-01
 
+- Activated Phase 17 on `feature/p17-v0.1.0a2-release`, created parent issue #116 and child issues
+  #120, #118, #119, and #117, and scoped the phase around publishing the FABLE workflow automation
+  alpha after the FreshForge `v0.1.0a2` and Modelwright `v0.1.0a7` dependency releases.
+- Started the `v0.1.0a2` release candidate by bumping package/import/provider versions, raising the
+  Modelwright dependency floor to `modelwright[notebook]>=0.1.0a7`, and updating release docs,
+  README alpha language, FreshForge installation guidance, tests, and release-artifact checks.
+- Verified the `v0.1.0a2` release candidate with Ruff, pytest, Sphinx warning-as-error docs, Read
+  the Docs theme verification, public workbook checksums, release artifact checks with a clean wheel
+  install, validation-evidence packaging smoke test, and import/API smoke tests confirming the
+  FABLE Pyculator and Modelwright release-train versions.
 - Activated Phase 16 on `feature/p16-validation-evidence-packaging`, created child issues #112,
   #110, #111, #113, and #114 under parent issue #79, and scoped the phase around compact validation
   evidence summaries from restored local artifacts plus an extraction-only opt-in benchmark workflow.

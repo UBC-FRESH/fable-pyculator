@@ -23,8 +23,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 16 is closed: validation evidence packaging and the opt-in benchmark evidence workflow are
   tracked, PR #115 merged, and post-merge Test and Docs Pages workflows passed.
-- `v0.1.0a1` has been published to TestPyPI and PyPI; future release work should target a new
-  version.
+- Phase 17 is active: prepare and publish `v0.1.0a2` as the FABLE workflow automation alpha in the
+  coordinated FreshForge, Modelwright, and FABLE Pyculator release train.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1344,3 +1344,72 @@ Local verification evidence:
 - PR #115 merged to `main` at merge commit `675c0ae`.
 - Post-merge `Test` workflow run #28539084681 passed.
 - Post-merge `Docs Pages` workflow run #28539084645 passed and deployed.
+
+## Phase 17: v0.1.0a2 FABLE Workflow Automation Alpha Release
+
+GitHub parent issue: #116.
+
+Active branch: `feature/p17-v0.1.0a2-release`.
+
+Status: active.
+
+Goal: publish `fable-pyculator==0.1.0a2` as the FABLE workflow automation alpha in the coordinated
+FreshForge -> Modelwright -> FABLE Pyculator release train.
+
+- [ ] P17.1 Bump version and dependency metadata. Child issue: #120.
+  - Status: complete locally.
+  - [x] Bump package version and import version to `0.1.0a2`.
+  - [x] Bump FABLE Pyculator FreshForge provider metadata to `0.1.0a2`.
+  - [x] Raise the Modelwright dependency floor to `modelwright[notebook]>=0.1.0a7`.
+  - [x] Update version assertions and release artifact checks.
+- [ ] P17.2 Update release docs and alpha boundary. Child issue: #118.
+  - Status: complete locally.
+  - [x] Update the release deployment guide for `v0.1.0a2`.
+  - [x] Update README alpha-line language and automation scope.
+  - [x] Update FreshForge installation guidance to use `v0.1.0a2`.
+  - [x] Record local verification and release evidence after checks pass.
+- [ ] P17.3 Verify release candidate and smoke tests. Child issue: #119.
+  - Status: complete locally.
+  - [x] Run full local verification.
+  - [ ] Open and merge the release PR after CI passes.
+  - [ ] Confirm post-merge Test and Docs Pages workflows pass.
+- [ ] P17.4 Publish PyPI/GitHub release and close phase. Child issue: #117.
+  - Status: pending.
+  - [ ] Push annotated `v0.1.0a2` tag.
+  - [ ] Confirm PyPI publication.
+  - [ ] Verify clean install from PyPI.
+  - [ ] Create GitHub prerelease.
+  - [ ] Close child issues and parent issue after evidence is recorded.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator publishes the current FABLE-C notebook wrapper, validated 2021 compressed
+  generated-model artifact, FreshForge provider/workflow helpers, version-general build workflow
+  scripts, scenario-bundle automation, and compact validation-evidence packaging as an alpha.
+- Must keep generated-model equivalence claims limited to recorded 2020/2021 public FABLE-C
+  validation evidence.
+- Must not claim stable public API compatibility, production workflow orchestration, arbitrary
+  country-calculator support, or full scenario-definition editing.
+
+Local implementation evidence:
+
+- Bumped package metadata, import version, and FABLE Pyculator FreshForge provider metadata to
+  `0.1.0a2`.
+- Raised the dependency floor to `modelwright[notebook]>=0.1.0a7`.
+- Updated README, release deployment docs, FreshForge provider install guidance, tests, release
+  artifact checks, and changelog language for the FABLE workflow automation alpha.
+
+Local verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 81 passed and 9 workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `scripts/check_release_artifacts.sh` passed, including clean wheel install of
+  `fable-pyculator 0.1.0a2` with `modelwright 0.1.0a7`.
+- `git diff --check` passed.
+- `.venv/bin/python scripts/package_fable_validation_evidence.py --json` passed and reported
+  conservative incomplete equivalence from restored local artifacts.
+- Import/API smoke test confirmed `fable_pyculator 0.1.0a2`, `modelwright 0.1.0a7`,
+  version-specific validation-evidence paths, and version-specific FreshForge build paths.

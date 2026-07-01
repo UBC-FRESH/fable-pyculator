@@ -41,7 +41,7 @@ def test_provider_metadata_serializes_deterministically() -> None:
 
     assert metadata.to_dict() == {
         "id": "fable_pyculator",
-        "version": "0.1.0a1",
+        "version": "0.1.0a2",
         "node_types": [
             {
                 "id": "notebook_spec_discover",
