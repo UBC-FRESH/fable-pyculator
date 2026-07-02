@@ -125,7 +125,7 @@ from __future__ import annotations
 
 import fable_pyculator
 
-assert fable_pyculator.__version__ == "0.1.0a3", fable_pyculator.__version__
+assert fable_pyculator.__version__ == "0.1.0a4", fable_pyculator.__version__
 assert "build_notebook_spec" in fable_pyculator.__all__
 assert "build_2021_notebook_spec" in fable_pyculator.__all__
 assert "run_2020_notebook_loop" in fable_pyculator.__all__

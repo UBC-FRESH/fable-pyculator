@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fable-pyculator"
-version = "0.1.0a3"
+version = "0.1.0a4"
 description = "FABLE Calculator-specific notebook controls for Modelwright-generated Python models."
 readme = "README.md"
 requires-python = ">=3.10"

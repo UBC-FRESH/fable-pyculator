@@ -37,6 +37,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   post-merge Test and Docs Pages workflows passed.
 - Phase 23 is closed: FreshForge matrix scenario-bundle runs are tracked, PR #162 merged, and
   post-merge Test and Docs Pages workflows passed.
+- Phase 24 is active on `feature/p24-v0.1.0a4-release`: publish the matrix workflow automation
+  alpha after FreshForge `v0.1.0a4`.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1827,3 +1829,57 @@ Closeout evidence:
 - PR #162 merged to `main` with squash commit `9ea77e6`.
 - Post-merge Test workflow passed: run `28562394428`.
 - Post-merge Docs Pages workflow passed and deployed: run `28562394444`.
+
+## Phase 24: v0.1.0a4 Matrix Workflow Automation Alpha Release
+
+GitHub parent issue: #163.
+
+Release branch: `feature/p24-v0.1.0a4-release`.
+
+Status: active.
+
+Goal: publish `fable-pyculator==0.1.0a4` to GitHub and PyPI as the matrix workflow automation
+alpha after FreshForge `v0.1.0a4`.
+
+- [x] P24.1 Bump version and dependency guidance. Child issue: #164.
+  - [x] Bump package and import metadata to `0.1.0a4`.
+  - [x] Bump FABLE Pyculator FreshForge provider metadata to `0.1.0a4`.
+  - [x] Update FreshForge installation guidance to `v0.1.0a4`.
+  - [x] Update version assertions and release artifact checks.
+- [x] P24.2 Update release docs, README, roadmap, and changelog. Child issue: #165.
+  - [x] Update README alpha language for strategy and scenario-bundle matrices.
+  - [x] Update the release deployment guide for the `v0.1.0a4` alpha boundary.
+  - [x] Record Phase 24 in the roadmap and changelog.
+- [ ] P24.3 Verify artifacts, tag, publish PyPI/GitHub release. Child issue: #166.
+  - [x] Run local quality, tests, docs, workbook checksum, and release artifact checks.
+  - [ ] Create annotated tag `v0.1.0a4`.
+  - [ ] Verify the release workflow publishes `fable-pyculator==0.1.0a4` to PyPI.
+  - [ ] Create GitHub prerelease with checked artifacts attached.
+  - [ ] Run a clean PyPI install smoke test.
+- [ ] P24.4 PR, docs deploy, and close phase. Child issue: #167.
+  - [ ] Open and merge release PR after CI passes.
+  - [ ] Confirm post-merge Test and Docs Pages workflows.
+  - [ ] Update roadmap and changelog closeout evidence.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator has a PyPI/GitHub alpha release for output-ref strategy matrices and
+  scenario-bundle matrices.
+- May point users to FreshForge `v0.1.0a4` for optional matrix planning/running.
+- Must keep FreshForge optional rather than a required runtime dependency.
+- Must not claim stable API, production readiness, arbitrary country-calculator support,
+  scenario-definition table editing, remote execution, or new generated-model equivalence.
+
+Local verification:
+
+- `.venv/bin/python -m pip install -e .[dev,notebook,docs]` refreshed editable metadata for
+  `fable-pyculator 0.1.0a4` with published `modelwright 0.1.0a8`.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 121 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for restored public workbook
+  artifacts.
+- `scripts/check_release_artifacts.sh` passed; the clean wheel install imported
+  `fable_pyculator 0.1.0a4` against published `modelwright 0.1.0a8`.
+- `git diff --check` passed.
