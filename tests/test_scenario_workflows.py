@@ -3,6 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
+pytest.importorskip("freshforge")
+
 from freshforge.providers import ProviderRegistry
 from freshforge.validation import validate_workflow_document
 
