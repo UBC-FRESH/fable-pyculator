@@ -29,8 +29,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   post-merge Test and Docs Pages workflows passed.
 - Phase 19 is closed: FreshForge-backed scenario-bundle orchestration is tracked, PR #136 merged,
   and post-merge Test and Docs Pages workflows passed.
-- Phase 20 is active on `feature/p20-opt-in-benchmark-workflow-upgrade` under parent issue #124,
-  adding opt-in benchmark evidence orchestration while keeping uploads compact and sanitized.
+- Phase 20 is closed: opt-in benchmark evidence orchestration is tracked, PR #142 merged, and
+  post-merge Test and Docs Pages workflows passed.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1572,7 +1572,7 @@ GitHub parent issue: #124.
 
 Active branch: `feature/p20-opt-in-benchmark-workflow-upgrade`.
 
-Status: implementation complete; PR closeout in progress.
+Status: complete.
 
 Goal: upgrade the existing manual benchmark evidence workflow from extraction-only summaries toward
 repeatable benchmark execution when restored public workbook artifacts are available.
@@ -1581,7 +1581,11 @@ repeatable benchmark execution when restored public workbook artifacts are avail
 - [x] P20.2 Add benchmark orchestration script and evidence backend selection. Child issue: #138.
 - [x] P20.3 Upgrade manual GitHub Actions workflow. Child issue: #139.
 - [x] P20.4 Update docs and tests. Child issue: #140.
-- [ ] P20.5 Verify, PR, deploy docs, and close phase. Child issue: #141.
+- [x] P20.5 Verify, PR, deploy docs, and close phase. Child issue: #141.
+  - [x] Open PR #142 from `feature/p20-opt-in-benchmark-workflow-upgrade` to `main`.
+  - [x] Merge PR #142 to `main`.
+  - [x] Confirm post-merge Test workflow run #28558959744 passed.
+  - [x] Confirm post-merge Docs Pages workflow run #28558959735 passed and deployed.
 
 Dependencies:
 
@@ -1628,3 +1632,5 @@ Local verification:
 - Real local smoke passed with `.venv/bin/python scripts/run_fable_benchmark_evidence.py --json`,
   selecting the `modelwright` evidence backend and reporting incomplete equivalence when explicit
   comparison counts were unavailable.
+- Merged Phase 20 through PR #142 and confirmed post-merge Test workflow run #28558959744 plus
+  Docs Pages workflow run #28558959735 passed, including GitHub Pages deployment.

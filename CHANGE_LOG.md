@@ -18,6 +18,8 @@ This file records completed project work in chronological order.
 - Added Sphinx documentation and tests for the opt-in benchmark evidence workflow, including
   conservative missing-artifact behavior, backend fallback, no raw-artifact uploads, and no
   equivalence claims without explicit comparison counts.
+- Merged Phase 20 through PR #142 and confirmed post-merge Test workflow run #28558959744 plus Docs
+  Pages workflow run #28558959735 passed, including GitHub Pages deployment.
 - Activated Phase 19 on `feature/p19-freshforge-scenario-bundle-orchestration`, created child
   issues #131, #132, #133, #134, and #135 under parent issue #123, and scoped the phase around
   FreshForge-backed scenario-bundle orchestration while preserving the direct bundle runner.
