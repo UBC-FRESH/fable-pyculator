@@ -37,8 +37,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   post-merge Test and Docs Pages workflows passed.
 - Phase 23 is closed: FreshForge matrix scenario-bundle runs are tracked, PR #162 merged, and
   post-merge Test and Docs Pages workflows passed.
-- Phase 24 is active on `feature/p24-v0.1.0a4-release`: publish the matrix workflow automation
-  alpha after FreshForge `v0.1.0a4`.
+- Phase 24 is closed: `v0.1.0a4` is published to PyPI and GitHub as the matrix workflow automation
+  alpha, PR #168 merged, and post-merge Test and Docs Pages workflows passed.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1836,7 +1836,8 @@ GitHub parent issue: #163.
 
 Release branch: `feature/p24-v0.1.0a4-release`.
 
-Status: active.
+Status: complete after PR #168, tag `v0.1.0a4`, PyPI publication, GitHub prerelease, and clean
+PyPI install smoke testing.
 
 Goal: publish `fable-pyculator==0.1.0a4` to GitHub and PyPI as the matrix workflow automation
 alpha after FreshForge `v0.1.0a4`.
@@ -1850,16 +1851,16 @@ alpha after FreshForge `v0.1.0a4`.
   - [x] Update README alpha language for strategy and scenario-bundle matrices.
   - [x] Update the release deployment guide for the `v0.1.0a4` alpha boundary.
   - [x] Record Phase 24 in the roadmap and changelog.
-- [ ] P24.3 Verify artifacts, tag, publish PyPI/GitHub release. Child issue: #166.
+- [x] P24.3 Verify artifacts, tag, publish PyPI/GitHub release. Child issue: #166.
   - [x] Run local quality, tests, docs, workbook checksum, and release artifact checks.
-  - [ ] Create annotated tag `v0.1.0a4`.
-  - [ ] Verify the release workflow publishes `fable-pyculator==0.1.0a4` to PyPI.
-  - [ ] Create GitHub prerelease with checked artifacts attached.
-  - [ ] Run a clean PyPI install smoke test.
-- [ ] P24.4 PR, docs deploy, and close phase. Child issue: #167.
-  - [ ] Open and merge release PR after CI passes.
-  - [ ] Confirm post-merge Test and Docs Pages workflows.
-  - [ ] Update roadmap and changelog closeout evidence.
+  - [x] Create annotated tag `v0.1.0a4`.
+  - [x] Verify the release workflow publishes `fable-pyculator==0.1.0a4` to PyPI.
+  - [x] Create GitHub prerelease with checked artifacts attached.
+  - [x] Run a clean PyPI install smoke test.
+- [x] P24.4 PR, docs deploy, and close phase. Child issue: #167.
+  - [x] Open and merge release PR after CI passes.
+  - [x] Confirm post-merge Test and Docs Pages workflows.
+  - [x] Update roadmap and changelog closeout evidence.
 
 Acceptance boundary:
 
@@ -1883,3 +1884,16 @@ Local verification:
 - `scripts/check_release_artifacts.sh` passed; the clean wheel install imported
   `fable_pyculator 0.1.0a4` against published `modelwright 0.1.0a8`.
 - `git diff --check` passed.
+
+Closeout evidence:
+
+- Phase 24 PR #168 merged to `main` at `238165b`.
+- Post-merge Test workflow passed: run `28562906226`.
+- Post-merge Docs Pages workflow passed and deployed: run `28562906254`.
+- Annotated tag `v0.1.0a4` was pushed.
+- Release workflow run #28562950207 built artifacts and published `fable-pyculator==0.1.0a4` to
+  PyPI.
+- Downloaded workflow-built artifacts passed `twine check`.
+- GitHub prerelease `v0.1.0a4` was created with the workflow-built wheel and sdist.
+- Clean PyPI install of `fable-pyculator[notebook]==0.1.0a4` imported
+  `fable_pyculator 0.1.0a4` with `modelwright 0.1.0a8` and smoke-tested the matrix helper exports.

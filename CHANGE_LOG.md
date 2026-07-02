@@ -373,3 +373,9 @@ This file records completed project work in chronological order.
 - Verified the `v0.1.0a4` release candidate with Ruff, full pytest (`121` passed and `9` skipped
   workbook tests), Sphinx warning-as-error docs, Read the Docs theme verification, public workbook
   checksums, release-artifact checks against published `modelwright 0.1.0a8`, and `git diff --check`.
+- Released `fable-pyculator==0.1.0a4` after PR #168 merged to `main`, post-merge Test workflow
+  #28562906226 and Docs Pages workflow #28562906254 passed, tag `v0.1.0a4` triggered Release
+  workflow #28562950207, and trusted publishing uploaded the wheel and sdist to PyPI.
+- Created the GitHub prerelease for `v0.1.0a4` with the workflow-built artifacts, verified PyPI
+  propagation, and smoke-tested a clean PyPI install of `fable-pyculator[notebook]==0.1.0a4`
+  importing `fable_pyculator 0.1.0a4` with `modelwright 0.1.0a8`.
