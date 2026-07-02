@@ -130,3 +130,11 @@ The script can override bundle render settings for quick slices:
 
 Use ``--workbook-version``, ``--workbook-path``, ``--generated-model-path``, and ``--output-dir``
 when working with non-default local artifact paths.
+
+FreshForge Orchestration
+------------------------
+
+Use :doc:`scenario-bundle-freshforge-orchestration` when the same bundle should be represented as a
+FreshForge graph with one node per scenario, namespace-isolated artifacts, and a compact run summary.
+The direct runner remains the default path; FreshForge execution is explicit through
+``--freshforge-plan`` or ``--freshforge-run``.

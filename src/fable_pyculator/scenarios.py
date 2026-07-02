@@ -193,41 +193,13 @@ def write_scenario_bundle_artifacts(
     scenarios: list[dict[str, Any]] = []
     for scenario in run_result.bundle.scenarios:
         result = run_result.scenario_results[scenario.scenario_id]
-        scenario_root = paths.scenario_dir(scenario.scenario_id)
-        inputs_path = scenario_root / "scenario_inputs.csv"
-        inputs_path.parent.mkdir(parents=True, exist_ok=True)
-        scenario_frame(result.run).to_csv(inputs_path, index=False)
-        output_table_paths = _write_frames(
-            result.output_tables,
-            scenario_root / "output_tables",
-        )
-        headline_frame_paths = _write_frames(
-            result.headline_frames,
-            scenario_root / "headline_frames",
-        )
-        figure_paths = _write_figures(
-            result.headline_figures,
-            scenario_root / "headline_figures",
-        )
         scenarios.append(
-            {
-                "scenario_id": scenario.scenario_id,
-                "label": scenario.label,
-                "description": scenario.description,
-                "scenario_inputs": _relative_to(inputs_path, paths.output_dir),
-                "output_tables": {
-                    name: _relative_to(path, paths.output_dir)
-                    for name, path in sorted(output_table_paths.items())
-                },
-                "headline_frames": {
-                    name: _relative_to(path, paths.output_dir)
-                    for name, path in sorted(headline_frame_paths.items())
-                },
-                "headline_figures": {
-                    name: _relative_to(path, paths.output_dir)
-                    for name, path in sorted(figure_paths.items())
-                },
-            }
+            write_scenario_artifacts(
+                result,
+                scenario,
+                scenario_dir=paths.scenario_dir(scenario.scenario_id),
+                output_dir=paths.output_dir,
+            )
         )
 
     manifest = {
@@ -240,6 +212,52 @@ def write_scenario_bundle_artifacts(
     }
     _write_json(paths.manifest_path, manifest)
     return manifest
+
+
+def write_scenario_artifacts(
+    result: NotebookLoopResult,
+    scenario: ScenarioCase,
+    *,
+    scenario_dir: str | Path,
+    output_dir: str | Path,
+) -> dict[str, Any]:
+    """Write rendered artifacts for one scenario and return a manifest entry."""
+
+    scenario_root = Path(scenario_dir)
+    output_root = Path(output_dir)
+    inputs_path = scenario_root / "scenario_inputs.csv"
+    inputs_path.parent.mkdir(parents=True, exist_ok=True)
+    scenario_frame(result.run).to_csv(inputs_path, index=False)
+    output_table_paths = _write_frames(
+        result.output_tables,
+        scenario_root / "output_tables",
+    )
+    headline_frame_paths = _write_frames(
+        result.headline_frames,
+        scenario_root / "headline_frames",
+    )
+    figure_paths = _write_figures(
+        result.headline_figures,
+        scenario_root / "headline_figures",
+    )
+    return {
+        "scenario_id": scenario.scenario_id,
+        "label": scenario.label,
+        "description": scenario.description,
+        "scenario_inputs": _relative_to(inputs_path, output_root),
+        "output_tables": {
+            name: _relative_to(path, output_root)
+            for name, path in sorted(output_table_paths.items())
+        },
+        "headline_frames": {
+            name: _relative_to(path, output_root)
+            for name, path in sorted(headline_frame_paths.items())
+        },
+        "headline_figures": {
+            name: _relative_to(path, output_root)
+            for name, path in sorted(figure_paths.items())
+        },
+    }
 
 
 def _scenario_bundle_from_mapping(data: Mapping[str, Any]) -> ScenarioBundle:

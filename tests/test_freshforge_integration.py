@@ -88,11 +88,51 @@ def test_provider_metadata_serializes_deterministically() -> None:
                 "name": "Plan notebook loop",
                 "description": "Declare a notebook loop around a matching workbook spec and generated model.",
             },
+            {
+                "id": "scenario_bundle_prepare",
+                "inputs": [],
+                "outputs": ["bundle"],
+                "parameters": ["bundle_path", "workbook_path", "workbook_id"],
+                "artifacts": ["normalized_bundle", "prepare_summary"],
+                "name": "Prepare scenario bundle",
+                "description": "Validate a scenario bundle and write normalized bundle metadata.",
+            },
+            {
+                "id": "scenario_run",
+                "inputs": ["bundle"],
+                "outputs": ["scenario_result"],
+                "parameters": [
+                    "bundle_path",
+                    "workbook_path",
+                    "workbook_id",
+                    "generated_model_path",
+                    "module_name",
+                    "scenario_id",
+                ],
+                "artifacts": [
+                    "scenario_summary",
+                    "scenario_inputs",
+                    "output_tables",
+                    "headline_frames",
+                    "headline_figures",
+                ],
+                "name": "Run scenario bundle case",
+                "description": "Run one scenario bundle case against a matching generated model.",
+            },
+            {
+                "id": "scenario_bundle_manifest",
+                "inputs": [],
+                "outputs": ["manifest"],
+                "parameters": ["bundle_path"],
+                "artifacts": ["manifest"],
+                "name": "Write scenario bundle manifest",
+                "description": "Assemble a scenario-bundle manifest from completed scenario run nodes.",
+            },
         ],
         "name": "FABLE Pyculator notebook workflow provider",
         "description": (
-            "Plan-only provider for FABLE workbook surface discovery, output-ref derivation, "
-            "and notebook workflow orchestration around Modelwright-generated models."
+            "Provider for FABLE workbook surface discovery, output-ref derivation, "
+            "scenario-bundle orchestration, and notebook workflows around Modelwright-generated models."
         ),
     }
 

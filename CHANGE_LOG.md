@@ -4,6 +4,17 @@ This file records completed project work in chronological order.
 
 ## 2026-07-01
 
+- Activated Phase 19 on `feature/p19-freshforge-scenario-bundle-orchestration`, created child
+  issues #131, #132, #133, #134, and #135 under parent issue #123, and scoped the phase around
+  FreshForge-backed scenario-bundle orchestration while preserving the direct bundle runner.
+- Added FreshForge-backed scenario-bundle workflow helpers, executable FABLE Pyculator provider
+  nodes, explicit scenario-bundle script plan/run modes, a public-safe 2021 SSP demo workflow
+  example, and Sphinx documentation for namespace-isolated scenario-bundle orchestration.
+- Verified the Phase 19 implementation with Ruff, full pytest (`96` passed and `9` skipped workbook
+  tests), Sphinx warning-as-error docs, Read the Docs theme verification, workbook checksums, release
+  artifact checks against published `modelwright 0.1.0a7`, `git diff --check`, FreshForge
+  validate/plan checks for the public-safe scenario-bundle workflow, and a real local 2021
+  `--freshforge-plan` smoke run.
 - Activated Phase 18 on `feature/p18-output-ref-strategy-comparison-workflows`, created child
   issues #127, #126, #128, #125, and #129 under parent issue #122, and scoped the phase around
   comparing FABLE output-ref strategy boundaries without making new generated-model equivalence
