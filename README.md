@@ -258,6 +258,17 @@ and the run is intentional. The manual GitHub workflow uploads only compact summ
 `tmp/validation-evidence/**`; it does not upload private workbooks, generated models, raw reports, or
 raw generated values. See `docs/guides/benchmark-evidence-workflow.rst`.
 
+To package compact evidence from an explicit FreshForge output-ref strategy matrix run, use:
+
+```bash
+.venv/bin/python scripts/package_fable_matrix_evidence.py --workbook-version 2021 --json
+```
+
+That command expects a matrix run summary such as
+`tmp/strategy-comparisons/fable-2021/matrix-run-summary.json` and writes sanitized matrix summaries
+under `tmp/validation-evidence/fable-2021/matrix/`. See
+`docs/guides/fable-2021-benchmark-matrix-evidence-cookbook.rst`.
+
 Tracked notebook example:
 
 ```text

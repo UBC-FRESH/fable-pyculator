@@ -42,6 +42,8 @@ To prepare or explicitly run a local 2021 rebuild from the public source workboo
 :doc:`2021-freshforge-rebuild-command`.
 To compare output-ref boundaries before choosing a rebuild target, see
 :doc:`output-ref-strategy-comparison`.
+To package compact evidence across an explicit output-ref strategy matrix run, see
+:doc:`fable-2021-benchmark-matrix-evidence-cookbook`.
 
 Spec Discovery Versus Model Generation
 --------------------------------------

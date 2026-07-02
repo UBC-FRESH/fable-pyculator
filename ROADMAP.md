@@ -39,8 +39,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   post-merge Test and Docs Pages workflows passed.
 - Phase 24 is closed: `v0.1.0a4` is published to PyPI and GitHub as the matrix workflow automation
   alpha, PR #168 merged, and post-merge Test and Docs Pages workflows passed.
-- Phase 25 is planned under parent issue #171: FABLE should consume Modelwright Phase 38 matrix
-  evidence aggregation in a 2021 benchmark matrix evidence cookbook/workflow.
+- Phase 25 is active on `feature/p25-fable-benchmark-matrix-evidence-cookbook`: FABLE consumes
+  Modelwright Phase 38 matrix evidence aggregation in a 2021 benchmark matrix evidence
+  cookbook/workflow.
 - Phase 26 is planned under parent issue #172: FABLE should add an editable scenario-definition
   parameter surface after matrix evidence workflows are documented.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -1906,12 +1907,20 @@ Closeout evidence:
 
 GitHub parent issue: #171.
 
-Status: planned. Child issues will be created when this phase is activated.
+Status: active on `feature/p25-fable-benchmark-matrix-evidence-cookbook`.
 
 Goal: consume Modelwright Phase 38 matrix evidence aggregation to document and package a FABLE-facing
 2021 benchmark matrix workflow.
 
 Planned scope:
+
+- [x] P25.1 Define FABLE benchmark matrix evidence path contract. Child issue: #174.
+- [x] P25.2 Add matrix evidence packaging helpers. Child issue: #175.
+- [x] P25.3 Add script/workflow cookbook commands. Child issue: #176.
+- [x] P25.4 Update docs, examples, and tests. Child issue: #177.
+- [ ] P25.5 Verify, PR, deploy docs, and close phase. Child issue: #178.
+
+Scope:
 
 - Document compare-only, matrix-plan, and explicit matrix-run workflows for 2021 FABLE output-ref
   strategy cases.
@@ -1924,6 +1933,16 @@ Out of scope:
 - New generated-model equivalence claims without evidence.
 - FreshForge core feature work.
 - Remote execution, caching, retries, or production scheduling.
+
+Implementation evidence:
+
+- Added FABLE-facing benchmark matrix evidence records and helpers that delegate generic matrix
+  aggregation to Modelwright Phase 38.
+- Added `scripts/package_fable_matrix_evidence.py` for compact matrix evidence packaging.
+- Added the 2021 benchmark matrix evidence cookbook and linked it from adjacent docs.
+- Local verification passed with Ruff, full pytest (`130` passed, `9` skipped workbook tests),
+  warning-clean Sphinx docs, Read the Docs theme verification, public workbook checksums, release
+  artifact checks, and `git diff --check`.
 
 ## Phase 26: Editable Scenario-Definition Parameter Surface
 

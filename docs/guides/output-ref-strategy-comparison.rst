@@ -104,6 +104,10 @@ workbook artifacts:
 FreshForge remains optional. Matrix document creation does not require FreshForge, but planning and
 running require a FreshForge version with matrix support.
 
+After an explicit matrix run, package compact generated-model evidence with
+``scripts/package_fable_matrix_evidence.py``. The full 2021 sequence is documented in
+:doc:`fable-2021-benchmark-matrix-evidence-cookbook`.
+
 FreshForge Namespaces
 ---------------------
 
