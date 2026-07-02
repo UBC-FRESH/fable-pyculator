@@ -66,6 +66,79 @@ def test_build_fable_2021_model_script_remains_shortcut() -> None:
     assert "--workbook-version" in result.stdout
 
 
+def test_run_fable_benchmark_evidence_script_help_documents_modes() -> None:
+    script = Path("scripts/run_fable_benchmark_evidence.py")
+
+    result = subprocess.run(
+        [str(script), "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert os.access(script, os.X_OK)
+    assert "--mode" in result.stdout
+    assert "freshforge-plan" in result.stdout
+    assert "--output-ref-strategy" in result.stdout
+
+
+def test_run_fable_benchmark_evidence_script_default_json_skips_missing_artifacts(tmp_path: Path) -> None:
+    script = Path("scripts/run_fable_benchmark_evidence.py")
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(tmp_path), "--json"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["mode"] == "evidence-only"
+    assert payload["evidence_status"] == "skipped"
+    assert payload["equivalence_status"] == "incomplete"
+    assert payload["benchmark_summary_json"] == "tmp/validation-evidence/fable-2021/benchmark-summary.json"
+
+
+def test_run_fable_benchmark_evidence_script_requires_artifacts(tmp_path: Path) -> None:
+    script = Path("scripts/run_fable_benchmark_evidence.py")
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(tmp_path), "--require-artifacts", "--json"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stderr)
+    assert payload["ok"] is False
+    assert "missing validation" in payload["error"]
+
+
+def test_run_fable_benchmark_evidence_script_freshforge_plan_skips_missing_workbook(tmp_path: Path) -> None:
+    script = Path("scripts/run_fable_benchmark_evidence.py")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--repo-root",
+            str(tmp_path),
+            "--mode",
+            "freshforge-plan",
+            "--json",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    payload = json.loads(result.stdout)
+    assert payload["freshforge"]["status"] == "skipped"
+    assert payload["freshforge"]["reason"] == "missing-workbook"
+
+
 def test_build_fable_model_script_reports_missing_versioned_workbook(tmp_path: Path) -> None:
     script = Path("scripts/build_fable_model.py")
 

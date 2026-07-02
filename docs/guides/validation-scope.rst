@@ -47,6 +47,11 @@ Phase 16 adds compact evidence packaging for already restored generated-model ar
 ``tmp/validation-evidence/`` and never copies raw generated source, raw generated values, source
 workbooks, or full raw reports. See :doc:`validation-evidence-packaging`.
 
+Phase 20 adds an opt-in benchmark orchestration wrapper around that packaging path. The manual
+workflow can stay extraction-only, prepare a FreshForge plan, or explicitly run the restored local
+benchmark workflow, but it still uploads only compact sanitized summaries. See
+:doc:`benchmark-evidence-workflow`.
+
 These summaries are conservative: they report ``pass`` only when explicit comparable-output, match,
 and mismatch counts prove zero mismatches. Current-style execution artifacts without those counts are
 reported as incomplete evidence.

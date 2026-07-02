@@ -235,6 +235,18 @@ This writes sanitized summaries under `tmp/validation-evidence/fable-YYYY/`. Mis
 produce a skipped summary by default; use `--require-artifacts` when absence should fail. See
 `docs/guides/validation-evidence-packaging.rst` for the evidence status and claim boundary.
 
+For the opt-in benchmark workflow wrapper, which can package evidence, prepare a FreshForge plan, or
+explicitly run the restored local benchmark workflow, use:
+
+```bash
+.venv/bin/python scripts/run_fable_benchmark_evidence.py --mode evidence-only --json
+```
+
+Switch to `--mode freshforge-plan` or `--mode freshforge-run` only when local artifacts are restored
+and the run is intentional. The manual GitHub workflow uploads only compact summaries under
+`tmp/validation-evidence/**`; it does not upload private workbooks, generated models, raw reports, or
+raw generated values. See `docs/guides/benchmark-evidence-workflow.rst`.
+
 Tracked notebook example:
 
 ```text
