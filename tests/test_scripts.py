@@ -204,6 +204,8 @@ def test_run_fable_scenario_bundle_script_help_documents_bundle_mode() -> None:
     assert "--generated-model-path" in result.stdout
     assert "--freshforge-plan" in result.stdout
     assert "--freshforge-run" in result.stdout
+    assert "--freshforge-matrix-plan" in result.stdout
+    assert "--freshforge-matrix-run" in result.stdout
 
 
 def test_run_fable_scenario_bundle_script_reports_missing_bundle(tmp_path: Path) -> None:
@@ -260,8 +262,106 @@ def test_run_fable_scenario_bundle_script_dry_run_is_explicit(
         "output_table_names": ["ghg_resultsghg"],
         "output_table_column_flavour_tags": "OUTPUT-8",
     }
+
+
+def test_run_fable_scenario_bundle_script_matrix_plan_is_explicit(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    module = _load_script_module("run_fable_scenario_bundle_matrix_plan", Path("scripts/run_fable_scenario_bundle.py"))
+    matrix_paths = SimpleNamespace(
+        matrix_path=tmp_path / "matrix.yaml",
+        workflow_template_path=tmp_path / "template.yaml",
+        matrix_summary_path=tmp_path / "matrix-summary.json",
+    )
+    matrix_plan = SimpleNamespace(case_count=1)
+
+    monkeypatch.setattr(module, "_load_bundle", lambda _: _fake_bundle())
+    monkeypatch.setattr(module, "_build_paths", lambda **_: _fake_build_paths(tmp_path))
+    monkeypatch.setattr(module, "_generated_model_path", lambda **_: tmp_path / "generated.py")
+    monkeypatch.setattr(module, "_artifact_paths", lambda **_: _fake_bundle_paths(tmp_path))
+    monkeypatch.setattr(module, "_freshforge_paths", lambda **_: _fake_freshforge_paths(tmp_path))
+    monkeypatch.setattr(module, "_freshforge_matrix_paths", lambda **_: matrix_paths)
+    monkeypatch.setattr(module, "_build_spec", lambda *_, **__: object())
+    monkeypatch.setattr(module, "_validate_bundle", lambda *_: None)
+    monkeypatch.setattr(module, "_prepare_freshforge_matrix", lambda bundle, **_: matrix_plan)
+    monkeypatch.setattr(module, "_plan_freshforge_matrix", lambda plan: {"ok": True, "case_count": plan.case_count})
+
+    exit_code = module.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--bundle",
+            "bundle.yaml",
+            "--freshforge-matrix-plan",
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["mode"] == "freshforge-matrix-plan"
+    assert payload["freshforge"]["matrix"] == "matrix.yaml"
+    assert payload["freshforge"]["case_count"] == 1
+    assert payload["freshforge"]["plan"]["ok"] is True
+
+
+def test_run_fable_scenario_bundle_script_matrix_run_reports_summary(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    module = _load_script_module("run_fable_scenario_bundle_matrix_run", Path("scripts/run_fable_scenario_bundle.py"))
+    matrix_paths = SimpleNamespace(
+        matrix_path=tmp_path / "matrix.yaml",
+        workflow_template_path=tmp_path / "template.yaml",
+        matrix_summary_path=tmp_path / "matrix-summary.json",
+    )
+    matrix_plan = SimpleNamespace(case_count=2)
+    seen: dict[str, object] = {}
+
+    def fake_run(plan, *, fail_fast):  # type: ignore[no-untyped-def]
+        seen["fail_fast"] = fail_fast
+        return object()
+
+    monkeypatch.setattr(module, "_load_bundle", lambda _: _fake_bundle())
+    monkeypatch.setattr(module, "_build_paths", lambda **_: _fake_build_paths(tmp_path))
+    monkeypatch.setattr(module, "_generated_model_path", lambda **_: tmp_path / "generated.py")
+    monkeypatch.setattr(module, "_artifact_paths", lambda **_: _fake_bundle_paths(tmp_path))
+    monkeypatch.setattr(module, "_freshforge_paths", lambda **_: _fake_freshforge_paths(tmp_path))
+    monkeypatch.setattr(module, "_freshforge_matrix_paths", lambda **_: matrix_paths)
+    monkeypatch.setattr(module, "_build_spec", lambda *_, **__: object())
+    monkeypatch.setattr(module, "_validate_bundle", lambda *_: None)
+    monkeypatch.setattr(module, "_prepare_freshforge_matrix", lambda bundle, **_: matrix_plan)
+    monkeypatch.setattr(module, "_plan_freshforge_matrix", lambda plan: {"ok": True})
+    monkeypatch.setattr(module, "_run_freshforge_matrix", fake_run)
+    monkeypatch.setattr(
+        module,
+        "_write_freshforge_matrix_summary",
+        lambda result, paths, **_: {"status": "success", "case_count": 2, "matrix_summary": str(paths.matrix_summary_path)},
+    )
+
+    exit_code = module.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--bundle",
+            "bundle.yaml",
+            "--freshforge-matrix-run",
+            "--fail-fast",
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert seen == {"fail_fast": True}
+    assert payload["mode"] == "freshforge-matrix-run"
+    assert payload["freshforge"]["run"]["status"] == "success"
     assert payload["manifest"] is None
-    assert payload["freshforge"] is None
 
 
 def test_run_fable_scenario_bundle_script_freshforge_plan_is_explicit(

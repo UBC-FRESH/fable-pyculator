@@ -55,6 +55,45 @@ That directory contains the normalized bundle, per-scenario CSV artifacts, the m
 ``freshforge-run-summary.json``. When ``--freshforge-run`` is used without ``--run-namespace``, the
 script creates a timestamp namespace.
 
+Plan A Matrix
+-------------
+
+Use ``--freshforge-matrix-plan`` when you want FreshForge to treat each scenario as its own matrix
+case:
+
+.. code-block:: bash
+
+   .venv/bin/python scripts/run_fable_scenario_bundle.py \
+     --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml \
+     --freshforge-matrix-plan \
+     --json
+
+This writes:
+
+.. code-block:: text
+
+   tmp/scenario-runs/fable-2021/fable-2021-ssp-demo/freshforge-scenario-bundle-matrix.yaml
+   tmp/scenario-runs/fable-2021/fable-2021-ssp-demo/freshforge-scenario-bundle-matrix-template.yaml
+
+The public-safe example files in ``examples/freshforge/`` show the same matrix/template shape.
+
+Run A Matrix
+------------
+
+Use ``--freshforge-matrix-run`` only after the matching workbook and generated model exist locally:
+
+.. code-block:: bash
+
+   .venv/bin/python scripts/run_fable_scenario_bundle.py \
+     --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml \
+     --freshforge-matrix-run \
+     --fail-fast \
+     --json
+
+Each scenario case gets its own namespace such as ``scenario/ssp1`` or ``scenario/ssp2`` under the
+scenario-bundle output root. The command writes a compact ``freshforge-matrix-summary.json`` beside
+the matrix files.
+
 Python API
 ----------
 
@@ -63,9 +102,12 @@ Python API
    from fable_pyculator import (
        build_2021_notebook_spec,
        default_generated_model_path,
+       fable_scenario_bundle_freshforge_matrix_paths,
        fable_scenario_bundle_freshforge_paths,
        load_scenario_bundle,
+       prepare_scenario_bundle_freshforge_matrix,
        prepare_scenario_bundle_freshforge_workflow,
+       plan_scenario_bundle_freshforge_matrix,
        run_scenario_bundle_freshforge_workflow,
        write_scenario_bundle_freshforge_summary,
    )
@@ -91,12 +133,27 @@ Python API
    )
    write_scenario_bundle_freshforge_summary(run, paths)
 
+   matrix_paths = fable_scenario_bundle_freshforge_matrix_paths(
+       workbook_version=bundle.workbook_version,
+       bundle_id=bundle.bundle_id,
+   )
+   matrix_plan = prepare_scenario_bundle_freshforge_matrix(
+       bundle,
+       bundle_path=bundle_path,
+       workbook_path="tmp/private-workbooks/2021_Open_FABLECalculator.xlsx",
+       generated_model_path=default_generated_model_path(workbook_version="2021"),
+       paths=matrix_paths,
+       spec=spec,
+   )
+   plan_scenario_bundle_freshforge_matrix(matrix_plan)
+
 Boundary
 --------
 
 FreshForge-backed scenario bundles do not rebuild generated models, edit ``SCENARIOS definition``
 tables, validate new generated-model equivalence, schedule remote jobs, cache runs, or retry failed
-nodes. They run selection-control scenarios against an existing matching generated model.
+nodes. They run selection-control scenarios against an existing matching generated model. Matrix mode
+adds repeated-run structure and summaries; it does not change the scenario semantics.
 
 When a benchmark evidence run needs to mention an existing scenario-bundle run summary, use the
 opt-in benchmark wrapper documented in :doc:`benchmark-evidence-workflow`. That path ingests compact
