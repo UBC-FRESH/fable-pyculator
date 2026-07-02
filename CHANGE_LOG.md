@@ -357,3 +357,4 @@ This file records completed project work in chronological order.
 
 - Activated Phase 22 on `feature/p22-freshforge-strategy-matrices`, created parent issue #149 and child issues #150 through #154, and scoped the phase around connecting output-ref strategy comparison to FreshForge Phase 8 matrices while preserving compare-only defaults and optional FreshForge integration.
 - Implemented the Phase 22 matrix layer by adding FreshForge-free matrix records and writers, lazy matrix plan/run helpers, strategy-comparison CLI flags for `--include-matrix`, `--matrix-plan`, and explicit `--matrix-run`, and documentation/tests for the matrix workflow boundary.
+- Closed Phase 22 after PR #155 merged to `main` and the post-merge Test and Docs Pages workflows passed, including GitHub Pages deployment.

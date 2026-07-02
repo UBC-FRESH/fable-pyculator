@@ -33,8 +33,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   post-merge Test and Docs Pages workflows passed.
 - Phase 21 is closed: `v0.1.0a3` is published to PyPI and GitHub as the benchmark workflow
   automation alpha, PR #148 merged, and post-merge Test and Docs Pages workflows passed.
-- Phase 22 is active on `feature/p22-freshforge-strategy-matrices`: connect output-ref strategy
-  comparison to FreshForge Phase 8 matrices while preserving compare-only defaults.
+- Phase 22 is closed: FreshForge matrix output-ref strategy runs are tracked, PR #155 merged, and
+  post-merge Test and Docs Pages workflows passed.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1714,7 +1714,7 @@ GitHub parent issue: #149.
 
 Active branch: `feature/p22-freshforge-strategy-matrices`.
 
-Status: active.
+Status: complete after PR #155 and post-merge Test and Docs Pages workflows.
 
 Goal: connect output-ref strategy comparison with FreshForge Phase 8 matrices so users can prepare
 one explicit matrix across strategy cases and optionally plan or run it through FreshForge.
@@ -1723,7 +1723,7 @@ one explicit matrix across strategy cases and optionally plan or run it through 
 - [x] P22.2 Add matrix document writer and optional planner/runner integration. Child issue: #151.
 - [x] P22.3 Update strategy comparison CLI, docs, and examples. Child issue: #152.
 - [x] P22.4 Add tests and verification. Child issue: #153.
-- [ ] P22.5 PR, docs deploy, and close phase. Child issue: #154.
+- [x] P22.5 PR, docs deploy, and close phase. Child issue: #154.
 
 Acceptance boundary:
 
@@ -1759,3 +1759,9 @@ Local verification:
   writing the strategy matrix and workflow template under ignored `tmp/strategy-comparisons/`.
 - Real local 2021 FreshForge matrix planning smoke passed with
   `.venv/bin/python scripts/compare_fable_output_ref_strategies.py --strategy headline-only --matrix-plan --json`.
+
+Closeout evidence:
+
+- PR #155 merged to `main` with squash commit `6ef33e6`.
+- Post-merge Test workflow passed.
+- Post-merge Docs Pages workflow passed and deployed.
