@@ -185,10 +185,10 @@ To compare output-ref boundaries before choosing a rebuild target, run:
 ```
 
 Use `--workbook-version 2020` or `--workbook-version 2021` to choose a workbook version by
-convention, and use `--output-ref-strategy headline-only`, `--table-name ghg_resultsghg`, or
-`--column-flavour-tag OUTPUT-8` to compare smaller generated-model boundaries. The older
-`scripts/build_fable_2021_model.py` command remains a 2021 shortcut. Use `--run` only after
-reviewing the generated `tmp/generated-models/fable-YYYY/` workflow artifacts.
+convention. Add `--include-matrix` or `--matrix-plan` to write or inspect a FreshForge matrix across
+the default strategy cases; use `--matrix-run` only after reviewing the generated matrix and local
+artifacts. The older `scripts/build_fable_2021_model.py` command remains a 2021 shortcut. Use
+`--run` only after reviewing the generated `tmp/generated-models/fable-YYYY/` workflow artifacts.
 
 FABLE Pyculator discovers wrapper metadata and renders notebook surfaces. It does not currently
 generate Modelwright `contract.json`, `expressions.json`, or `constants.json` files from a FABLE

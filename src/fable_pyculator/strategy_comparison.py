@@ -12,6 +12,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from fable_pyculator.spec import FableCalculatorSpec
 from fable_pyculator.workflows import (
     DEFAULT_WORKFLOW_FILENAME,
@@ -79,6 +81,18 @@ class OutputRefStrategyComparisonPaths:
 
         return self.case_dir(case_id) / DEFAULT_WORKFLOW_FILENAME
 
+    @property
+    def matrix_path(self) -> Path:
+        """Return the default FreshForge matrix YAML path."""
+
+        return self.output_dir / "strategy-matrix.yaml"
+
+    @property
+    def matrix_template_path(self) -> Path:
+        """Return the default FreshForge matrix workflow-template YAML path."""
+
+        return self.output_dir / "strategy-matrix-workflow-template.yaml"
+
 
 @dataclass(frozen=True)
 class OutputRefStrategyComparisonEntry:
@@ -128,6 +142,50 @@ class OutputRefStrategyComparisonResult:
             "summary_json_path": str(self.paths.summary_json_path),
             "summary_markdown_path": str(self.paths.summary_markdown_path),
             "entries": [entry.to_dict() for entry in self.entries],
+            "notes": list(self.notes),
+        }
+
+
+@dataclass(frozen=True)
+class OutputRefStrategyMatrixPaths:
+    """Path layout for a FreshForge matrix built from a strategy comparison."""
+
+    workbook_version: str
+    output_dir: Path
+    matrix_path: Path
+    workflow_template_path: Path
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a stable JSON representation."""
+
+        return {
+            "workbook_version": self.workbook_version,
+            "output_dir": str(self.output_dir),
+            "matrix_path": str(self.matrix_path),
+            "workflow_template_path": str(self.workflow_template_path),
+        }
+
+
+@dataclass(frozen=True)
+class OutputRefStrategyMatrixResult:
+    """Prepared FreshForge matrix artifacts for strategy comparison cases."""
+
+    workbook_version: str
+    paths: OutputRefStrategyMatrixPaths
+    matrix: dict[str, Any]
+    workflow_template: dict[str, Any]
+    case_count: int
+    notes: tuple[str, ...] = field(default_factory=tuple)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a stable JSON representation."""
+
+        return {
+            "workbook_version": self.workbook_version,
+            "paths": self.paths.to_dict(),
+            "matrix": self.matrix,
+            "workflow_template": self.workflow_template,
+            "case_count": self.case_count,
             "notes": list(self.notes),
         }
 
@@ -296,6 +354,115 @@ def write_output_ref_strategy_comparison(result: OutputRefStrategyComparisonResu
     return payload
 
 
+def build_output_ref_strategy_matrix(
+    result: OutputRefStrategyComparisonResult,
+    *,
+    matrix_path: str | Path | None = None,
+) -> OutputRefStrategyMatrixResult:
+    """Build a FreshForge matrix document for prepared strategy-comparison workflows.
+
+    Matrix creation is FreshForge-free. Planning and running the written matrix require FreshForge to
+    be installed separately.
+    """
+
+    paths = _matrix_paths(result, matrix_path=matrix_path)
+    missing_workflows = [
+        entry.case.case_id
+        for entry in result.entries
+        if entry.workflow_path is None or not entry.workflow_path.exists()
+    ]
+    if missing_workflows:
+        raise FileNotFoundError(
+            "strategy matrix requires per-case workflow files; rerun comparison with "
+            f"include_workflows=True for: {', '.join(missing_workflows)}"
+        )
+
+    template = _strategy_matrix_workflow_template(result)
+    matrix = {
+        "matrix": {
+            "id": f"fable_{result.workbook_version}_output_ref_strategies",
+            "name": f"FABLE {result.workbook_version} output-ref strategy matrix",
+            "description": "FreshForge matrix for comparing FABLE output-ref strategy rebuild boundaries.",
+            "workflow_template": _path_relative_to(paths.workflow_template_path, paths.matrix_path.parent),
+        },
+        "cases": [_strategy_matrix_case(entry, workbook_version=result.workbook_version) for entry in result.entries],
+    }
+    return OutputRefStrategyMatrixResult(
+        workbook_version=result.workbook_version,
+        paths=paths,
+        matrix=matrix,
+        workflow_template=template,
+        case_count=len(result.entries),
+        notes=(
+            "FreshForge matrix creation prepares repeated runs only; it is not a generated-model equivalence claim.",
+        ),
+    )
+
+
+def write_output_ref_strategy_matrix(result: OutputRefStrategyMatrixResult) -> dict[str, Any]:
+    """Write a FreshForge strategy matrix and workflow template as YAML."""
+
+    result.paths.output_dir.mkdir(parents=True, exist_ok=True)
+    result.paths.workflow_template_path.parent.mkdir(parents=True, exist_ok=True)
+    result.paths.workflow_template_path.write_text(
+        yaml.safe_dump(result.workflow_template, sort_keys=False),
+        encoding="utf-8",
+    )
+    result.paths.matrix_path.write_text(
+        yaml.safe_dump(result.matrix, sort_keys=False),
+        encoding="utf-8",
+    )
+    return result.to_dict()
+
+
+def plan_output_ref_strategy_matrix(matrix_path: str | Path) -> dict[str, Any]:
+    """Plan a FreshForge strategy matrix and return a serializable payload."""
+
+    try:
+        from freshforge.matrix import load_workflow_matrix, plan_workflow_matrix
+    except ImportError as exc:  # pragma: no cover - exercised by callers without FreshForge
+        raise RuntimeError("FreshForge with matrix support is required to plan strategy matrices.") from exc
+
+    matrix, diagnostics = load_workflow_matrix(matrix_path)
+    if matrix is None:
+        return {
+            "ok": False,
+            "matrix": None,
+            "diagnostics": [diagnostic.to_dict() for diagnostic in diagnostics],
+        }
+    plan = plan_workflow_matrix(matrix, diagnostics=diagnostics)
+    return {"ok": plan.ok, "matrix": matrix.to_dict(), "plan": plan.to_dict()}
+
+
+def run_output_ref_strategy_matrix(
+    matrix_path: str | Path,
+    *,
+    workdir: str | Path | None = None,
+    fail_fast: bool = False,
+) -> dict[str, Any]:
+    """Run a FreshForge strategy matrix and return a serializable payload."""
+
+    try:
+        from freshforge.matrix import load_workflow_matrix, run_workflow_matrix
+    except ImportError as exc:  # pragma: no cover - exercised by callers without FreshForge
+        raise RuntimeError("FreshForge with matrix support is required to run strategy matrices.") from exc
+
+    matrix, diagnostics = load_workflow_matrix(matrix_path)
+    if matrix is None:
+        return {
+            "ok": False,
+            "matrix": None,
+            "diagnostics": [diagnostic.to_dict() for diagnostic in diagnostics],
+        }
+    run = run_workflow_matrix(matrix, diagnostics=diagnostics, workdir=workdir, fail_fast=fail_fast)
+    return {
+        "ok": run.ok,
+        "matrix": matrix.to_dict(),
+        "run": run.to_dict(),
+        "summary": run.summary().to_dict(),
+    }
+
+
 def _selected_cases(
     cases: Sequence[OutputRefStrategyCase],
     selected_case_ids: Sequence[str] | None,
@@ -358,6 +525,150 @@ def _comparison_markdown(result: OutputRefStrategyComparisonResult) -> str:
         lines.extend(["", "## Notes", ""])
         lines.extend(f"- {note}" for note in result.notes)
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _matrix_paths(
+    result: OutputRefStrategyComparisonResult,
+    *,
+    matrix_path: str | Path | None,
+) -> OutputRefStrategyMatrixPaths:
+    selected_matrix_path = Path(matrix_path) if matrix_path is not None else result.paths.matrix_path
+    if not selected_matrix_path.is_absolute():
+        selected_matrix_path = result.paths.output_dir / selected_matrix_path
+    template_path = selected_matrix_path.parent / "strategy-matrix-workflow-template.yaml"
+    return OutputRefStrategyMatrixPaths(
+        workbook_version=result.workbook_version,
+        output_dir=result.paths.output_dir,
+        matrix_path=selected_matrix_path,
+        workflow_template_path=template_path,
+    )
+
+
+def _strategy_matrix_case(entry: OutputRefStrategyComparisonEntry, *, workbook_version: str) -> dict[str, Any]:
+    workflow_path = entry.workflow_path
+    if workflow_path is None:  # pragma: no cover - guarded by caller
+        raise ValueError(f"strategy case {entry.case.case_id} does not have a workflow path")
+    case_dir = workflow_path.parent
+    return {
+        "id": entry.case.case_id,
+        "namespace": entry.run_namespace,
+        "variables": {
+            "case_id": entry.case.case_id,
+            "case_label": entry.case.label,
+            "workflow_path": str(workflow_path),
+            "workbook": _existing_artifact_value(workflow_path, "infer_contract", "parameters", "workbook"),
+            "module_name": f"generated_fable_{workbook_version}_{_safe_identifier(entry.case.case_id)}_model",
+            "output_refs": str(case_dir / "output_refs.json"),
+            "contract": str(case_dir / "contract.json"),
+            "expressions": str(case_dir / "expressions.json"),
+            "constants": str(case_dir / "constants.json"),
+            "inference_result": str(case_dir / "inference-result.json"),
+            "generation_result": str(case_dir / "generation-result.json"),
+            "generated_model": str(case_dir / f"generated_fable_{workbook_version}_model.py"),
+            "generated_values": str(case_dir / "generated-values.json"),
+            "validation_scenario": str(case_dir / "validation-scenario.json"),
+            "evaluation_report": str(case_dir / "evaluation-report.json"),
+        },
+    }
+
+
+def _strategy_matrix_workflow_template(result: OutputRefStrategyComparisonResult) -> dict[str, Any]:
+    return {
+        "workflow": {
+            "id": f"fable_{result.workbook_version}_${{matrix.case_id}}_modelwright_run",
+            "name": f"FABLE {result.workbook_version} ${{matrix.case_label}}",
+            "description": "Modelwright workflow for FABLE output-ref strategy ${matrix.case_id}.",
+        },
+        "nodes": [
+            {
+                "id": "infer_contract",
+                "provider": "modelwright.model_infer_contract",
+                "outputs": {
+                    "generated_contract": "generated_contract",
+                    "formula_expressions": "formula_expressions",
+                    "input_constants": "input_constants",
+                },
+                "parameters": {
+                    "workbook": "${matrix.workbook}",
+                    "module_name": "${matrix.module_name}",
+                },
+                "artifacts": {
+                    "output_refs": "${matrix.output_refs}",
+                    "contract": "${matrix.contract}",
+                    "expressions": "${matrix.expressions}",
+                    "constants": "${matrix.constants}",
+                    "inference_result": "${matrix.inference_result}",
+                },
+            },
+            {
+                "id": "generate_model",
+                "provider": "modelwright.model_generate",
+                "needs": ["infer_contract"],
+                "inputs": {
+                    "generated_contract": "infer_contract.generated_contract",
+                    "formula_expressions": "infer_contract.formula_expressions",
+                    "input_constants": "infer_contract.input_constants",
+                },
+                "outputs": {"generated_model": "${matrix.module_name}"},
+                "artifacts": {
+                    "contract": "${matrix.contract}",
+                    "expressions": "${matrix.expressions}",
+                    "constants": "${matrix.constants}",
+                    "generated_model": "${matrix.generated_model}",
+                    "generation_result": "${matrix.generation_result}",
+                },
+            },
+            {
+                "id": "execute_model",
+                "provider": "modelwright.model_execute",
+                "needs": ["generate_model"],
+                "inputs": {
+                    "generated_contract": "infer_contract.generated_contract",
+                    "generated_model": "generate_model.generated_model",
+                },
+                "outputs": {"generated_values": "generated_values"},
+                "artifacts": {
+                    "contract": "${matrix.contract}",
+                    "generated_model": "${matrix.generated_model}",
+                    "generated_values": "${matrix.generated_values}",
+                },
+            },
+            {
+                "id": "evaluate_model",
+                "provider": "modelwright.validation_evaluate",
+                "needs": ["execute_model"],
+                "inputs": {
+                    "generated_contract": "infer_contract.generated_contract",
+                    "generated_model": "generate_model.generated_model",
+                },
+                "outputs": {"validation_report": "validation_report"},
+                "parameters": {"scenario": "${matrix.validation_scenario}"},
+                "artifacts": {
+                    "contract": "${matrix.contract}",
+                    "generated_model": "${matrix.generated_model}",
+                    "scenario": "${matrix.validation_scenario}",
+                    "evaluation_report": "${matrix.evaluation_report}",
+                },
+            },
+        ],
+    }
+
+
+def _existing_artifact_value(path: Path, node_id: str, section: str, key: str) -> str:
+    workflow = json.loads(path.read_text(encoding="utf-8"))
+    for node in workflow.get("nodes", ()):
+        if node.get("id") == node_id:
+            value = node.get(section, {}).get(key)
+            if isinstance(value, str):
+                return value
+    raise KeyError(f"could not find {node_id}.{section}.{key} in {path}")
+
+
+def _path_relative_to(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
 
 
 def _safe_identifier(value: str) -> str:

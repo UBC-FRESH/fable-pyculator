@@ -64,6 +64,46 @@ Restrict the comparison to selected default cases:
 Add ``--include-workflows`` when you also want per-strategy FreshForge workflow JSON files. The
 workflow files are still plan artifacts; FreshForge execution remains explicit and separate.
 
+FreshForge Matrix
+-----------------
+
+Phase 22 can also write a FreshForge matrix document for the compared strategies:
+
+.. code-block:: bash
+
+   .venv/bin/python scripts/compare_fable_output_ref_strategies.py \
+     --include-matrix \
+     --json
+
+This implies per-strategy workflow files and writes:
+
+.. code-block:: text
+
+   tmp/strategy-comparisons/fable-2021/strategy-matrix.yaml
+   tmp/strategy-comparisons/fable-2021/strategy-matrix-workflow-template.yaml
+
+Plan the matrix without running Modelwright:
+
+.. code-block:: bash
+
+   .venv/bin/python scripts/compare_fable_output_ref_strategies.py \
+     --matrix-plan \
+     --json
+
+Run the matrix only after reviewing the strategy boundaries and restoring the required local
+workbook artifacts:
+
+.. code-block:: bash
+
+   .venv/bin/python scripts/compare_fable_output_ref_strategies.py \
+     --matrix-run \
+     --workdir . \
+     --fail-fast \
+     --json
+
+FreshForge remains optional. Matrix document creation does not require FreshForge, but planning and
+running require a FreshForge version with matrix support.
+
 FreshForge Namespaces
 ---------------------
 
@@ -75,7 +115,7 @@ Each comparison entry records an intended FreshForge run namespace such as:
    strategy/headline-only
 
 FreshForge namespaces let later repeated runs avoid overwriting artifacts from other strategies.
-Phase 18 records those namespaces but does not introduce a matrix runner.
+The Phase 22 matrix uses those namespaces for the explicit strategy cases.
 
 Evidence Summaries
 ------------------
