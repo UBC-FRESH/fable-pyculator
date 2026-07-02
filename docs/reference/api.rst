@@ -59,6 +59,12 @@ Validation Evidence
 .. automodule:: fable_pyculator.validation
    :members:
 
+Output-Ref Strategy Comparison
+------------------------------
+
+.. automodule:: fable_pyculator.strategy_comparison
+   :members:
+
 FreshForge Workflow Helpers
 ---------------------------
 

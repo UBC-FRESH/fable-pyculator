@@ -304,6 +304,97 @@ def test_package_fable_validation_evidence_script_accepts_custom_dirs(tmp_path: 
     assert (output_dir / "summary.json").exists()
 
 
+def test_compare_fable_output_ref_strategies_script_help_documents_compare_mode() -> None:
+    script = Path("scripts/compare_fable_output_ref_strategies.py")
+
+    result = subprocess.run(
+        [str(script), "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert os.access(script, os.X_OK)
+    assert "--strategy" in result.stdout
+    assert "--include-workflows" in result.stdout
+    assert "--include-existing-evidence" in result.stdout
+
+
+def test_compare_fable_output_ref_strategies_script_reports_missing_workbook(tmp_path: Path) -> None:
+    script = Path("scripts/compare_fable_output_ref_strategies.py")
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(tmp_path), "--workbook-version", "2022", "--json"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stderr)
+    assert payload["ok"] is False
+    assert "No such file" in payload["error"] or "not found" in payload["error"]
+
+
+def test_compare_fable_output_ref_strategies_script_outputs_json(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    module = _load_script_module(
+        "compare_fable_output_ref_strategies",
+        Path("scripts/compare_fable_output_ref_strategies.py"),
+    )
+    payload = {
+        "workbook_version": "2021",
+        "summary_json_path": str(tmp_path / "summary.json"),
+        "summary_markdown_path": str(tmp_path / "summary.md"),
+        "entries": [
+            {
+                "case": {"case_id": "output-columns"},
+                "output_ref_count": 3,
+                "comparable_output_count": 3,
+            },
+            {
+                "case": {"case_id": "headline-only"},
+                "output_ref_count": 2,
+                "comparable_output_count": 2,
+            },
+        ],
+    }
+
+    spec_marker = object()
+    seen: dict[str, object] = {}
+
+    def fake_compare(*args, **kwargs):  # type: ignore[no-untyped-def]
+        seen["spec"] = args[0]
+        seen["selected_case_ids"] = kwargs["selected_case_ids"]
+        return object()
+
+    monkeypatch.setattr(module, "_build_spec", lambda **_: spec_marker)
+    monkeypatch.setattr(module, "_compare", fake_compare)
+    monkeypatch.setattr(module, "_write", lambda _: payload)
+
+    exit_code = module.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--workbook-version",
+            "2021",
+            "--strategy",
+            "output-columns",
+            "--strategy",
+            "headline-only",
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert seen == {"spec": spec_marker, "selected_case_ids": ("output-columns", "headline-only")}
+    assert json.loads(captured.out)["entries"][1]["case"]["case_id"] == "headline-only"
+
+
 def _load_script_module(module_name: str, script: Path) -> ModuleType:
     spec = importlib.util.spec_from_file_location(module_name, script)
     assert spec is not None and spec.loader is not None

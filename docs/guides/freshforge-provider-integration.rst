@@ -79,6 +79,10 @@ The node vocabulary maps to the public workflow helper APIs documented in
 ``build_modelwright_freshforge_workflow``. The 2021-specific helper names remain available as
 compatibility shortcuts for existing notebooks and scripts.
 
+For real workbook-derived output-ref strategy comparisons, see
+:doc:`output-ref-strategy-comparison`. That guide records per-strategy FreshForge namespaces and
+optional workflow documents without turning the FABLE provider into an execution adapter.
+
 Example
 -------
 

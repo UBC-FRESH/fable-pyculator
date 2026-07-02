@@ -178,6 +178,12 @@ start with plan-only preparation. The generic command defaults to the public 202
 .venv/bin/python scripts/build_fable_model.py
 ```
 
+To compare output-ref boundaries before choosing a rebuild target, run:
+
+```bash
+.venv/bin/python scripts/compare_fable_output_ref_strategies.py --json
+```
+
 Use `--workbook-version 2020` or `--workbook-version 2021` to choose a workbook version by
 convention, and use `--output-ref-strategy headline-only`, `--table-name ghg_resultsghg`, or
 `--column-flavour-tag OUTPUT-8` to compare smaller generated-model boundaries. The older

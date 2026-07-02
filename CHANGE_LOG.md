@@ -4,6 +4,21 @@ This file records completed project work in chronological order.
 
 ## 2026-07-01
 
+- Activated Phase 18 on `feature/p18-output-ref-strategy-comparison-workflows`, created child
+  issues #127, #126, #128, #125, and #129 under parent issue #122, and scoped the phase around
+  comparing FABLE output-ref strategy boundaries without making new generated-model equivalence
+  claims.
+- Added `fable_pyculator.strategy_comparison`, public package exports, and
+  `scripts/compare_fable_output_ref_strategies.py` so users can compare default FABLE output-ref
+  boundaries, cached comparable-output counts, intended FreshForge namespaces, optional workflow
+  artifacts, and optional existing validation evidence summaries before choosing a build target.
+- Documented output-ref strategy comparison in Sphinx and linked it from README, generated-model
+  artifacts, FreshForge provider, rebuild-command, validation-evidence packaging, and API reference
+  pages.
+- Verified the Phase 18 implementation with Ruff, full pytest (`90` passed and `9` skipped workbook
+  tests), Sphinx warning-as-error docs, Read the Docs theme verification, workbook checksums, release
+  artifact checks against published `modelwright 0.1.0a7`, `git diff --check`, and a real local 2021
+  strategy-comparison smoke run for `output-columns` and `headline-only`.
 - Activated Phase 17 on `feature/p17-v0.1.0a2-release`, created parent issue #116 and child issues
   #120, #118, #119, and #117, and scoped the phase around publishing the FABLE workflow automation
   alpha after the FreshForge `v0.1.0a2` and Modelwright `v0.1.0a7` dependency releases.
