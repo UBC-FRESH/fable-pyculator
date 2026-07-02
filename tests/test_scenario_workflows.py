@@ -16,13 +16,18 @@ from fable_pyculator import (
     HeadlineSeries,
     OutputTable,
     ScenarioBundle,
+    ScenarioBundleFreshForgeMatrixPaths,
     ScenarioBundleFreshForgePaths,
     ScenarioCase,
     SelectionControl,
     SelectionOption,
+    fable_scenario_bundle_freshforge_matrix_paths,
     fable_scenario_bundle_freshforge_paths,
+    prepare_scenario_bundle_freshforge_matrix,
     prepare_scenario_bundle_freshforge_workflow,
+    run_scenario_bundle_freshforge_matrix,
     run_scenario_bundle_freshforge_workflow,
+    write_scenario_bundle_freshforge_matrix_summary,
     write_scenario_bundle_freshforge_summary,
 )
 from fable_pyculator.freshforge import provider_factory
@@ -153,6 +158,118 @@ def test_fable_scenario_bundle_freshforge_paths_are_version_general(tmp_path: Pa
     assert paths.namespaced_run_summary_path("scenario/test") == (
         tmp_path / "tmp/scenario-runs/fable-2022/ssp-demo/scenario/test/freshforge-run-summary.json"
     )
+
+
+def test_prepare_scenario_bundle_freshforge_matrix_creates_case_per_scenario(tmp_path: Path) -> None:
+    bundle_path = _write_bundle(tmp_path)
+    paths = fable_scenario_bundle_freshforge_matrix_paths(
+        workbook_version="2021",
+        bundle_id="ssp-demo",
+        repo_root=tmp_path,
+    )
+
+    plan = prepare_scenario_bundle_freshforge_matrix(
+        _bundle(),
+        bundle_path=bundle_path,
+        workbook_path=tmp_path / "workbook.xlsx",
+        generated_model_path=tmp_path / "generated.py",
+        paths=paths,
+        repo_root=tmp_path,
+        spec=_spec(),
+    )
+
+    assert plan.case_count == 2
+    assert [case["id"] for case in plan.matrix["cases"]] == ["ssp1", "ssp2"]
+    assert [case["namespace"] for case in plan.matrix["cases"]] == ["scenario/ssp1", "scenario/ssp2"]
+    assert plan.matrix["matrix"]["workflow_template"] == "freshforge-scenario-bundle-matrix-template.yaml"
+    assert "scenario_${matrix.scenario_id}" in {
+        node["id"] for node in plan.workflow_template["nodes"]
+    }
+    assert paths.matrix_path.exists()
+    assert paths.workflow_template_path.exists()
+
+
+def test_plan_scenario_bundle_freshforge_matrix(tmp_path: Path) -> None:
+    from fable_pyculator import plan_scenario_bundle_freshforge_matrix
+
+    bundle_path = _write_bundle(tmp_path)
+    paths = fable_scenario_bundle_freshforge_matrix_paths(
+        workbook_version="2021",
+        bundle_id="ssp-demo",
+        repo_root=tmp_path,
+    )
+    plan = prepare_scenario_bundle_freshforge_matrix(
+        _bundle(),
+        bundle_path=bundle_path,
+        workbook_path=tmp_path / "workbook.xlsx",
+        generated_model_path=tmp_path / "generated.py",
+        paths=paths,
+        repo_root=tmp_path,
+        spec=_spec(),
+    )
+
+    payload = plan_scenario_bundle_freshforge_matrix(plan)
+
+    assert payload["ok"] is True
+    assert [case["case_id"] for case in payload["plan"]["cases"]] == ["ssp1", "ssp2"]
+    assert payload["plan"]["cases"][0]["namespace"] == "scenario/ssp1"
+
+
+def test_freshforge_matrix_runs_each_scenario_under_namespace(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    bundle_path = _write_bundle(tmp_path)
+    workbook_path = tmp_path / "workbook.xlsx"
+    generated_model_path = tmp_path / "generated.py"
+    workbook_path.write_text("fake workbook\n", encoding="utf-8")
+    generated_model_path.write_text("fake model\n", encoding="utf-8")
+    paths = fable_scenario_bundle_freshforge_matrix_paths(
+        workbook_version="2021",
+        bundle_id="ssp-demo",
+        repo_root=tmp_path,
+    )
+    plan = prepare_scenario_bundle_freshforge_matrix(
+        _bundle(),
+        bundle_path=bundle_path,
+        workbook_path=workbook_path,
+        generated_model_path=generated_model_path,
+        paths=paths,
+        repo_root=tmp_path,
+        spec=_spec(),
+    )
+
+    import fable_pyculator.notebook as notebook
+
+    monkeypatch.setattr(notebook, "build_notebook_spec", lambda *_, **__: _spec())
+    monkeypatch.setattr(notebook, "load_generated_model", lambda *_, **__: _calculate)
+
+    registry = ProviderRegistry()
+    registry.register(provider_factory())
+    result = run_scenario_bundle_freshforge_matrix(plan, registry=registry)
+    summary_payload = write_scenario_bundle_freshforge_matrix_summary(result, paths)
+
+    assert result.ok
+    assert result.summary().case_count == 2
+    assert (paths.output_dir / "scenario" / "ssp1" / "scenarios" / "ssp1" / "scenario_inputs.csv").exists()
+    assert (paths.output_dir / "scenario" / "ssp2" / "manifest.json").exists()
+    assert summary_payload["status"] == "success"
+    assert summary_payload["case_count"] == 2
+    assert paths.matrix_summary_path.exists()
+
+
+def test_fable_scenario_bundle_freshforge_matrix_paths_are_version_general(tmp_path: Path) -> None:
+    paths = fable_scenario_bundle_freshforge_matrix_paths(
+        workbook_version="2022",
+        bundle_id="ssp-demo",
+        repo_root=tmp_path,
+    )
+
+    assert isinstance(paths, ScenarioBundleFreshForgeMatrixPaths)
+    assert paths.output_dir == tmp_path / "tmp/scenario-runs/fable-2022/ssp-demo"
+    assert paths.matrix_path.name == "freshforge-scenario-bundle-matrix.yaml"
+    assert paths.workflow_template_path.name == "freshforge-scenario-bundle-matrix-template.yaml"
+    assert paths.matrix_summary_path.name == "freshforge-matrix-summary.json"
 
 
 def _write_bundle(root: Path) -> Path:

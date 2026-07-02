@@ -225,6 +225,17 @@ FreshForge run summary, use the FreshForge-backed path:
 Switch to `--freshforge-run --run-namespace scenario/demo` only after the plan and local artifacts
 look right. See `docs/guides/scenario-bundle-freshforge-orchestration.rst`.
 
+To treat each scenario as a FreshForge matrix case, use:
+
+```bash
+.venv/bin/python scripts/run_fable_scenario_bundle.py \
+  --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml \
+  --freshforge-matrix-plan \
+  --json
+```
+
+Switch to `--freshforge-matrix-run` only after the matching workbook and generated model are restored.
+
 To package compact validation evidence from existing local generated-model artifacts, use:
 
 ```bash
