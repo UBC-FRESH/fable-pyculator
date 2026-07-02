@@ -33,6 +33,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   post-merge Test and Docs Pages workflows passed.
 - Phase 21 is closed: `v0.1.0a3` is published to PyPI and GitHub as the benchmark workflow
   automation alpha, PR #148 merged, and post-merge Test and Docs Pages workflows passed.
+- Phase 22 is active on `feature/p22-freshforge-strategy-matrices`: connect output-ref strategy
+  comparison to FreshForge Phase 8 matrices while preserving compare-only defaults.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1705,3 +1707,55 @@ Release evidence:
 - Clean PyPI install of `fable-pyculator[notebook]==0.1.0a3` imported
   `fable_pyculator 0.1.0a3` with `modelwright 0.1.0a8` and smoke-tested the benchmark, strategy
   comparison, and FreshForge scenario-workflow API exports.
+
+## Phase 22: FreshForge Matrix Output-Ref Strategy Runs
+
+GitHub parent issue: #149.
+
+Active branch: `feature/p22-freshforge-strategy-matrices`.
+
+Status: active.
+
+Goal: connect output-ref strategy comparison with FreshForge Phase 8 matrices so users can prepare
+one explicit matrix across strategy cases and optionally plan or run it through FreshForge.
+
+- [x] P22.1 Define strategy matrix contract and artifacts. Child issue: #150.
+- [x] P22.2 Add matrix document writer and optional planner/runner integration. Child issue: #151.
+- [x] P22.3 Update strategy comparison CLI, docs, and examples. Child issue: #152.
+- [x] P22.4 Add tests and verification. Child issue: #153.
+- [ ] P22.5 PR, docs deploy, and close phase. Child issue: #154.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator can prepare FreshForge matrix documents for output-ref strategy
+  comparisons.
+- May claim users can explicitly plan or run those matrices when FreshForge Phase 8 is installed.
+- Must keep FreshForge optional and avoid normal import-time FreshForge imports.
+- Must not claim new generated-model equivalence from matrix creation, planning, or execution unless
+  explicit validation evidence exists.
+- Must not add scenario-bundle matrices in this phase.
+
+Implementation evidence:
+
+- Added FreshForge-free strategy matrix records, matrix YAML/template writers, and lazy FreshForge
+  plan/run adapters to `fable_pyculator.strategy_comparison`.
+- Extended `scripts/compare_fable_output_ref_strategies.py` with `--include-matrix`,
+  `--matrix-plan`, explicit `--matrix-run`, `--matrix-path`, `--workdir`, and `--fail-fast`.
+- Updated the output-ref strategy comparison guide and README with compare-only, matrix-writing,
+  matrix-planning, and explicit matrix-run examples.
+
+Local verification:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 115 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for restored public workbook
+  artifacts.
+- `scripts/check_release_artifacts.sh` passed.
+- `git diff --check` passed.
+- Real local 2021 smoke passed with
+  `.venv/bin/python scripts/compare_fable_output_ref_strategies.py --strategy headline-only --include-matrix --json`,
+  writing the strategy matrix and workflow template under ignored `tmp/strategy-comparisons/`.
+- Real local 2021 FreshForge matrix planning smoke passed with
+  `.venv/bin/python scripts/compare_fable_output_ref_strategies.py --strategy headline-only --matrix-plan --json`.

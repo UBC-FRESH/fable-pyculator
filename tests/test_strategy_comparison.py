@@ -5,16 +5,20 @@ import json
 from pathlib import Path
 
 from openpyxl import Workbook
+import pytest
 
 from fable_pyculator import (
     FableCalculatorSpec,
     HeadlinePoint,
     HeadlineSeries,
     OutputTable,
+    build_output_ref_strategy_matrix,
     compare_output_ref_strategies,
     default_output_ref_strategy_cases,
     output_ref_strategy_comparison_paths,
+    plan_output_ref_strategy_matrix,
     write_output_ref_strategy_comparison,
+    write_output_ref_strategy_matrix,
 )
 
 
@@ -40,6 +44,8 @@ def test_output_ref_strategy_comparison_paths_are_versioned(tmp_path: Path) -> N
         tmp_path / "tmp/strategy-comparisons/fable-2022/headline-only/output_refs.json"
     )
     assert paths.workflow_path("headline-only").name == "freshforge-modelwright-run-workflow.json"
+    assert paths.matrix_path == tmp_path / "tmp/strategy-comparisons/fable-2022/strategy-matrix.yaml"
+    assert paths.matrix_template_path.name == "strategy-matrix-workflow-template.yaml"
 
 
 def test_compare_output_ref_strategies_writes_counts_and_artifacts(tmp_path: Path) -> None:
@@ -99,6 +105,93 @@ def test_write_output_ref_strategy_comparison_is_stable(tmp_path: Path) -> None:
     assert result.paths.summary_json_path.exists()
     assert result.paths.summary_markdown_path.exists()
     assert "Strategy comparison" in result.paths.summary_markdown_path.read_text(encoding="utf-8")
+
+
+def test_strategy_matrix_contains_one_case_per_selected_strategy(tmp_path: Path) -> None:
+    comparison = compare_output_ref_strategies(
+        _spec(),
+        workbook_version="2022",
+        workbook_path=_workbook(tmp_path),
+        repo_root=tmp_path,
+        selected_case_ids=("output-columns", "headline-only"),
+        include_workflows=True,
+    )
+
+    matrix = build_output_ref_strategy_matrix(comparison)
+    payload = write_output_ref_strategy_matrix(matrix)
+
+    cases = payload["matrix"]["cases"]
+    assert payload["case_count"] == 2
+    assert payload["paths"]["matrix_path"] == str(tmp_path / "tmp/strategy-comparisons/fable-2022/strategy-matrix.yaml")
+    assert payload["matrix"]["matrix"]["workflow_template"] == "strategy-matrix-workflow-template.yaml"
+    assert [case["id"] for case in cases] == ["output-columns", "headline-only"]
+    assert [case["namespace"] for case in cases] == ["strategy/output-columns", "strategy/headline-only"]
+    assert cases[0]["variables"]["workflow_path"].endswith("output-columns/freshforge-modelwright-run-workflow.json")
+    assert cases[0]["variables"]["module_name"] == "generated_fable_2022_output_columns_model"
+    assert matrix.paths.matrix_path.exists()
+    assert matrix.paths.workflow_template_path.exists()
+
+
+def test_strategy_matrix_requires_written_workflows(tmp_path: Path) -> None:
+    comparison = compare_output_ref_strategies(
+        _spec(),
+        workbook_version="2021",
+        workbook_path=_workbook(tmp_path),
+        repo_root=tmp_path,
+        selected_case_ids=("headline-only",),
+    )
+
+    try:
+        build_output_ref_strategy_matrix(comparison)
+    except FileNotFoundError as error:
+        assert "include_workflows=True" in str(error)
+        assert "headline-only" in str(error)
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected FileNotFoundError")
+
+
+def test_strategy_matrix_write_does_not_import_freshforge(monkeypatch, tmp_path: Path) -> None:
+    comparison = compare_output_ref_strategies(
+        _spec(),
+        workbook_version="2021",
+        workbook_path=_workbook(tmp_path),
+        repo_root=tmp_path,
+        selected_case_ids=("headline-only",),
+        include_workflows=True,
+    )
+    matrix = build_output_ref_strategy_matrix(comparison)
+    real_import = builtins.__import__
+
+    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):  # type: ignore[no-untyped-def]
+        if name.startswith("freshforge"):
+            raise AssertionError("FreshForge should not be imported while writing a strategy matrix")
+        return real_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+    payload = write_output_ref_strategy_matrix(matrix)
+
+    assert payload["case_count"] == 1
+
+
+def test_strategy_matrix_plan_uses_freshforge_when_available(tmp_path: Path) -> None:
+    pytest.importorskip("freshforge.matrix")
+    comparison = compare_output_ref_strategies(
+        _spec(),
+        workbook_version="2021",
+        workbook_path=_workbook(tmp_path),
+        repo_root=tmp_path,
+        selected_case_ids=("headline-only",),
+        include_workflows=True,
+    )
+    matrix = build_output_ref_strategy_matrix(comparison)
+    write_output_ref_strategy_matrix(matrix)
+
+    payload = plan_output_ref_strategy_matrix(matrix.paths.matrix_path)
+
+    assert payload["ok"] is True
+    assert payload["plan"]["cases"][0]["case_id"] == "headline-only"
+    assert payload["plan"]["cases"][0]["namespace"] == "strategy/headline-only"
 
 
 def test_existing_evidence_falls_back_to_fable_local_when_modelwright_evidence_is_unavailable(

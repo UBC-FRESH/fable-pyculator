@@ -21,6 +21,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     args = _parser().parse_args(argv)
     repo_root = _repo_root(args.repo_root)
+    include_workflows = args.include_workflows or args.include_matrix or args.matrix_plan or args.matrix_run
     try:
         spec = _build_spec(
             workbook_version=args.workbook_version,
@@ -34,10 +35,27 @@ def main(argv: Sequence[str] | None = None) -> int:
             repo_root=repo_root,
             output_dir=args.output_dir,
             selected_case_ids=tuple(args.strategy) if args.strategy else None,
-            include_workflows=args.include_workflows,
+            include_workflows=include_workflows,
             include_existing_evidence=args.include_existing_evidence,
         )
         payload = _write(result)
+        matrix_payload = None
+        if args.include_matrix or args.matrix_plan or args.matrix_run:
+            matrix_result = _build_matrix(result, matrix_path=args.matrix_path)
+            matrix_payload = _write_matrix(matrix_result)
+            payload["matrix"] = matrix_payload
+        if args.matrix_plan:
+            if matrix_payload is None:
+                raise RuntimeError("matrix plan requested but no matrix was written")
+            payload["matrix_plan"] = _plan_matrix(matrix_payload["paths"]["matrix_path"])
+        if args.matrix_run:
+            if matrix_payload is None:
+                raise RuntimeError("matrix run requested but no matrix was written")
+            payload["matrix_run"] = _run_matrix(
+                matrix_payload["paths"]["matrix_path"],
+                workdir=args.workdir or repo_root,
+                fail_fast=args.fail_fast,
+            )
     except Exception as exc:  # noqa: BLE001
         return _fail(f"{type(exc).__name__}: {exc}", json_output=args.json_output)
     return _emit(payload, json_output=args.json_output)
@@ -70,6 +88,33 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Also write per-strategy FreshForge workflow JSON files.",
     )
+    parser.add_argument(
+        "--include-matrix",
+        action="store_true",
+        help="Also write a FreshForge matrix YAML document for the compared strategy cases.",
+    )
+    parser.add_argument(
+        "--matrix-plan",
+        action="store_true",
+        help="Write and plan the FreshForge strategy matrix without running it.",
+    )
+    parser.add_argument(
+        "--matrix-run",
+        action="store_true",
+        help="Write and explicitly run the FreshForge strategy matrix.",
+    )
+    parser.add_argument(
+        "--matrix-path",
+        default=None,
+        help="FreshForge matrix YAML path. Defaults to strategy-matrix.yaml under the comparison output directory.",
+    )
+    parser.add_argument(
+        "--workdir",
+        type=Path,
+        default=None,
+        help="FreshForge matrix run workdir. Defaults to the repository root.",
+    )
+    parser.add_argument("--fail-fast", action="store_true", help="Stop matrix execution after the first failed case.")
     parser.add_argument(
         "--include-existing-evidence",
         action="store_true",
@@ -109,6 +154,30 @@ def _write(result: Any) -> dict[str, Any]:
     return write_output_ref_strategy_comparison(result)
 
 
+def _build_matrix(result: Any, *, matrix_path: str | None) -> Any:
+    from fable_pyculator import build_output_ref_strategy_matrix
+
+    return build_output_ref_strategy_matrix(result, matrix_path=matrix_path)
+
+
+def _write_matrix(result: Any) -> dict[str, Any]:
+    from fable_pyculator import write_output_ref_strategy_matrix
+
+    return write_output_ref_strategy_matrix(result)
+
+
+def _plan_matrix(matrix_path: str) -> dict[str, Any]:
+    from fable_pyculator import plan_output_ref_strategy_matrix
+
+    return plan_output_ref_strategy_matrix(matrix_path)
+
+
+def _run_matrix(matrix_path: str, *, workdir: Path, fail_fast: bool) -> dict[str, Any]:
+    from fable_pyculator import run_output_ref_strategy_matrix
+
+    return run_output_ref_strategy_matrix(matrix_path, workdir=workdir, fail_fast=fail_fast)
+
+
 def _emit(payload: dict[str, Any], *, json_output: bool) -> int:
     if json_output:
         print(json.dumps(payload, indent=2, sort_keys=True))
@@ -117,6 +186,8 @@ def _emit(payload: dict[str, Any], *, json_output: bool) -> int:
         print(f"Workbook version: {payload['workbook_version']}")
         print(f"Summary JSON: {payload['summary_json_path']}")
         print(f"Summary Markdown: {payload['summary_markdown_path']}")
+        if "matrix" in payload:
+            print(f"Matrix YAML: {payload['matrix']['paths']['matrix_path']}")
         print("Strategies:")
         for entry in payload["entries"]:
             print(
@@ -124,6 +195,10 @@ def _emit(payload: dict[str, Any], *, json_output: bool) -> int:
                 f"{entry['output_ref_count']:,} refs; "
                 f"{entry['comparable_output_count']:,} comparable cached outputs"
             )
+        if "matrix_plan" in payload:
+            print(f"Matrix plan ok: {payload['matrix_plan']['ok']}")
+        if "matrix_run" in payload:
+            print(f"Matrix run ok: {payload['matrix_run']['ok']}")
     return 0
 
 

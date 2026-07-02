@@ -490,6 +490,9 @@ def test_compare_fable_output_ref_strategies_script_help_documents_compare_mode(
     assert os.access(script, os.X_OK)
     assert "--strategy" in result.stdout
     assert "--include-workflows" in result.stdout
+    assert "--include-matrix" in result.stdout
+    assert "--matrix-plan" in result.stdout
+    assert "--matrix-run" in result.stdout
     assert "--include-existing-evidence" in result.stdout
 
 
@@ -566,6 +569,117 @@ def test_compare_fable_output_ref_strategies_script_outputs_json(
     assert exit_code == 0
     assert seen == {"spec": spec_marker, "selected_case_ids": ("output-columns", "headline-only")}
     assert json.loads(captured.out)["entries"][1]["case"]["case_id"] == "headline-only"
+
+
+def test_compare_fable_output_ref_strategies_script_writes_matrix_json(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    module = _load_script_module(
+        "compare_fable_output_ref_strategies_matrix",
+        Path("scripts/compare_fable_output_ref_strategies.py"),
+    )
+    payload = {
+        "workbook_version": "2021",
+        "summary_json_path": str(tmp_path / "summary.json"),
+        "summary_markdown_path": str(tmp_path / "summary.md"),
+        "entries": [],
+    }
+    matrix_payload = {
+        "case_count": 1,
+        "paths": {"matrix_path": str(tmp_path / "strategy-matrix.yaml")},
+    }
+    seen: dict[str, object] = {}
+
+    def fake_compare(*args, **kwargs):  # type: ignore[no-untyped-def]
+        seen["include_workflows"] = kwargs["include_workflows"]
+        return object()
+
+    monkeypatch.setattr(module, "_build_spec", lambda **_: object())
+    monkeypatch.setattr(module, "_compare", fake_compare)
+    monkeypatch.setattr(module, "_write", lambda _: dict(payload))
+    monkeypatch.setattr(module, "_build_matrix", lambda result, matrix_path=None: ("matrix", matrix_path))
+    monkeypatch.setattr(module, "_write_matrix", lambda _: matrix_payload)
+
+    exit_code = module.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--workbook-version",
+            "2021",
+            "--include-matrix",
+            "--matrix-path",
+            "custom-matrix.yaml",
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert seen == {"include_workflows": True}
+    output = json.loads(captured.out)
+    assert output["matrix"]["case_count"] == 1
+
+
+def test_compare_fable_output_ref_strategies_script_matrix_plan_json(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    module = _load_script_module(
+        "compare_fable_output_ref_strategies_plan",
+        Path("scripts/compare_fable_output_ref_strategies.py"),
+    )
+    matrix_path = str(tmp_path / "strategy-matrix.yaml")
+    monkeypatch.setattr(module, "_build_spec", lambda **_: object())
+    monkeypatch.setattr(module, "_compare", lambda *_, **__: object())
+    monkeypatch.setattr(module, "_write", lambda _: {"workbook_version": "2021", "entries": []})
+    monkeypatch.setattr(module, "_build_matrix", lambda result, matrix_path=None: object())
+    monkeypatch.setattr(module, "_write_matrix", lambda _: {"paths": {"matrix_path": matrix_path}, "case_count": 1})
+    monkeypatch.setattr(module, "_plan_matrix", lambda path: {"ok": True, "path": path})
+
+    exit_code = module.main(["--repo-root", str(tmp_path), "--matrix-plan", "--json"])
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["matrix_plan"] == {"ok": True, "path": matrix_path}
+
+
+def test_compare_fable_output_ref_strategies_script_matrix_run_is_explicit(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    module = _load_script_module(
+        "compare_fable_output_ref_strategies_run",
+        Path("scripts/compare_fable_output_ref_strategies.py"),
+    )
+    matrix_path = str(tmp_path / "strategy-matrix.yaml")
+    seen: dict[str, object] = {}
+
+    def fake_run(path, *, workdir, fail_fast):  # type: ignore[no-untyped-def]
+        seen["path"] = path
+        seen["workdir"] = str(workdir)
+        seen["fail_fast"] = fail_fast
+        return {"ok": False, "summary": {"status": "failed"}}
+
+    monkeypatch.setattr(module, "_build_spec", lambda **_: object())
+    monkeypatch.setattr(module, "_compare", lambda *_, **__: object())
+    monkeypatch.setattr(module, "_write", lambda _: {"workbook_version": "2021", "entries": []})
+    monkeypatch.setattr(module, "_build_matrix", lambda result, matrix_path=None: object())
+    monkeypatch.setattr(module, "_write_matrix", lambda _: {"paths": {"matrix_path": matrix_path}, "case_count": 1})
+    monkeypatch.setattr(module, "_run_matrix", fake_run)
+
+    exit_code = module.main(
+        ["--repo-root", str(tmp_path), "--matrix-run", "--fail-fast", "--workdir", str(tmp_path / "runs"), "--json"]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert seen == {"path": matrix_path, "workdir": str(tmp_path / "runs"), "fail_fast": True}
+    assert json.loads(captured.out)["matrix_run"]["summary"]["status"] == "failed"
 
 
 def _load_script_module(module_name: str, script: Path) -> ModuleType:
