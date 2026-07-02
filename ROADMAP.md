@@ -25,9 +25,12 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   tracked, PR #115 merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 17 is closed: `v0.1.0a2` is published to PyPI and GitHub as the FABLE workflow automation
   alpha, PR #121 merged, and post-merge Test and Docs Pages workflows passed.
-- Phases 18, 19, and 20 are planned backlog phases for post-alpha automation: output-ref strategy
-  comparison workflows, FreshForge-backed scenario-bundle orchestration, and opt-in benchmark
-  workflow upgrades. Child issues will be created only when each phase is activated.
+- Phase 18 is active on `feature/p18-output-ref-strategy-comparison-workflows`: output-ref strategy
+  comparison workflows will help users compare generated-model boundaries before choosing validation
+  or modelling targets.
+- Phases 19 and 20 remain planned backlog phases for post-alpha automation: FreshForge-backed
+  scenario-bundle orchestration and opt-in benchmark workflow upgrades. Child issues will be created
+  only when each phase is activated.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1432,12 +1435,18 @@ Local verification evidence:
 
 GitHub parent issue: #122.
 
-Status: planned backlog.
+Active branch: `feature/p18-output-ref-strategy-comparison-workflows`.
+
+Status: active.
 
 Goal: compare FABLE output-ref strategies as explicit generated-model workflow boundaries before
 choosing validation or modelling targets.
 
-Child issues: create only when this phase is activated.
+- [x] P18.1 Define strategy comparison records and artifact paths. Child issue: #127.
+- [x] P18.2 Add strategy comparison preparation and optional run-summary ingestion. Child issue: #126.
+- [x] P18.3 Add script interface and public-safe examples. Child issue: #128.
+- [x] P18.4 Update docs and tests. Child issue: #125.
+- [ ] P18.5 Verify, PR, deploy docs, and close phase. Child issue: #129.
 
 Dependencies:
 
@@ -1449,6 +1458,34 @@ Acceptance boundary:
 - May compare `output-columns`, `headline-only`, `table`, `flavour-tags`, and `all-columns`
   strategies with compact counts, artifacts, diagnostics, and validation-boundary summaries.
 - Must not claim new generated-model equivalence from strategy comparison alone.
+
+Implementation evidence:
+
+- Added `fable_pyculator.strategy_comparison` with public strategy case, path, entry, and result
+  records plus default FABLE output-ref strategy cases.
+- Added `compare_output_ref_strategies(...)` and `write_output_ref_strategy_comparison(...)` to
+  derive per-strategy output refs, cached comparable-output counts, validation scenarios, optional
+  FreshForge workflow JSON, and optional existing evidence summaries.
+- Added `scripts/compare_fable_output_ref_strategies.py` as a plan-first strategy comparison command.
+- Added Sphinx guide and API reference coverage, plus links from README, generated-model artifact,
+  FreshForge provider, rebuild-command, and validation-evidence packaging docs.
+
+Local verification:
+
+- `.venv/bin/python -m pytest tests/test_strategy_comparison.py tests/test_scripts.py -q` passed with
+  22 tests.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 90 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for the restored 2019, 2020,
+  and 2021 public workbooks.
+- `scripts/check_release_artifacts.sh` passed; the clean wheel install imported
+  `fable_pyculator 0.1.0a2` against published `modelwright 0.1.0a7`.
+- `git diff --check` passed.
+- Real local 2021 smoke comparison passed for `output-columns` and `headline-only` with
+  `--include-workflows --include-existing-evidence`, reporting 16,478 output-column refs and 99
+  headline refs while correctly marking absent per-strategy generated-model evidence as skipped.
 
 ## Phase 19: FreshForge-Backed Scenario-Bundle Orchestration
 

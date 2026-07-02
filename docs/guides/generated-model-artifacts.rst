@@ -40,6 +40,8 @@ ignored ``tmp/`` paths.
 
 To prepare or explicitly run a local 2021 rebuild from the public source workbook, see
 :doc:`2021-freshforge-rebuild-command`.
+To compare output-ref boundaries before choosing a rebuild target, see
+:doc:`output-ref-strategy-comparison`.
 
 Spec Discovery Versus Model Generation
 --------------------------------------

@@ -86,3 +86,7 @@ Claim Boundary
 Compact summaries are not automatically new validation claims. They are evidence packaging around
 existing artifacts. Treat a summary as an equivalence claim only when it reports explicit comparable
 output counts, match counts, mismatch counts, and a ``pass`` equivalence status.
+
+When comparing possible generated-model boundaries before running a workflow, use
+:doc:`output-ref-strategy-comparison`. That comparison can include existing evidence summaries when
+available, but it does not create new equivalence evidence by itself.
