@@ -31,8 +31,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   and post-merge Test and Docs Pages workflows passed.
 - Phase 20 is closed: opt-in benchmark evidence orchestration is tracked, PR #142 merged, and
   post-merge Test and Docs Pages workflows passed.
-- Phase 21 is active on `feature/p21-v0.1.0a3-release`: publish `fable-pyculator==0.1.0a3` as the
-  benchmark workflow automation alpha after FreshForge `v0.1.0a3` and Modelwright `v0.1.0a8`.
+- Phase 21 is closed: `v0.1.0a3` is published to PyPI and GitHub as the benchmark workflow
+  automation alpha, PR #148 merged, and post-merge Test and Docs Pages workflows passed.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1641,9 +1641,10 @@ Local verification:
 
 GitHub parent issue: #143.
 
-Active branch: `feature/p21-v0.1.0a3-release`.
+Release branch: `feature/p21-v0.1.0a3-release`.
 
-Status: active.
+Status: complete after PR #148, tag `v0.1.0a3`, PyPI publication, GitHub prerelease, and clean
+PyPI install smoke tests.
 
 Goal: publish `fable-pyculator==0.1.0a3` to GitHub and PyPI as the benchmark workflow automation
 alpha release after FreshForge `v0.1.0a3` and Modelwright `v0.1.0a8`.
@@ -1660,11 +1661,11 @@ alpha release after FreshForge `v0.1.0a3` and Modelwright `v0.1.0a8`.
 - [x] P21.3 Verify FABLE Pyculator release artifacts and smoke tests. Child issue: #146.
   - [x] Run local quality, tests, docs, theme, checksum, and release artifact checks.
   - [x] Smoke-test benchmark evidence packaging entry points.
-- [ ] P21.4 Tag, publish PyPI/GitHub release, and close phase. Child issue: #147.
-  - [ ] Open and merge release PR after CI passes.
-  - [ ] Create annotated tag `v0.1.0a3`.
-  - [ ] Publish to PyPI through trusted publishing.
-  - [ ] Create GitHub prerelease and verify clean PyPI install.
+- [x] P21.4 Tag, publish PyPI/GitHub release, and close phase. Child issue: #147.
+  - [x] Open and merge release PR after CI passes.
+  - [x] Create annotated tag `v0.1.0a3`.
+  - [x] Publish to PyPI through trusted publishing.
+  - [x] Create GitHub prerelease and verify clean PyPI install.
 
 Acceptance boundary:
 
@@ -1689,3 +1690,18 @@ Local verification:
   `modelwright` evidence backend and reporting incomplete equivalence when explicit comparison
   counts were unavailable.
 - `git diff --check` passed.
+
+Release evidence:
+
+- PR #148 merged to `main`.
+- Post-merge Test workflow run #28559940344 passed.
+- Post-merge Docs Pages workflow run #28559940366 passed and deployed.
+- Annotated tag `v0.1.0a3` was pushed.
+- Release workflow run #28559980122 built artifacts and published `fable-pyculator==0.1.0a3` to
+  PyPI.
+- PyPI listed both `fable_pyculator-0.1.0a3-py3-none-any.whl` and
+  `fable_pyculator-0.1.0a3.tar.gz`.
+- GitHub prerelease `v0.1.0a3` was created with the workflow-built wheel and sdist.
+- Clean PyPI install of `fable-pyculator[notebook]==0.1.0a3` imported
+  `fable_pyculator 0.1.0a3` with `modelwright 0.1.0a8` and smoke-tested the benchmark, strategy
+  comparison, and FreshForge scenario-workflow API exports.

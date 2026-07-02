@@ -17,6 +17,14 @@ This file records completed project work in chronological order.
   checksums, release artifact checks with a clean wheel install against published Modelwright
   `0.1.0a8`, `git diff --check`, and a benchmark evidence script smoke test selecting the
   Modelwright evidence backend.
+- Released `fable-pyculator==0.1.0a3` after PR #148 merged to `main`, post-merge Test workflow
+  #28559940344 passed, post-merge Docs Pages workflow #28559940366 passed, annotated tag
+  `v0.1.0a3` triggered Release workflow #28559980122, and trusted publishing uploaded the wheel and
+  sdist to PyPI.
+- Created the GitHub prerelease for `v0.1.0a3` with the workflow-built artifacts, verified PyPI
+  listed both package artifacts, and smoke-tested a clean PyPI install of
+  `fable-pyculator[notebook]==0.1.0a3` importing `fable_pyculator 0.1.0a3` with
+  `modelwright 0.1.0a8`.
 
 ## 2026-07-01
 
