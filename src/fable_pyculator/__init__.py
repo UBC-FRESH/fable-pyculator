@@ -1,5 +1,12 @@
 """FABLE Calculator-specific notebook helpers for Modelwright-generated models."""
 
+from fable_pyculator.benchmarks import (
+    FableBenchmarkRunPaths,
+    FableBenchmarkRunSummary,
+    fable_benchmark_run_paths,
+    package_fable_benchmark_evidence,
+    write_fable_benchmark_summary,
+)
 from fable_pyculator.discovery import (
     curate_default_headline_series,
     discover_output_tables,
@@ -125,6 +132,8 @@ __all__ = [
     "DEFAULT_OUTPUT_TABLES",
     "DEFAULT_SCENARIO_BUNDLE_RUN_SUMMARY_FILENAME",
     "DEFAULT_SCENARIO_BUNDLE_WORKFLOW_FILENAME",
+    "FableBenchmarkRunPaths",
+    "FableBenchmarkRunSummary",
     "FableFreshForgeBuildPaths",
     "FableFreshForgeRebuildPlan",
     "HeadlinePoint",
@@ -168,6 +177,7 @@ __all__ = [
     "derive_output_refs_for_strategy",
     "default_output_ref_strategy_cases",
     "default_generated_model_path",
+    "fable_benchmark_run_paths",
     "fable_freshforge_build_paths",
     "fable_scenario_bundle_artifact_paths",
     "fable_scenario_bundle_freshforge_paths",
@@ -179,6 +189,7 @@ __all__ = [
     "output_tables",
     "output_ref_strategy_comparison_paths",
     "outputs_frame",
+    "package_fable_benchmark_evidence",
     "plot_headline",
     "plot_outputs",
     "load_generated_model",
@@ -197,6 +208,7 @@ __all__ = [
     "scenario_definition_tables_for_location",
     "scenario_frame",
     "write_freshforge_workflow",
+    "write_fable_benchmark_summary",
     "write_output_ref_strategy_comparison",
     "write_output_refs",
     "write_scenario_bundle_artifacts",

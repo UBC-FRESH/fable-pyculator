@@ -4,6 +4,20 @@ This file records completed project work in chronological order.
 
 ## 2026-07-01
 
+- Activated Phase 20 on `feature/p20-opt-in-benchmark-workflow-upgrade`, created child issues #137
+  through #141 under parent issue #124, and scoped the phase around opt-in benchmark evidence
+  orchestration without PR-triggered benchmark runs, workbook downloads, raw artifact uploads, or new
+  unsupported equivalence claims.
+- Added `fable_pyculator.benchmarks` and `scripts/run_fable_benchmark_evidence.py` so users can
+  package compact evidence, prepare a FreshForge benchmark plan, or explicitly run a restored local
+  benchmark workflow while recording whether the evidence backend was generic Modelwright or the
+  FABLE-local fallback.
+- Upgraded the manual `Benchmark Evidence` GitHub Actions workflow with safe `workflow_dispatch`
+  inputs for benchmark mode, output-ref strategy, scenario-bundle summary ingestion, run namespace,
+  and required artifacts while keeping uploads restricted to compact sanitized summaries.
+- Added Sphinx documentation and tests for the opt-in benchmark evidence workflow, including
+  conservative missing-artifact behavior, backend fallback, no raw-artifact uploads, and no
+  equivalence claims without explicit comparison counts.
 - Activated Phase 19 on `feature/p19-freshforge-scenario-bundle-orchestration`, created child
   issues #131, #132, #133, #134, and #135 under parent issue #123, and scoped the phase around
   FreshForge-backed scenario-bundle orchestration while preserving the direct bundle runner.

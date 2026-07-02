@@ -97,3 +97,8 @@ Boundary
 FreshForge-backed scenario bundles do not rebuild generated models, edit ``SCENARIOS definition``
 tables, validate new generated-model equivalence, schedule remote jobs, cache runs, or retry failed
 nodes. They run selection-control scenarios against an existing matching generated model.
+
+When a benchmark evidence run needs to mention an existing scenario-bundle run summary, use the
+opt-in benchmark wrapper documented in :doc:`benchmark-evidence-workflow`. That path ingests compact
+summary status only; it does not upload scenario work directories or rerun scenario bundles by
+default.

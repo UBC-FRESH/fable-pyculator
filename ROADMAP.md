@@ -29,8 +29,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   post-merge Test and Docs Pages workflows passed.
 - Phase 19 is closed: FreshForge-backed scenario-bundle orchestration is tracked, PR #136 merged,
   and post-merge Test and Docs Pages workflows passed.
-- Phase 20 remains a planned backlog phase for opt-in benchmark workflow upgrades. Child issues will
-  be created only when the phase is activated.
+- Phase 20 is active on `feature/p20-opt-in-benchmark-workflow-upgrade` under parent issue #124,
+  adding opt-in benchmark evidence orchestration while keeping uploads compact and sanitized.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1570,12 +1570,18 @@ Local verification:
 
 GitHub parent issue: #124.
 
-Status: planned backlog.
+Active branch: `feature/p20-opt-in-benchmark-workflow-upgrade`.
+
+Status: implementation complete; PR closeout in progress.
 
 Goal: upgrade the existing manual benchmark evidence workflow from extraction-only summaries toward
 repeatable benchmark execution when restored public workbook artifacts are available.
 
-Child issues: create only when this phase is activated.
+- [x] P20.1 Define opt-in benchmark workflow contract. Child issue: #137.
+- [x] P20.2 Add benchmark orchestration script and evidence backend selection. Child issue: #138.
+- [x] P20.3 Upgrade manual GitHub Actions workflow. Child issue: #139.
+- [x] P20.4 Update docs and tests. Child issue: #140.
+- [ ] P20.5 Verify, PR, deploy docs, and close phase. Child issue: #141.
 
 Dependencies:
 
@@ -1589,3 +1595,36 @@ Acceptance boundary:
 - Must not run by default on every PR.
 - Must not upload source workbooks, raw generated models, raw validation reports, or unsupported
   equivalence claims.
+
+Implementation evidence:
+
+- Added `fable_pyculator.benchmarks` with FABLE benchmark path and summary records, conservative
+  benchmark evidence packaging, Modelwright-generic evidence backend selection, FABLE-local fallback,
+  optional FreshForge plan/run summary handling, and compact Markdown/JSON writers.
+- Added `scripts/run_fable_benchmark_evidence.py` with `evidence-only`, `freshforge-plan`, and
+  explicit `freshforge-run` modes plus workbook version, output-ref strategy, scenario-bundle,
+  namespace, required-artifact, and JSON flags.
+- Upgraded `.github/workflows/benchmark-evidence.yml` to remain `workflow_dispatch` only while
+  exposing benchmark mode, output-ref strategy, scenario-bundle, required-artifact, and namespace
+  inputs; uploads remain restricted to compact summaries under `tmp/validation-evidence/**` and
+  `tmp/benchmark-evidence-summary.json`.
+- Added Sphinx documentation for the opt-in benchmark evidence workflow and linked it from README,
+  validation evidence packaging, validation scope, generated-model artifact, scenario-bundle
+  FreshForge orchestration, and API reference docs.
+
+Local verification:
+
+- `.venv/bin/python -m pytest tests/test_benchmarks.py tests/test_benchmark_evidence_workflow.py tests/test_scripts.py -q`
+  passed with 31 tests.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 108 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for the restored 2019, 2020,
+  and 2021 public workbooks.
+- `scripts/check_release_artifacts.sh` passed; the clean wheel install imported
+  `fable_pyculator 0.1.0a2` against published `modelwright 0.1.0a7`.
+- `git diff --check` passed.
+- Real local smoke passed with `.venv/bin/python scripts/run_fable_benchmark_evidence.py --json`,
+  selecting the `modelwright` evidence backend and reporting incomplete equivalence when explicit
+  comparison counts were unavailable.

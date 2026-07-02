@@ -115,3 +115,6 @@ After running a local Modelwright/FreshForge generated-model workflow, use
 ``tmp/generated-models/fable-YYYY/``. The command writes compact summaries under
 ``tmp/validation-evidence/fable-YYYY/`` and reports incomplete evidence unless explicit comparison
 counts are present. See :doc:`validation-evidence-packaging`.
+
+For manual benchmark orchestration around those artifacts, including extraction-only, FreshForge
+plan, and explicit FreshForge run modes, use :doc:`benchmark-evidence-workflow`.

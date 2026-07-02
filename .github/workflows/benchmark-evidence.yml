@@ -7,11 +7,37 @@ on:
         description: "FABLE workbook version"
         required: true
         default: "2021"
+      mode:
+        description: "Benchmark orchestration mode"
+        required: true
+        type: choice
+        default: "evidence-only"
+        options:
+          - evidence-only
+          - freshforge-plan
+          - freshforge-run
       require_artifacts:
         description: "Fail when local generated-model artifacts are absent"
         required: true
         type: boolean
         default: false
+      output_ref_strategy:
+        description: "Output-ref strategy for FreshForge plan/run modes"
+        required: true
+        default: "output-columns"
+      scenario_bundle:
+        description: "Optional scenario bundle path for compact summary ingestion"
+        required: false
+        default: ""
+      include_scenario_bundle_summary:
+        description: "Ingest compact scenario-bundle FreshForge summary when present"
+        required: true
+        type: boolean
+        default: false
+      run_namespace:
+        description: "Optional FreshForge run namespace"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -37,12 +63,23 @@ jobs:
           set -euo pipefail
           args=(
             --workbook-version "${{ inputs.workbook_version }}"
+            --mode "${{ inputs.mode }}"
+            --output-ref-strategy "${{ inputs.output_ref_strategy }}"
             --json
           )
           if [[ "${{ inputs.require_artifacts }}" == "true" ]]; then
             args+=(--require-artifacts)
           fi
-          python scripts/package_fable_validation_evidence.py "${args[@]}" | tee tmp/validation-evidence-summary.json
+          if [[ -n "${{ inputs.scenario_bundle }}" ]]; then
+            args+=(--bundle "${{ inputs.scenario_bundle }}")
+          fi
+          if [[ "${{ inputs.include_scenario_bundle_summary }}" == "true" ]]; then
+            args+=(--include-scenario-bundle-summary)
+          fi
+          if [[ -n "${{ inputs.run_namespace }}" ]]; then
+            args+=(--run-namespace "${{ inputs.run_namespace }}")
+          fi
+          python scripts/run_fable_benchmark_evidence.py "${args[@]}" | tee tmp/benchmark-evidence-summary.json
 
       - name: Upload compact evidence summaries
         uses: actions/upload-artifact@v4
@@ -50,5 +87,5 @@ jobs:
           name: fable-validation-evidence-${{ inputs.workbook_version }}
           path: |
             tmp/validation-evidence/**
-            tmp/validation-evidence-summary.json
+            tmp/benchmark-evidence-summary.json
           if-no-files-found: error
