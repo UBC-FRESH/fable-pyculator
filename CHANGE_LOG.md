@@ -363,3 +363,4 @@ This file records completed project work in chronological order.
 
 - Activated Phase 23 on `feature/p23-freshforge-scenario-bundle-matrices`, created parent issue #156 and child issues #157 through #161, and scoped the phase around treating each scenario-bundle scenario as an explicit FreshForge matrix case while preserving direct and single-workflow FreshForge modes.
 - Implemented the Phase 23 matrix layer by adding scenario-bundle matrix path/plan records, YAML matrix/template writers, lazy FreshForge matrix plan/run helpers, scenario-bundle CLI flags for `--freshforge-matrix-plan` and explicit `--freshforge-matrix-run`, public-safe examples, and documentation/tests for the matrix boundary.
+- Closed Phase 23 after PR #162 merged to `main` and the post-merge Test and Docs Pages workflows passed, including GitHub Pages deployment.

@@ -35,8 +35,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   automation alpha, PR #148 merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 22 is closed: FreshForge matrix output-ref strategy runs are tracked, PR #155 merged, and
   post-merge Test and Docs Pages workflows passed.
-- Phase 23 is active on `feature/p23-freshforge-scenario-bundle-matrices`: add FreshForge matrix
-  orchestration for scenario-bundle cases while preserving direct and single-workflow modes.
+- Phase 23 is closed: FreshForge matrix scenario-bundle runs are tracked, PR #162 merged, and
+  post-merge Test and Docs Pages workflows passed.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1772,9 +1772,9 @@ Closeout evidence:
 
 GitHub parent issue: #156.
 
-Active branch: `feature/p23-freshforge-scenario-bundle-matrices`.
+Phase branch: `feature/p23-freshforge-scenario-bundle-matrices`.
 
-Status: active.
+Status: complete.
 
 Goal: add FreshForge matrix orchestration for existing FABLE scenario bundles so each scenario can
 run as a namespaced matrix case with compact planning/run summaries.
@@ -1783,7 +1783,7 @@ run as a namespaced matrix case with compact planning/run summaries.
 - [x] P23.2 Add matrix document writer and optional planner/runner integration. Child issue: #158.
 - [x] P23.3 Update scenario-bundle CLI, docs, and examples. Child issue: #159.
 - [x] P23.4 Add tests and verification. Child issue: #160.
-- [ ] P23.5 PR, docs deploy, and close phase. Child issue: #161.
+- [x] P23.5 PR, docs deploy, and close phase. Child issue: #161.
 
 Acceptance boundary:
 
@@ -1821,3 +1821,9 @@ Local verification:
   `.venv/bin/python scripts/run_fable_scenario_bundle.py --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml --freshforge-matrix-plan --json`.
 - Public-safe example matrix planning passed with
   `.venv/bin/freshforge matrix plan examples/freshforge/fable_2021_scenario_bundle_matrix.yaml --json`.
+
+Closeout evidence:
+
+- PR #162 merged to `main` with squash commit `9ea77e6`.
+- Post-merge Test workflow passed: run `28562394428`.
+- Post-merge Docs Pages workflow passed and deployed: run `28562394444`.
