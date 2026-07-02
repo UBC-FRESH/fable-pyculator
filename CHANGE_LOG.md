@@ -364,3 +364,12 @@ This file records completed project work in chronological order.
 - Activated Phase 23 on `feature/p23-freshforge-scenario-bundle-matrices`, created parent issue #156 and child issues #157 through #161, and scoped the phase around treating each scenario-bundle scenario as an explicit FreshForge matrix case while preserving direct and single-workflow FreshForge modes.
 - Implemented the Phase 23 matrix layer by adding scenario-bundle matrix path/plan records, YAML matrix/template writers, lazy FreshForge matrix plan/run helpers, scenario-bundle CLI flags for `--freshforge-matrix-plan` and explicit `--freshforge-matrix-run`, public-safe examples, and documentation/tests for the matrix boundary.
 - Closed Phase 23 after PR #162 merged to `main` and the post-merge Test and Docs Pages workflows passed, including GitHub Pages deployment.
+- Activated Phase 24 on `feature/p24-v0.1.0a4-release`, created parent issue #163 and child issues
+  #164 through #167, and scoped the phase around publishing the matrix workflow automation alpha after
+  FreshForge `v0.1.0a4`.
+- Prepared the `v0.1.0a4` release candidate by bumping package/import/provider versions, updating
+  FreshForge guidance to `v0.1.0a4`, and refreshing README, release docs, tests, and release-artifact
+  checks for output-ref strategy matrices and scenario-bundle matrices.
+- Verified the `v0.1.0a4` release candidate with Ruff, full pytest (`121` passed and `9` skipped
+  workbook tests), Sphinx warning-as-error docs, Read the Docs theme verification, public workbook
+  checksums, release-artifact checks against published `modelwright 0.1.0a8`, and `git diff --check`.

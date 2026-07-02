@@ -8,7 +8,7 @@ all been checked.
 Current Alpha Target
 --------------------
 
-The current alpha target is ``0.1.0a3`` with Git tag ``v0.1.0a3``.
+The current alpha target is ``0.1.0a4`` with Git tag ``v0.1.0a4``.
 
 This alpha may claim an early FABLE-C notebook wrapper that can discover the public 2020/2021
 ``SCENARIOS selection`` controls, inspect ``SCENARIOS definition`` tables, render canonical output
@@ -17,7 +17,7 @@ a locally restored Modelwright-generated 2020 model from ignored ``tmp/`` artifa
 validated compressed 2021 generated model from ``examples/fable_2021/``, plan and assemble
 FreshForge/Modelwright 2021 rebuild workflows, run selection-control scenario bundles against an
 existing matching generated model, compare output-ref strategy boundaries, orchestrate
-scenario-bundle runs through FreshForge namespaces and summaries, and package opt-in benchmark
+strategy-boundary and scenario-bundle matrices through FreshForge, and package opt-in benchmark
 evidence from restored local artifacts.
 
 It must not claim stable public API compatibility, full editable scenario-definition widgets,
@@ -81,7 +81,7 @@ least:
 
 .. code-block:: bash
 
-   python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ fable-pyculator==0.1.0a3
+   python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ fable-pyculator==0.1.0a4
    python -c "import fable_pyculator; print(fable_pyculator.__version__)"
 
 Real PyPI Publication
@@ -94,7 +94,7 @@ Expected sequence:
 1. Confirm ``CHANGE_LOG.md`` and release notes describe the actual alpha boundary.
 2. Confirm local and CI release artifact checks pass.
 3. Confirm TestPyPI rehearsal passes or document the exact blocker.
-4. Create the annotated tag, for example ``v0.1.0a3``.
+4. Create the annotated tag, for example ``v0.1.0a4``.
 5. Run the ``Release`` workflow or push the tag, then approve the protected PyPI environment.
 6. Verify the package page, wheel install, import, docs deployment, and GitHub release notes.
 
@@ -107,7 +107,7 @@ Use one of these responses:
 
 - yank the broken release on PyPI if installation should be discouraged but historical availability is
   still useful;
-- publish a new alpha such as ``0.1.0a3`` after fixing the issue;
+- publish a new alpha such as ``0.1.0a5`` after fixing the issue;
 - update release notes and roadmap entries with the failure mode and mitigation.
 
 Private Data Rules
