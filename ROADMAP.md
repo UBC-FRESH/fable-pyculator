@@ -31,6 +31,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   and post-merge Test and Docs Pages workflows passed.
 - Phase 20 is closed: opt-in benchmark evidence orchestration is tracked, PR #142 merged, and
   post-merge Test and Docs Pages workflows passed.
+- Phase 21 is active on `feature/p21-v0.1.0a3-release`: publish `fable-pyculator==0.1.0a3` as the
+  benchmark workflow automation alpha after FreshForge `v0.1.0a3` and Modelwright `v0.1.0a8`.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1634,3 +1636,56 @@ Local verification:
   comparison counts were unavailable.
 - Merged Phase 20 through PR #142 and confirmed post-merge Test workflow run #28558959744 plus
   Docs Pages workflow run #28558959735 passed, including GitHub Pages deployment.
+
+## Phase 21: v0.1.0a3 Benchmark Workflow Automation Alpha Release
+
+GitHub parent issue: #143.
+
+Active branch: `feature/p21-v0.1.0a3-release`.
+
+Status: active.
+
+Goal: publish `fable-pyculator==0.1.0a3` to GitHub and PyPI as the benchmark workflow automation
+alpha release after FreshForge `v0.1.0a3` and Modelwright `v0.1.0a8`.
+
+- [x] P21.1 Bump FABLE Pyculator version and dependency metadata. Child issue: #144.
+  - [x] Bump package and import metadata to `0.1.0a3`.
+  - [x] Bump FABLE Pyculator FreshForge provider metadata to `0.1.0a3`.
+  - [x] Raise the Modelwright dependency floor to `modelwright[notebook]>=0.1.0a8`.
+  - [x] Update version assertions and release artifact checks.
+- [x] P21.2 Update release docs and FreshForge/Modelwright guidance. Child issue: #145.
+  - [x] Update the release deployment guide for the `v0.1.0a3` alpha boundary.
+  - [x] Update README alpha-line language for the benchmark workflow automation release.
+  - [x] Update FreshForge installation guidance to use `v0.1.0a3`.
+- [x] P21.3 Verify FABLE Pyculator release artifacts and smoke tests. Child issue: #146.
+  - [x] Run local quality, tests, docs, theme, checksum, and release artifact checks.
+  - [x] Smoke-test benchmark evidence packaging entry points.
+- [ ] P21.4 Tag, publish PyPI/GitHub release, and close phase. Child issue: #147.
+  - [ ] Open and merge release PR after CI passes.
+  - [ ] Create annotated tag `v0.1.0a3`.
+  - [ ] Publish to PyPI through trusted publishing.
+  - [ ] Create GitHub prerelease and verify clean PyPI install.
+
+Acceptance boundary:
+
+- May claim output-ref strategy comparison workflows, FreshForge-backed scenario-bundle
+  orchestration, opt-in benchmark evidence packaging, and dependency alignment with Modelwright
+  `0.1.0a8` plus FreshForge `v0.1.0a3`.
+- Must not claim stable public API compatibility, production readiness, arbitrary FABLE
+  country-calculator support, scenario-definition table editing, or new generated-model equivalence
+  beyond recorded public 2020/2021 evidence.
+
+Local verification:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 108 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for the restored 2019, 2020,
+  and 2021 public workbooks.
+- `scripts/check_release_artifacts.sh` passed; the clean wheel install imported
+  `fable_pyculator 0.1.0a3` against published `modelwright 0.1.0a8`.
+- `.venv/bin/python scripts/run_fable_benchmark_evidence.py --json` passed, selecting the
+  `modelwright` evidence backend and reporting incomplete equivalence when explicit comparison
+  counts were unavailable.
+- `git diff --check` passed.

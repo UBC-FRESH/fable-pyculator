@@ -16,4 +16,4 @@ def test_fable_output_surface_sheet_order_is_canonical() -> None:
 
 
 def test_package_version_matches_alpha_release_target() -> None:
-    assert __version__ == "0.1.0a2"
+    assert __version__ == "0.1.0a3"
