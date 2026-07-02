@@ -1508,10 +1508,10 @@ Status: active.
 Goal: upgrade existing FABLE Pyculator scenario bundles so repeated bundle runs can be orchestrated
 and summarized cleanly through FreshForge.
 
-- [ ] P19.1 Define FreshForge scenario-bundle workflow contract. Child issue: #131.
-- [ ] P19.2 Add executable FABLE provider nodes for scenario-bundle runs. Child issue: #132.
-- [ ] P19.3 Add script interface, examples, and summary artifacts. Child issue: #133.
-- [ ] P19.4 Update docs and tests. Child issue: #134.
+- [x] P19.1 Define FreshForge scenario-bundle workflow contract. Child issue: #131.
+- [x] P19.2 Add executable FABLE provider nodes for scenario-bundle runs. Child issue: #132.
+- [x] P19.3 Add script interface, examples, and summary artifacts. Child issue: #133.
+- [x] P19.4 Update docs and tests. Child issue: #134.
 - [ ] P19.5 Verify, PR, deploy docs, and close phase. Child issue: #135.
 
 Dependencies:
@@ -1526,6 +1526,40 @@ Acceptance boundary:
 - Must preserve direct scenario-bundle execution as the default script/API path.
 - Must not add scenario-definition table editing, generated-model rebuild orchestration, remote
   execution, caching, retries, production scheduling, or new generated-model equivalence claims.
+
+Implementation evidence:
+
+- Added `fable_pyculator.scenario_workflows` with FreshForge path and plan records, workflow
+  preparation, workflow execution, and compact run-summary writing for scenario bundles.
+- Extended the FABLE Pyculator FreshForge provider with executable `scenario_bundle_prepare`,
+  `scenario_run`, and `scenario_bundle_manifest` nodes while keeping earlier Phase 9 node types
+  plan-only.
+- Extended `scripts/run_fable_scenario_bundle.py` with explicit `--freshforge-plan`,
+  `--freshforge-run`, `--run-namespace`, `--workflow-path`, and `--run-summary-path` options while
+  preserving direct dry-run/run behavior.
+- Added a public-safe FreshForge scenario-bundle workflow example for the 2021 SSP demo bundle and
+  Sphinx guide/API coverage.
+
+Local verification:
+
+- `.venv/bin/python -m pytest tests/test_scenario_workflows.py tests/test_scripts.py -q` passed with
+  22 tests.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 96 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for the restored 2019, 2020,
+  and 2021 public workbooks.
+- `scripts/check_release_artifacts.sh` passed; the clean wheel install imported
+  `fable_pyculator 0.1.0a2` against published `modelwright 0.1.0a7`.
+- `git diff --check` passed.
+- `.venv/bin/freshforge validate examples/freshforge/fable_2021_scenario_bundle_workflow.yaml --json`
+  passed.
+- `.venv/bin/freshforge plan examples/freshforge/fable_2021_scenario_bundle_workflow.yaml --json`
+  passed.
+- Real local 2021 smoke plan passed with
+  `.venv/bin/python scripts/run_fable_scenario_bundle.py --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml --freshforge-plan --json`,
+  reporting a 4-node FreshForge workflow.
 
 ## Phase 20: Opt-In Benchmark Workflow Upgrade
 

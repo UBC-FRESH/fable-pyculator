@@ -53,6 +53,12 @@ Scenario Bundles
 .. automodule:: fable_pyculator.scenarios
    :members:
 
+Scenario-Bundle FreshForge Workflows
+------------------------------------
+
+.. automodule:: fable_pyculator.scenario_workflows
+   :members:
+
 Validation Evidence
 -------------------
 

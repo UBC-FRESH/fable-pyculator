@@ -212,6 +212,19 @@ Remove `--dry-run` after the matching workbook and generated model are restored 
 outputs are written under ignored `tmp/scenario-runs/fable-YYYY/<bundle-id>/` paths. See
 `docs/guides/scenario-bundles.rst` for the bundle schema and artifact layout.
 
+When repeated bundle runs need explicit graph planning, namespace-isolated artifacts, and a compact
+FreshForge run summary, use the FreshForge-backed path:
+
+```bash
+.venv/bin/python scripts/run_fable_scenario_bundle.py \
+  --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml \
+  --freshforge-plan \
+  --json
+```
+
+Switch to `--freshforge-run --run-namespace scenario/demo` only after the plan and local artifacts
+look right. See `docs/guides/scenario-bundle-freshforge-orchestration.rst`.
+
 To package compact validation evidence from existing local generated-model artifacts, use:
 
 ```bash

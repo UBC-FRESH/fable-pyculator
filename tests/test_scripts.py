@@ -7,6 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
+from types import SimpleNamespace
 
 from fable_pyculator import (
     FableFreshForgeBuildPaths,
@@ -128,6 +129,8 @@ def test_run_fable_scenario_bundle_script_help_documents_bundle_mode() -> None:
     assert "--bundle" in result.stdout
     assert "--dry-run" in result.stdout
     assert "--generated-model-path" in result.stdout
+    assert "--freshforge-plan" in result.stdout
+    assert "--freshforge-run" in result.stdout
 
 
 def test_run_fable_scenario_bundle_script_reports_missing_bundle(tmp_path: Path) -> None:
@@ -185,6 +188,103 @@ def test_run_fable_scenario_bundle_script_dry_run_is_explicit(
         "output_table_column_flavour_tags": "OUTPUT-8",
     }
     assert payload["manifest"] is None
+    assert payload["freshforge"] is None
+
+
+def test_run_fable_scenario_bundle_script_freshforge_plan_is_explicit(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    module = _load_script_module("run_fable_scenario_bundle_plan", Path("scripts/run_fable_scenario_bundle.py"))
+    freshforge_paths = _fake_freshforge_paths(tmp_path)
+
+    monkeypatch.setattr(module, "_load_bundle", lambda _: _fake_bundle())
+    monkeypatch.setattr(module, "_build_paths", lambda **_: _fake_build_paths(tmp_path))
+    monkeypatch.setattr(module, "_artifact_paths", lambda **_: _fake_bundle_paths(tmp_path))
+    monkeypatch.setattr(module, "_freshforge_paths", lambda **_: freshforge_paths)
+    monkeypatch.setattr(module, "_build_spec", lambda *_, **__: object())
+    monkeypatch.setattr(module, "_validate_bundle", lambda *_: None)
+    monkeypatch.setattr(
+        module,
+        "_prepare_freshforge_workflow",
+        lambda *_, **__: SimpleNamespace(workflow={"nodes": [{"id": "prepare_bundle"}]}),
+    )
+
+    exit_code = module.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--bundle",
+            "bundle.yaml",
+            "--freshforge-plan",
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["mode"] == "freshforge-plan"
+    assert payload["freshforge"]["workflow"] == "tmp/scenario-runs/fable-2021/ssp-demo/workflow.json"
+    assert payload["freshforge"]["run_namespace"] is None
+    assert payload["freshforge"]["node_count"] == 1
+
+
+def test_run_fable_scenario_bundle_script_freshforge_run_reports_summary(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    module = _load_script_module("run_fable_scenario_bundle_run", Path("scripts/run_fable_scenario_bundle.py"))
+    freshforge_paths = _fake_freshforge_paths(tmp_path)
+    seen: dict[str, object] = {}
+
+    monkeypatch.setattr(module, "_load_bundle", lambda _: _fake_bundle())
+    monkeypatch.setattr(module, "_build_paths", lambda **_: _fake_build_paths(tmp_path))
+    monkeypatch.setattr(module, "_artifact_paths", lambda **_: _fake_bundle_paths(tmp_path))
+    monkeypatch.setattr(module, "_freshforge_paths", lambda **_: freshforge_paths)
+    monkeypatch.setattr(module, "_build_spec", lambda *_, **__: object())
+    monkeypatch.setattr(module, "_validate_bundle", lambda *_: None)
+    monkeypatch.setattr(
+        module,
+        "_prepare_freshforge_workflow",
+        lambda *_, **__: SimpleNamespace(workflow={"nodes": [{"id": "prepare_bundle"}, {"id": "scenario_ssp1"}]}),
+    )
+    monkeypatch.setattr(module, "_run_freshforge_workflow", lambda *_, **kwargs: seen.setdefault("run", kwargs))
+    monkeypatch.setattr(
+        module,
+        "_write_freshforge_summary",
+        lambda *_, **__: {
+            "run_summary": str(tmp_path / "tmp/scenario-runs/fable-2021/ssp-demo/test/run/run-summary.json"),
+            "status": "success",
+            "run_namespace": "test/run",
+            "node_count": 2,
+            "failed_count": 0,
+            "error_count": 0,
+        },
+    )
+
+    exit_code = module.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--bundle",
+            "bundle.yaml",
+            "--freshforge-run",
+            "--run-namespace",
+            "test/run",
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert seen == {"run": {"run_namespace": "test/run"}}
+    assert payload["mode"] == "freshforge-run"
+    assert payload["freshforge"]["run"]["status"] == "success"
+    assert payload["freshforge"]["run_namespace"] == "test/run"
 
 
 def test_run_fable_scenario_bundle_script_reports_missing_generated_model(
@@ -443,6 +543,17 @@ def _fake_bundle_paths(root: Path) -> ScenarioBundleArtifactPaths:
         output_dir=output_dir,
         normalized_bundle_path=output_dir / "bundle.json",
         manifest_path=output_dir / "manifest.json",
+    )
+
+
+def _fake_freshforge_paths(root: Path) -> SimpleNamespace:
+    output_dir = root / "tmp" / "scenario-runs" / "fable-2021" / "ssp-demo"
+    return SimpleNamespace(
+        output_dir=output_dir,
+        workflow_path=output_dir / "workflow.json",
+        namespaced_run_summary_path=lambda namespace=None: output_dir
+        / (namespace or "")
+        / "freshforge-run-summary.json",
     )
 
 
