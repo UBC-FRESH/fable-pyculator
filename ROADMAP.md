@@ -27,9 +27,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   alpha, PR #121 merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 18 is closed: output-ref strategy comparison workflows are tracked, PR #130 merged, and
   post-merge Test and Docs Pages workflows passed.
-- Phase 19 is active on `feature/p19-freshforge-scenario-bundle-orchestration`: FreshForge-backed
-  scenario-bundle orchestration will add namespaced workflow execution and compact summaries around
-  the existing direct scenario-bundle runner.
+- Phase 19 is closed: FreshForge-backed scenario-bundle orchestration is tracked, PR #136 merged,
+  and post-merge Test and Docs Pages workflows passed.
 - Phase 20 remains a planned backlog phase for opt-in benchmark workflow upgrades. Child issues will
   be created only when the phase is activated.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -1501,9 +1500,9 @@ Local verification:
 
 GitHub parent issue: #123.
 
-Active branch: `feature/p19-freshforge-scenario-bundle-orchestration`.
+Active branch: `main` after PR #136.
 
-Status: active.
+Status: complete.
 
 Goal: upgrade existing FABLE Pyculator scenario bundles so repeated bundle runs can be orchestrated
 and summarized cleanly through FreshForge.
@@ -1512,7 +1511,11 @@ and summarized cleanly through FreshForge.
 - [x] P19.2 Add executable FABLE provider nodes for scenario-bundle runs. Child issue: #132.
 - [x] P19.3 Add script interface, examples, and summary artifacts. Child issue: #133.
 - [x] P19.4 Update docs and tests. Child issue: #134.
-- [ ] P19.5 Verify, PR, deploy docs, and close phase. Child issue: #135.
+- [x] P19.5 Verify, PR, deploy docs, and close phase. Child issue: #135.
+  - [x] Open PR #136 from `feature/p19-freshforge-scenario-bundle-orchestration` to `main`.
+  - [x] Merge PR #136 to `main`.
+  - [x] Confirm post-merge Test workflow run #28558440319 passed.
+  - [x] Confirm post-merge Docs Pages workflow run #28558440328 passed and deployed.
 
 Dependencies:
 
@@ -1560,6 +1563,8 @@ Local verification:
 - Real local 2021 smoke plan passed with
   `.venv/bin/python scripts/run_fable_scenario_bundle.py --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml --freshforge-plan --json`,
   reporting a 4-node FreshForge workflow.
+- Merged Phase 19 through PR #136 and confirmed post-merge Test workflow run #28558440319 plus
+  Docs Pages workflow run #28558440328 passed, including GitHub Pages deployment.
 
 ## Phase 20: Opt-In Benchmark Workflow Upgrade
 
