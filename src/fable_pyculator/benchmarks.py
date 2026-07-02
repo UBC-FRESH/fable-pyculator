@@ -22,6 +22,7 @@ from fable_pyculator.workflows import DEFAULT_WORKFLOW_FILENAME, OutputRefStrate
 
 BenchmarkMode = Literal["evidence-only", "freshforge-plan", "freshforge-run"]
 EvidenceBackend = Literal["modelwright", "fable-local"]
+MatrixEvidenceBackend = Literal["modelwright"]
 
 
 @dataclass(frozen=True)
@@ -73,6 +74,68 @@ class FableBenchmarkRunSummary:
         }
 
 
+@dataclass(frozen=True)
+class FableBenchmarkMatrixEvidencePaths:
+    """Path contract for FABLE-facing benchmark matrix evidence packaging."""
+
+    workbook_version: str
+    evidence_id: str
+    output_dir: Path
+    artifact_root: Path
+    matrix_run_path: Path | None
+    matrix_summary_path: Path | None
+    modelwright_summary_json_path: Path
+    modelwright_summary_markdown_path: Path
+    benchmark_summary_json_path: Path
+    benchmark_summary_markdown_path: Path
+
+
+@dataclass(frozen=True)
+class FableBenchmarkMatrixEvidenceSummary:
+    """Compact FABLE-facing summary of a generated-model benchmark matrix."""
+
+    workbook_version: str
+    evidence_backend: MatrixEvidenceBackend
+    evidence_id: str
+    evidence_status: str
+    equivalence_status: str
+    case_count: int
+    complete_count: int
+    incomplete_count: int
+    skipped_count: int
+    pass_count: int
+    fail_count: int
+    diagnostic_count: int
+    error_count: int
+    warning_count: int
+    paths: dict[str, str | None]
+    modelwright_summary: dict[str, Any]
+    notes: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a stable JSON-serializable representation."""
+
+        return {
+            "workbook_version": self.workbook_version,
+            "evidence_backend": self.evidence_backend,
+            "evidence_id": self.evidence_id,
+            "evidence_status": self.evidence_status,
+            "equivalence_status": self.equivalence_status,
+            "case_count": self.case_count,
+            "complete_count": self.complete_count,
+            "incomplete_count": self.incomplete_count,
+            "skipped_count": self.skipped_count,
+            "pass_count": self.pass_count,
+            "fail_count": self.fail_count,
+            "diagnostic_count": self.diagnostic_count,
+            "error_count": self.error_count,
+            "warning_count": self.warning_count,
+            "paths": self.paths,
+            "modelwright_summary": _sanitize_compact_payload(self.modelwright_summary),
+            "notes": list(self.notes),
+        }
+
+
 def fable_benchmark_run_paths(
     *,
     workbook_version: str = "2021",
@@ -98,6 +161,43 @@ def fable_benchmark_run_paths(
         validation_summary_markdown_path=output_root / "summary.md",
         workflow_path=artifact_root / DEFAULT_WORKFLOW_FILENAME,
         freshforge_run_summary_path=output_root / "freshforge-run-summary.json",
+    )
+
+
+def fable_benchmark_matrix_evidence_paths(
+    *,
+    workbook_version: str = "2021",
+    repo_root: str | Path = ".",
+    matrix_run_path: str | Path | None = None,
+    matrix_summary_path: str | Path | None = None,
+    artifact_root: str | Path | None = None,
+    output_dir: str | Path | None = None,
+    evidence_id: str | None = None,
+) -> FableBenchmarkMatrixEvidencePaths:
+    """Return default paths for FABLE benchmark matrix evidence packaging."""
+
+    version = _normalize_workbook_version(workbook_version)
+    root = Path(repo_root)
+    strategy_root = root / f"tmp/strategy-comparisons/fable-{version}"
+    default_matrix_run = strategy_root / "matrix-run-summary.json"
+    matrix_run = _absolute_path(root, matrix_run_path) if matrix_run_path is not None else None
+    matrix_summary = _absolute_path(root, matrix_summary_path) if matrix_summary_path is not None else None
+    if matrix_run is None and matrix_summary is None and default_matrix_run.exists():
+        matrix_run = default_matrix_run
+    artifact = _absolute_path(root, artifact_root) if artifact_root is not None else strategy_root
+    output = _absolute_path(root, output_dir) if output_dir is not None else root / f"tmp/validation-evidence/fable-{version}/matrix"
+    resolved_evidence_id = evidence_id or f"fable-{version}-strategy-matrix"
+    return FableBenchmarkMatrixEvidencePaths(
+        workbook_version=version,
+        evidence_id=resolved_evidence_id,
+        output_dir=output,
+        artifact_root=artifact,
+        matrix_run_path=matrix_run,
+        matrix_summary_path=matrix_summary,
+        modelwright_summary_json_path=output / "summary.json",
+        modelwright_summary_markdown_path=output / "summary.md",
+        benchmark_summary_json_path=output / "benchmark-matrix-summary.json",
+        benchmark_summary_markdown_path=output / "benchmark-matrix-summary.md",
     )
 
 
@@ -173,6 +273,100 @@ def package_fable_benchmark_evidence(
         scenario_bundle=scenario_bundle,
         notes=tuple(notes),
     )
+
+
+def package_fable_benchmark_matrix_evidence(
+    *,
+    workbook_version: str = "2021",
+    repo_root: str | Path = ".",
+    matrix_run_path: str | Path | None = None,
+    matrix_summary_path: str | Path | None = None,
+    artifact_root: str | Path | None = None,
+    output_dir: str | Path | None = None,
+    evidence_id: str | None = None,
+    require_evidence: bool = False,
+) -> FableBenchmarkMatrixEvidenceSummary:
+    """Package compact FABLE benchmark matrix evidence through Modelwright.
+
+    This wrapper supplies FABLE-C path defaults and public-facing summary text. Generic matrix
+    aggregation remains in Modelwright.
+    """
+
+    paths = fable_benchmark_matrix_evidence_paths(
+        workbook_version=workbook_version,
+        repo_root=repo_root,
+        matrix_run_path=matrix_run_path,
+        matrix_summary_path=matrix_summary_path,
+        artifact_root=artifact_root,
+        output_dir=output_dir,
+        evidence_id=evidence_id,
+    )
+    if paths.matrix_run_path is None and paths.matrix_summary_path is None:
+        raise FileNotFoundError(
+            "matrix evidence packaging requires --matrix-run or --matrix-summary; "
+            f"no default matrix run summary exists at {paths.artifact_root / 'matrix-run-summary.json'}"
+        )
+    modelwright_api = _modelwright_matrix_evidence_api()
+    if modelwright_api is None:
+        raise RuntimeError(
+            "Modelwright with Phase 38 matrix evidence aggregation support is required "
+            "for FABLE benchmark matrix evidence packaging."
+        )
+    modelwright_paths, modelwright_extract, modelwright_write = modelwright_api
+    generic_paths = modelwright_paths(
+        evidence_id=paths.evidence_id,
+        output_dir=paths.output_dir,
+        matrix_run_path=paths.matrix_run_path,
+        matrix_summary_path=paths.matrix_summary_path,
+        artifact_root=paths.artifact_root,
+    )
+    summary = modelwright_extract(generic_paths, require_evidence=require_evidence)
+    written = modelwright_write(summary, generic_paths)
+    payload = _sanitize_compact_payload(dict(written.get("summary", summary.to_dict())))
+    notes = tuple(str(note) for note in payload.get("notes", ()))
+    notes = (
+        *notes,
+        "FABLE wrapper around Modelwright generic matrix evidence; no equivalence claim without explicit counts.",
+    )
+    return FableBenchmarkMatrixEvidenceSummary(
+        workbook_version=paths.workbook_version,
+        evidence_backend="modelwright",
+        evidence_id=str(payload.get("evidence_id", paths.evidence_id)),
+        evidence_status=str(payload.get("evidence_status", "incomplete")),
+        equivalence_status=str(payload.get("equivalence_status", "incomplete")),
+        case_count=int(payload.get("case_count", 0) or 0),
+        complete_count=int(payload.get("complete_count", 0) or 0),
+        incomplete_count=int(payload.get("incomplete_count", 0) or 0),
+        skipped_count=int(payload.get("skipped_count", 0) or 0),
+        pass_count=int(payload.get("pass_count", 0) or 0),
+        fail_count=int(payload.get("fail_count", 0) or 0),
+        diagnostic_count=int(payload.get("diagnostic_count", 0) or 0),
+        error_count=int(payload.get("error_count", 0) or 0),
+        warning_count=int(payload.get("warning_count", 0) or 0),
+        paths=_matrix_path_payload(paths),
+        modelwright_summary=payload,
+        notes=notes,
+    )
+
+
+def write_fable_benchmark_matrix_evidence(
+    summary: FableBenchmarkMatrixEvidenceSummary,
+    paths: FableBenchmarkMatrixEvidencePaths | None = None,
+) -> dict[str, Any]:
+    """Write compact FABLE-facing JSON and Markdown matrix evidence summaries."""
+
+    resolved_paths = paths or fable_benchmark_matrix_evidence_paths(workbook_version=summary.workbook_version)
+    resolved_paths.output_dir.mkdir(parents=True, exist_ok=True)
+    payload = summary.to_dict()
+    resolved_paths.benchmark_summary_json_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    resolved_paths.benchmark_summary_markdown_path.write_text(
+        _benchmark_matrix_markdown(summary),
+        encoding="utf-8",
+    )
+    return payload
 
 
 def write_fable_benchmark_summary(
@@ -333,6 +527,18 @@ def _modelwright_evidence_api() -> tuple[Any, Any, Any] | None:
     return validation_evidence_paths, modelwright_extract, modelwright_write
 
 
+def _modelwright_matrix_evidence_api() -> tuple[Any, Any, Any] | None:
+    try:
+        from modelwright.evidence import (  # type: ignore[import-untyped]
+            extract_matrix_evidence,
+            matrix_evidence_paths,
+            write_matrix_evidence,
+        )
+    except (ImportError, AttributeError):
+        return None
+    return matrix_evidence_paths, extract_matrix_evidence, write_matrix_evidence
+
+
 def _compact_freshforge_summary(payload: dict[str, Any]) -> dict[str, Any]:
     summary = payload.get("summary", payload)
     if not isinstance(summary, dict):
@@ -348,6 +554,19 @@ def _compact_freshforge_summary(payload: dict[str, Any]) -> dict[str, Any]:
             "artifact_count",
         )
         if key in summary
+    }
+
+
+def _matrix_path_payload(paths: FableBenchmarkMatrixEvidencePaths) -> dict[str, str | None]:
+    return {
+        "artifact_root": paths.artifact_root.as_posix(),
+        "output_dir": paths.output_dir.as_posix(),
+        "matrix_run": paths.matrix_run_path.as_posix() if paths.matrix_run_path is not None else None,
+        "matrix_summary": paths.matrix_summary_path.as_posix() if paths.matrix_summary_path is not None else None,
+        "modelwright_summary_json": paths.modelwright_summary_json_path.as_posix(),
+        "modelwright_summary_markdown": paths.modelwright_summary_markdown_path.as_posix(),
+        "benchmark_summary_json": paths.benchmark_summary_json_path.as_posix(),
+        "benchmark_summary_markdown": paths.benchmark_summary_markdown_path.as_posix(),
     }
 
 
@@ -392,6 +611,79 @@ def _benchmark_markdown(summary: FableBenchmarkRunSummary) -> str:
     if summary.notes:
         lines.extend(["## Notes", "", *[f"- {note}" for note in summary.notes], ""])
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _benchmark_matrix_markdown(summary: FableBenchmarkMatrixEvidenceSummary) -> str:
+    lines = [
+        f"# FABLE {summary.workbook_version} Benchmark Matrix Evidence",
+        "",
+        f"- evidence backend: `{summary.evidence_backend}`",
+        f"- evidence status: `{summary.evidence_status}`",
+        f"- equivalence status: `{summary.equivalence_status}`",
+        f"- cases: `{summary.case_count}`",
+        f"- complete: `{summary.complete_count}`",
+        f"- incomplete: `{summary.incomplete_count}`",
+        f"- skipped: `{summary.skipped_count}`",
+        f"- pass: `{summary.pass_count}`",
+        f"- fail: `{summary.fail_count}`",
+        "",
+        "Equivalence is `pass` only when Modelwright matrix evidence contains explicit comparable, match, and mismatch counts proving zero mismatches.",
+        "",
+    ]
+    cases = summary.modelwright_summary.get("cases", ())
+    if cases:
+        lines.extend(
+            [
+                "## Cases",
+                "",
+                "| Case | Evidence | Equivalence | Comparable | Matches | Mismatches |",
+                "| --- | --- | --- | ---: | ---: | ---: |",
+            ]
+        )
+        for case in cases:
+            if not isinstance(case, dict):
+                continue
+            lines.append(
+                "| "
+                f"`{case.get('case_id')}` | "
+                f"`{case.get('evidence_status')}` | "
+                f"`{case.get('equivalence_status')}` | "
+                f"{case.get('comparable_output_count')} | "
+                f"{case.get('match_count')} | "
+                f"{case.get('mismatch_count')} |"
+            )
+        lines.append("")
+    if summary.notes:
+        lines.extend(["## Notes", "", *[f"- {note}" for note in summary.notes], ""])
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _sanitize_compact_payload(value: Any) -> Any:
+    raw_keys = {
+        "source_code",
+        "output_values",
+        "workbook_contents",
+        "workbook_data",
+        "generated_values",
+        "validation_report",
+        "mismatches",
+    }
+    if isinstance(value, dict):
+        return {
+            str(key): _sanitize_compact_payload(item)
+            for key, item in value.items()
+            if str(key) not in raw_keys
+        }
+    if isinstance(value, list):
+        return [_sanitize_compact_payload(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_sanitize_compact_payload(item) for item in value)
+    return value
+
+
+def _absolute_path(root: Path, value: str | Path) -> Path:
+    path = Path(value)
+    return path if path.is_absolute() else root / path
 
 
 def _normalize_workbook_version(workbook_version: str) -> str:

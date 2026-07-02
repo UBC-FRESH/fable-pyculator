@@ -52,6 +52,9 @@ workflow can stay extraction-only, prepare a FreshForge plan, or explicitly run 
 benchmark workflow, but it still uploads only compact sanitized summaries. See
 :doc:`benchmark-evidence-workflow`.
 
+Phase 25 adds a cookbook for packaging compact evidence across an explicit FreshForge output-ref
+strategy matrix run. See :doc:`fable-2021-benchmark-matrix-evidence-cookbook`.
+
 These summaries are conservative: they report ``pass`` only when explicit comparable-output, match,
 and mismatch counts prove zero mismatches. Current-style execution artifacts without those counts are
 reported as incomplete evidence.

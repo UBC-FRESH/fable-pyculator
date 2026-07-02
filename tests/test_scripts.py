@@ -82,6 +82,22 @@ def test_run_fable_benchmark_evidence_script_help_documents_modes() -> None:
     assert "--output-ref-strategy" in result.stdout
 
 
+def test_package_fable_matrix_evidence_script_help_documents_matrix_inputs() -> None:
+    script = Path("scripts/package_fable_matrix_evidence.py")
+
+    result = subprocess.run(
+        [str(script), "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert os.access(script, os.X_OK)
+    assert "--matrix-run" in result.stdout
+    assert "--matrix-summary" in result.stdout
+    assert "--require-evidence" in result.stdout
+
+
 def test_run_fable_benchmark_evidence_script_default_json_skips_missing_artifacts(tmp_path: Path) -> None:
     script = Path("scripts/run_fable_benchmark_evidence.py")
 
@@ -137,6 +153,90 @@ def test_run_fable_benchmark_evidence_script_freshforge_plan_skips_missing_workb
     payload = json.loads(result.stdout)
     assert payload["freshforge"]["status"] == "skipped"
     assert payload["freshforge"]["reason"] == "missing-workbook"
+
+
+def test_package_fable_matrix_evidence_script_default_json_with_synthetic_backend(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    module = _load_script_module("package_fable_matrix_evidence", Path("scripts/package_fable_matrix_evidence.py"))
+    paths = _fake_matrix_evidence_paths(tmp_path)
+    calls: dict[str, object] = {}
+
+    import fable_pyculator
+
+    monkeypatch.setattr(fable_pyculator, "fable_benchmark_matrix_evidence_paths", lambda **_: paths)
+    monkeypatch.setattr(
+        fable_pyculator,
+        "package_fable_benchmark_matrix_evidence",
+        lambda **kwargs: _fake_matrix_summary(calls, kwargs),
+    )
+    monkeypatch.setattr(fable_pyculator, "write_fable_benchmark_matrix_evidence", lambda summary, paths: summary.to_dict())
+
+    exit_code = module.main(["--repo-root", str(tmp_path), "--matrix-run", str(tmp_path / "matrix-run.json"), "--json"])
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["ok"] is True
+    assert payload["evidence_backend"] == "modelwright"
+    assert payload["case_count"] == 2
+    assert calls["matrix_run_path"] == str(tmp_path / "matrix-run.json")
+
+
+def test_package_fable_matrix_evidence_script_accepts_matrix_summary_and_requires_evidence(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    module = _load_script_module("package_fable_matrix_evidence_summary", Path("scripts/package_fable_matrix_evidence.py"))
+    paths = _fake_matrix_evidence_paths(tmp_path, matrix_summary_path=tmp_path / "matrix-summary.json")
+    calls: dict[str, object] = {}
+
+    import fable_pyculator
+
+    monkeypatch.setattr(fable_pyculator, "fable_benchmark_matrix_evidence_paths", lambda **_: paths)
+    monkeypatch.setattr(
+        fable_pyculator,
+        "package_fable_benchmark_matrix_evidence",
+        lambda **kwargs: _fake_matrix_summary(calls, kwargs),
+    )
+    monkeypatch.setattr(fable_pyculator, "write_fable_benchmark_matrix_evidence", lambda summary, paths: summary.to_dict())
+
+    exit_code = module.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--matrix-summary",
+            str(tmp_path / "matrix-summary.json"),
+            "--require-evidence",
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["matrix_summary"] == "matrix-summary.json"
+    assert calls["matrix_summary_path"] == str(tmp_path / "matrix-summary.json")
+    assert calls["require_evidence"] is True
+
+
+def test_package_fable_matrix_evidence_script_missing_matrix_input_fails(tmp_path: Path) -> None:
+    script = Path("scripts/package_fable_matrix_evidence.py")
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(tmp_path), "--json"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stderr)
+    assert payload["ok"] is False
+    assert "requires --matrix-run or --matrix-summary" in payload["error"]
 
 
 def test_build_fable_model_script_reports_missing_versioned_workbook(tmp_path: Path) -> None:
@@ -812,6 +912,42 @@ def _fake_rebuild_plan(root: Path) -> FableFreshForgeRebuildPlan:
         output_refs=("GHG!B3", "GHG!D3"),
         validation_scenario={"outputs": [{"cell_ref": "GHG!B3"}]},
         workflow={"workflow": {"id": "demo"}, "nodes": []},
+    )
+
+
+def _fake_matrix_evidence_paths(root: Path, *, matrix_summary_path: Path | None = None) -> SimpleNamespace:
+    return SimpleNamespace(
+        matrix_run_path=None if matrix_summary_path is not None else root / "matrix-run.json",
+        matrix_summary_path=matrix_summary_path,
+        artifact_root=root / "artifact-root",
+        benchmark_summary_json_path=root / "benchmark-matrix-summary.json",
+        benchmark_summary_markdown_path=root / "benchmark-matrix-summary.md",
+        modelwright_summary_json_path=root / "summary.json",
+    )
+
+
+def _fake_matrix_summary(calls: dict[str, object], kwargs: dict[str, object]) -> SimpleNamespace:
+    calls.update(kwargs)
+    return SimpleNamespace(
+        to_dict=lambda: {
+            "workbook_version": "2021",
+            "evidence_backend": "modelwright",
+            "evidence_id": "fable-2021-strategy-matrix",
+            "evidence_status": "complete",
+            "equivalence_status": "pass",
+            "case_count": 2,
+            "complete_count": 2,
+            "incomplete_count": 0,
+            "skipped_count": 0,
+            "pass_count": 2,
+            "fail_count": 0,
+            "diagnostic_count": 0,
+            "error_count": 0,
+            "warning_count": 0,
+            "paths": {},
+            "modelwright_summary": {},
+            "notes": [],
+        }
     )
 
 

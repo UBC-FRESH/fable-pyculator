@@ -4,6 +4,18 @@ This file records completed project work in chronological order.
 
 ## 2026-07-02
 
+- Activated Phase 25 on `feature/p25-fable-benchmark-matrix-evidence-cookbook`, created child
+  issues #174 through #178 under parent issue #171, and scoped the phase around packaging FABLE
+  2021 benchmark matrix evidence through Modelwright's generic matrix evidence aggregation while
+  keeping matrix execution explicit and equivalence claims evidence-bound.
+- Added FABLE-facing benchmark matrix evidence path, summary, packaging, and writer helpers plus
+  `scripts/package_fable_matrix_evidence.py`, delegating generic matrix aggregation to Modelwright
+  Phase 38 and failing clearly when that backend is unavailable.
+- Added the FABLE 2021 benchmark matrix evidence cookbook and linked it from README, benchmark
+  evidence, output-ref strategy comparison, generated-model artifact, and validation-scope docs.
+- Verified the Phase 25 implementation with Ruff, full pytest (`130` passed and `9` skipped
+  workbook tests), warning-clean Sphinx docs, Read the Docs theme verification, public workbook
+  checksums, release artifact checks, and `git diff --check`.
 - Added planned Phase 25 and Phase 26 parent issues to extend the FreshForge workflow lane: Phase 25
   will consume Modelwright matrix evidence aggregation for a 2021 benchmark matrix cookbook, and
   Phase 26 will tackle editable scenario-definition parameter surfaces.

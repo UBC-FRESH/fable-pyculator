@@ -119,3 +119,16 @@ scenario-bundle run summary when one already exists:
 
 This is summary ingestion only. Scenario-bundle execution remains documented in
 :doc:`scenario-bundles` and :doc:`scenario-bundle-freshforge-orchestration`.
+
+Matrix Evidence
+---------------
+
+The single-run benchmark wrapper packages evidence for one generated-model workflow. For output-ref
+strategy matrices, use the matrix cookbook instead:
+
+.. code-block:: bash
+
+   .venv/bin/python scripts/package_fable_matrix_evidence.py --workbook-version 2021 --json
+
+See :doc:`fable-2021-benchmark-matrix-evidence-cookbook` for the compare-only, matrix-plan,
+optional matrix-run, and matrix evidence packaging sequence.

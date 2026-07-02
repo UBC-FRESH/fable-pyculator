@@ -20,6 +20,7 @@ Modelwright-generated Python models.
    guides/2021-freshforge-rebuild-command
    guides/validation-evidence-packaging
    guides/benchmark-evidence-workflow
+   guides/fable-2021-benchmark-matrix-evidence-cookbook
    guides/validation-scope
    guides/release-deployment
 
