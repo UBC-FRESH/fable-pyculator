@@ -4,6 +4,9 @@ This file records completed project work in chronological order.
 
 ## 2026-07-02
 
+- Added planned Phase 25 and Phase 26 parent issues to extend the FreshForge workflow lane: Phase 25
+  will consume Modelwright matrix evidence aggregation for a 2021 benchmark matrix cookbook, and
+  Phase 26 will tackle editable scenario-definition parameter surfaces.
 - Updated the optional FreshForge integration dependency now that FreshForge is published on PyPI:
   `fable-pyculator[freshforge]`, `dev`, and `test` install `freshforge>=0.1.0a5,<0.2` while the core
   FABLE Pyculator package remains FreshForge-free.
