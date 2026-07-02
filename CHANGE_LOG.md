@@ -16,6 +16,8 @@ This file records completed project work in chronological order.
 - Verified the Phase 25 implementation with Ruff, full pytest (`130` passed and `9` skipped
   workbook tests), warning-clean Sphinx docs, Read the Docs theme verification, public workbook
   checksums, release artifact checks, and `git diff --check`.
+- Merged Phase 25 through PR #179 and confirmed post-merge Test workflow #28627076860 passed plus
+  Docs Pages workflow #28627076848 passed after rerunning a transient GitHub Pages deploy failure.
 - Added planned Phase 25 and Phase 26 parent issues to extend the FreshForge workflow lane: Phase 25
   will consume Modelwright matrix evidence aggregation for a 2021 benchmark matrix cookbook, and
   Phase 26 will tackle editable scenario-definition parameter surfaces.

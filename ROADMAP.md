@@ -39,9 +39,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   post-merge Test and Docs Pages workflows passed.
 - Phase 24 is closed: `v0.1.0a4` is published to PyPI and GitHub as the matrix workflow automation
   alpha, PR #168 merged, and post-merge Test and Docs Pages workflows passed.
-- Phase 25 is active on `feature/p25-fable-benchmark-matrix-evidence-cookbook`: FABLE consumes
-  Modelwright Phase 38 matrix evidence aggregation in a 2021 benchmark matrix evidence
-  cookbook/workflow.
+- Phase 25 is closed: FABLE benchmark matrix evidence cookbook/workflow is tracked, PR #179
+  merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 26 is planned under parent issue #172: FABLE should add an editable scenario-definition
   parameter surface after matrix evidence workflows are documented.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
@@ -1907,7 +1906,7 @@ Closeout evidence:
 
 GitHub parent issue: #171.
 
-Status: active on `feature/p25-fable-benchmark-matrix-evidence-cookbook`.
+Status: complete.
 
 Goal: consume Modelwright Phase 38 matrix evidence aggregation to document and package a FABLE-facing
 2021 benchmark matrix workflow.
@@ -1918,7 +1917,7 @@ Planned scope:
 - [x] P25.2 Add matrix evidence packaging helpers. Child issue: #175.
 - [x] P25.3 Add script/workflow cookbook commands. Child issue: #176.
 - [x] P25.4 Update docs, examples, and tests. Child issue: #177.
-- [ ] P25.5 Verify, PR, deploy docs, and close phase. Child issue: #178.
+- [x] P25.5 Verify, PR, deploy docs, and close phase. Child issue: #178.
 
 Scope:
 
@@ -1943,6 +1942,8 @@ Implementation evidence:
 - Local verification passed with Ruff, full pytest (`130` passed, `9` skipped workbook tests),
   warning-clean Sphinx docs, Read the Docs theme verification, public workbook checksums, release
   artifact checks, and `git diff --check`.
+- PR #179 merged to `main`; post-merge Test workflow #28627076860 passed and post-merge Docs Pages
+  workflow #28627076848 passed after rerunning a transient GitHub Pages deploy failure.
 
 ## Phase 26: Editable Scenario-Definition Parameter Surface
 
