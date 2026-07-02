@@ -14,10 +14,19 @@ validation, planning, namespaces, and provider orchestration.
 Installation Boundary
 ---------------------
 
-FABLE Pyculator registers a ``freshforge.providers`` entry point, but it does not depend on
-FreshForge directly. FreshForge can only discover that entry point after the current FABLE Pyculator
-checkout has been installed into the active environment. From the repository root, refresh the local
-editable install after pulling provider changes:
+FABLE Pyculator registers a ``freshforge.providers`` entry point. The core
+package stays FreshForge-free during normal imports, but the ``freshforge``
+extra installs the PyPI alpha needed for provider discovery, planning, and
+execution:
+
+.. code-block:: bash
+
+   python -m pip install "fable-pyculator[freshforge]"
+
+FreshForge can only discover the provider entry point after the current FABLE
+Pyculator checkout has been installed into the active environment. From the
+repository root, refresh the local editable install after pulling provider
+changes:
 
 .. code-block:: bash
 
@@ -30,12 +39,8 @@ or, when the virtual environment already exists:
    source .venv/bin/activate
    python -m pip install -e ".[dev,notebook,docs]"
 
-Then install FreshForge separately in development environments that need provider discovery or
-workflow planning:
-
-.. code-block:: bash
-
-   python -m pip install "freshforge @ git+https://github.com/UBC-FRESH/freshforge.git@v0.1.0a4"
+The development extra includes FreshForge so provider and matrix tests exercise
+the published FreshForge alpha line.
 
 Confirm that FreshForge can see the FABLE Pyculator provider before validating the example:
 

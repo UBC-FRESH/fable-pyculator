@@ -4,6 +4,9 @@ This file records completed project work in chronological order.
 
 ## 2026-07-02
 
+- Updated the optional FreshForge integration dependency now that FreshForge is published on PyPI:
+  `fable-pyculator[freshforge]`, `dev`, and `test` install `freshforge>=0.1.0a5,<0.2` while the core
+  FABLE Pyculator package remains FreshForge-free.
 - Activated Phase 21 on `feature/p21-v0.1.0a3-release`, created parent issue #143 and child
   issues #144 through #147, and scoped the release around publishing the benchmark workflow
   automation alpha after FreshForge `v0.1.0a3` and Modelwright `v0.1.0a8`.
