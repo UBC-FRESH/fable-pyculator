@@ -1447,6 +1447,7 @@ choosing validation or modelling targets.
 - [x] P18.3 Add script interface and public-safe examples. Child issue: #128.
 - [x] P18.4 Update docs and tests. Child issue: #125.
 - [ ] P18.5 Verify, PR, deploy docs, and close phase. Child issue: #129.
+  - [x] Open PR #130 from `feature/p18-output-ref-strategy-comparison-workflows` to `main`.
 
 Dependencies:
 
@@ -1486,6 +1487,7 @@ Local verification:
 - Real local 2021 smoke comparison passed for `output-columns` and `headline-only` with
   `--include-workflows --include-existing-evidence`, reporting 16,478 output-column refs and 99
   headline refs while correctly marking absent per-strategy generated-model evidence as skipped.
+- Phase 18 PR #130 is open.
 
 ## Phase 19: FreshForge-Backed Scenario-Bundle Orchestration
 
