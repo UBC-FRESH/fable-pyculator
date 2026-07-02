@@ -2,6 +2,22 @@
 
 This file records completed project work in chronological order.
 
+## 2026-07-02
+
+- Activated Phase 21 on `feature/p21-v0.1.0a3-release`, created parent issue #143 and child
+  issues #144 through #147, and scoped the release around publishing the benchmark workflow
+  automation alpha after FreshForge `v0.1.0a3` and Modelwright `v0.1.0a8`.
+- Started the `v0.1.0a3` release candidate by bumping package/import/provider versions, raising the
+  Modelwright dependency floor to `modelwright[notebook]>=0.1.0a8`, updating FreshForge guidance to
+  `v0.1.0a3`, and refreshing README, release docs, tests, and release-artifact checks for the
+  output-ref strategy comparison, FreshForge-backed scenario-bundle, and opt-in benchmark evidence
+  automation milestone.
+- Verified the `v0.1.0a3` release candidate with Ruff, full pytest (`108` passed and `9` skipped
+  workbook tests), warning-clean Sphinx docs, Read the Docs theme verification, public workbook
+  checksums, release artifact checks with a clean wheel install against published Modelwright
+  `0.1.0a8`, `git diff --check`, and a benchmark evidence script smoke test selecting the
+  Modelwright evidence backend.
+
 ## 2026-07-01
 
 - Activated Phase 20 on `feature/p20-opt-in-benchmark-workflow-upgrade`, created child issues #137
