@@ -4,6 +4,9 @@ This file records completed project work in chronological order.
 
 ## 2026-07-01
 
+- Activated Phase 19 on `feature/p19-freshforge-scenario-bundle-orchestration`, created child
+  issues #131, #132, #133, #134, and #135 under parent issue #123, and scoped the phase around
+  FreshForge-backed scenario-bundle orchestration while preserving the direct bundle runner.
 - Activated Phase 18 on `feature/p18-output-ref-strategy-comparison-workflows`, created child
   issues #127, #126, #128, #125, and #129 under parent issue #122, and scoped the phase around
   comparing FABLE output-ref strategy boundaries without making new generated-model equivalence
