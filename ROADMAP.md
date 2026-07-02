@@ -25,9 +25,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   tracked, PR #115 merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 17 is closed: `v0.1.0a2` is published to PyPI and GitHub as the FABLE workflow automation
   alpha, PR #121 merged, and post-merge Test and Docs Pages workflows passed.
-- Phase 18 is active on `feature/p18-output-ref-strategy-comparison-workflows`: output-ref strategy
-  comparison workflows will help users compare generated-model boundaries before choosing validation
-  or modelling targets.
+- Phase 18 is closed: output-ref strategy comparison workflows are tracked, PR #130 merged, and
+  post-merge Test and Docs Pages workflows passed.
 - Phases 19 and 20 remain planned backlog phases for post-alpha automation: FreshForge-backed
   scenario-bundle orchestration and opt-in benchmark workflow upgrades. Child issues will be created
   only when each phase is activated.
@@ -1437,7 +1436,7 @@ GitHub parent issue: #122.
 
 Active branch: `feature/p18-output-ref-strategy-comparison-workflows`.
 
-Status: active.
+Status: complete.
 
 Goal: compare FABLE output-ref strategies as explicit generated-model workflow boundaries before
 choosing validation or modelling targets.
@@ -1446,8 +1445,12 @@ choosing validation or modelling targets.
 - [x] P18.2 Add strategy comparison preparation and optional run-summary ingestion. Child issue: #126.
 - [x] P18.3 Add script interface and public-safe examples. Child issue: #128.
 - [x] P18.4 Update docs and tests. Child issue: #125.
-- [ ] P18.5 Verify, PR, deploy docs, and close phase. Child issue: #129.
+- [x] P18.5 Verify, PR, deploy docs, and close phase. Child issue: #129.
   - [x] Open PR #130 from `feature/p18-output-ref-strategy-comparison-workflows` to `main`.
+  - [x] Merge PR #130 to `main`.
+  - [x] Confirm post-merge Test workflow run #28557443902 passed.
+  - [x] Confirm post-merge Docs Pages workflow run #28557443878 passed and deployed.
+  - [x] Smoke-check the published Sphinx page for the output-ref strategy comparison guide.
 
 Dependencies:
 
@@ -1487,7 +1490,10 @@ Local verification:
 - Real local 2021 smoke comparison passed for `output-columns` and `headline-only` with
   `--include-workflows --include-existing-evidence`, reporting 16,478 output-column refs and 99
   headline refs while correctly marking absent per-strategy generated-model evidence as skipped.
-- Phase 18 PR #130 is open.
+- Merged Phase 18 through PR #130 and confirmed post-merge Test workflow run #28557443902 plus
+  Docs Pages workflow run #28557443878 passed, including GitHub Pages deployment.
+- Smoke-checked the live Sphinx page at
+  `https://ubc-fresh.github.io/fable-pyculator/guides/output-ref-strategy-comparison.html`.
 
 ## Phase 19: FreshForge-Backed Scenario-Bundle Orchestration
 

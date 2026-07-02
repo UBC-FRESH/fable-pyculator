@@ -19,6 +19,9 @@ This file records completed project work in chronological order.
   tests), Sphinx warning-as-error docs, Read the Docs theme verification, workbook checksums, release
   artifact checks against published `modelwright 0.1.0a7`, `git diff --check`, and a real local 2021
   strategy-comparison smoke run for `output-columns` and `headline-only`.
+- Merged Phase 18 through PR #130, confirmed post-merge Test workflow run #28557443902 and Docs
+  Pages workflow run #28557443878 passed, smoke-checked the live output-ref strategy comparison docs,
+  and closed the Phase 18 issue set.
 - Activated Phase 17 on `feature/p17-v0.1.0a2-release`, created parent issue #116 and child issues
   #120, #118, #119, and #117, and scoped the phase around publishing the FABLE workflow automation
   alpha after the FreshForge `v0.1.0a2` and Modelwright `v0.1.0a7` dependency releases.
