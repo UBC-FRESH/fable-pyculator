@@ -39,6 +39,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   post-merge Test and Docs Pages workflows passed.
 - Phase 24 is closed: `v0.1.0a4` is published to PyPI and GitHub as the matrix workflow automation
   alpha, PR #168 merged, and post-merge Test and Docs Pages workflows passed.
+- Phase 25 is planned under parent issue #171: FABLE should consume Modelwright Phase 38 matrix
+  evidence aggregation in a 2021 benchmark matrix evidence cookbook/workflow.
+- Phase 26 is planned under parent issue #172: FABLE should add an editable scenario-definition
+  parameter surface after matrix evidence workflows are documented.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1897,3 +1901,49 @@ Closeout evidence:
 - GitHub prerelease `v0.1.0a4` was created with the workflow-built wheel and sdist.
 - Clean PyPI install of `fable-pyculator[notebook]==0.1.0a4` imported
   `fable_pyculator 0.1.0a4` with `modelwright 0.1.0a8` and smoke-tested the matrix helper exports.
+
+## Phase 25: FABLE Benchmark Matrix Evidence Cookbook
+
+GitHub parent issue: #171.
+
+Status: planned. Child issues will be created when this phase is activated.
+
+Goal: consume Modelwright Phase 38 matrix evidence aggregation to document and package a FABLE-facing
+2021 benchmark matrix workflow.
+
+Planned scope:
+
+- Document compare-only, matrix-plan, and explicit matrix-run workflows for 2021 FABLE output-ref
+  strategy cases.
+- Package FABLE-facing summaries from generic Modelwright matrix evidence.
+- Keep generated-model equivalence claims tied only to explicit comparable/match/mismatch evidence.
+
+Out of scope:
+
+- Editable scenario-definition parameters.
+- New generated-model equivalence claims without evidence.
+- FreshForge core feature work.
+- Remote execution, caching, retries, or production scheduling.
+
+## Phase 26: Editable Scenario-Definition Parameter Surface
+
+GitHub parent issue: #172.
+
+Status: planned. Child issues will be created when this phase is activated.
+
+Goal: expose FABLE scenario-definition table editing and validation as a first-class FABLE Pyculator
+modelling surface after benchmark matrix evidence workflows are documented.
+
+Planned scope:
+
+- Add APIs for editable scenario-definition parameter surfaces.
+- Validate edited parameter tables before generated-model execution.
+- Integrate later with scenario bundles and FreshForge matrices.
+- Keep workbook-version assumptions explicit.
+
+Out of scope:
+
+- Arbitrary country-calculator support.
+- Generic Modelwright workbook conversion logic.
+- Remote execution, caching, retries, or production scheduling.
+- New generated-model equivalence claims.
