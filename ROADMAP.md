@@ -44,9 +44,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 26 is closed: editable scenario-definition patches are tracked, PR #185 merged, and
   post-merge Test and Docs Pages workflows passed after rerunning a transient GitHub Pages deploy
   failure.
-- Phase 27 is active on `feature/p27-alpha-tester-notebook-hardening`: alpha-tester notebook
-  reliability, 2021 smoke hardening, skipped-table diagnostics, and notebook-failure issue hygiene
-  are being tracked under parent issue #194.
+- Phase 27 is closed: alpha-tester notebook reliability, 2021 smoke hardening, skipped-table
+  diagnostics, and notebook-failure issue hygiene are tracked, PR #201 merged, and post-merge Test
+  and Docs Pages workflows passed.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -2021,7 +2021,7 @@ GitHub parent issue: #194.
 
 Branch: `feature/p27-alpha-tester-notebook-hardening`.
 
-Status: active.
+Status: complete.
 
 Goal: harden the Abdulateef-facing 2021 notebook loop after recent output-table rendering fixes by
 adding a repeatable smoke path, clearer skipped-table diagnostics, and better notebook failure
@@ -2029,11 +2029,11 @@ reporting.
 
 Tasks:
 
-- [ ] P27.1 Define notebook smoke scope and alpha-tester failure contract. Child issue: #195.
-- [ ] P27.2 Add opt-in 2021 notebook smoke script/test. Child issue: #196.
-- [ ] P27.3 Improve notebook-loop rendering diagnostics. Child issue: #197.
-- [ ] P27.4 Harden GitHub issue/reporting workflow for notebook failures. Child issue: #198.
-- [ ] P27.5 Update docs, verification, PR, deploy docs, and close phase. Child issue: #199.
+- [x] P27.1 Define notebook smoke scope and alpha-tester failure contract. Child issue: #195.
+- [x] P27.2 Add opt-in 2021 notebook smoke script/test. Child issue: #196.
+- [x] P27.3 Improve notebook-loop rendering diagnostics. Child issue: #197.
+- [x] P27.4 Harden GitHub issue/reporting workflow for notebook failures. Child issue: #198.
+- [x] P27.5 Update docs, verification, PR, deploy docs, and close phase. Child issue: #199.
 
 Scope:
 
@@ -2076,3 +2076,9 @@ Verification evidence:
 - `.venv/bin/python scripts/smoke_2021_notebook_loop.py --json` passed against restored local
   2021 artifacts in about 213 seconds, rendering 10 output tables, skipping 4 non-matching default
   `OUTPUT-*` tables, and proving populated `trade_resultstrade` `PRODUCT`/`YEAR` context columns.
+
+Closeout evidence:
+
+- PR #201 merged to `main` with merge commit `37cf162`.
+- Post-merge Test workflow #28631757605 passed.
+- Post-merge Docs Pages workflow #28631757588 passed.

@@ -15,6 +15,8 @@ This file records completed project work in chronological order.
 - Verified Phase 27 locally with Ruff, full pytest (`147` passed and `12` skipped), warning-clean
   Sphinx docs, Read the Docs theme verification, public workbook checksums, release artifact checks,
   `git diff --check`, and a restored-artifact 2021 smoke run that passed in about 213 seconds.
+- Merged Phase 27 through PR #201 and confirmed post-merge Test workflow #28631757605 plus Docs
+  Pages workflow #28631757588 passed.
 - Fixed the 2021 loop notebook crash where rendering all default output tables with an `OUTPUT-*`
   flavour filter raised on tables without matching output columns; default all-table rendering now
   skips non-matching tables while explicit table requests still fail clearly.
