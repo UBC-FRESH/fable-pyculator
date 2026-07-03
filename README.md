@@ -212,6 +212,20 @@ Remove `--dry-run` after the matching workbook and generated model are restored 
 outputs are written under ignored `tmp/scenario-runs/fable-YYYY/<bundle-id>/` paths. See
 `docs/guides/scenario-bundles.rst` for the bundle schema and artifact layout.
 
+To validate conservative `SCENARIOS definition` table edits without mutating the source workbook,
+use a scenario-definition patch:
+
+```bash
+.venv/bin/python scripts/validate_fable_scenario_definition_patch.py \
+  --patch examples/scenario-definition-patches/fable_2021_diet_target_demo.yaml \
+  --workbook-version 2021 \
+  --json
+```
+
+Valid patches target non-formula `DIRECT` cells and become generated-model input overrides. Read-only
+role tags such as `SCEN`, `DATA-*`, and `CALC` fail before model execution. See
+`docs/guides/scenario-definition-editing.rst`.
+
 When repeated bundle runs need explicit graph planning, namespace-isolated artifacts, and a compact
 FreshForge run summary, use the FreshForge-backed path:
 
@@ -296,12 +310,10 @@ The Sphinx guide expands this into a full workflow under
 `fable-pyculator` is pre-release. The current alpha line is `0.1.0a4`; alpha releases must not be
 described as stable public API compatibility, full editable scenario-definition widgets, production
 readiness, or arbitrary country-calculator support. Generated-model equivalence claims are limited
-to the exact 2020 and 2021 public FABLE-C validation evidence recorded in the docs. The `0.1.0a4`
-line adds the current FABLE matrix workflow automation surface: FreshForge matrix runs for
-output-ref strategies and scenario bundles on top of the existing strategy comparison,
-FreshForge-backed scenario-bundle orchestration, opt-in benchmark evidence packaging, planning/run
-examples, version-general build helpers, scenario bundles, and compact validation-evidence
-packaging.
+to the exact 2020 and 2021 public FABLE-C validation evidence recorded in the docs. Work after the
+`0.1.0a4` release adds the current FABLE matrix workflow automation surface plus a conservative
+scenario-definition patch surface that produces generated-model input overrides without mutating
+source workbooks.
 
 The public API is intentionally small while the FABLE-specific conventions are being discovered from
 real country calculators.

@@ -5,7 +5,14 @@ from pathlib import Path
 
 import pytest
 
-from fable_pyculator import discover_scenario_definition_tables
+from fable_pyculator import (
+    FableCalculatorSpec,
+    ScenarioDefinitionEdit,
+    ScenarioDefinitionPatch,
+    discover_scenario_definition_tables,
+    editable_scenario_definition_cells,
+    validate_scenario_definition_patch,
+)
 
 
 WORKBOOK_ROOT = Path("tmp/private-workbooks")
@@ -90,9 +97,50 @@ def test_2020_and_2021_scenario_definition_location_links_match() -> None:
     assert observed_2020["S.4.B"] == ["FoodLossTarget"]
 
 
+@pytest.mark.workbook
+def test_2020_and_2021_definition_tables_expose_direct_editable_cells() -> None:
+    for filename in ("2020_Open_FABLECalculator.xlsx", "2021_Open_FABLECalculator.xlsx"):
+        tables = discover_scenario_definition_tables(workbook_path(filename))
+        spec = FableCalculatorSpec(scenario_definition_tables=tables)
+
+        editable_cells = editable_scenario_definition_cells(spec)
+
+        assert editable_cells
+        assert {cell.column_role_tag for cell in editable_cells} == {"DIRECT"}
+        assert all(not (isinstance(cell.original_value, str) and cell.original_value.startswith("=")) for cell in editable_cells)
+
+
+@pytest.mark.workbook
+def test_known_read_only_definition_cells_remain_rejected() -> None:
+    tables = discover_scenario_definition_tables(workbook_path("2020_Open_FABLECalculator.xlsx"))
+    spec = FableCalculatorSpec(scenario_definition_tables=tables)
+    read_only_cell_ref = _first_read_only_or_formula_cell(tables)
+
+    with pytest.raises(ValueError, match="read-only"):
+        validate_scenario_definition_patch(
+            spec,
+            ScenarioDefinitionPatch(
+                version=1,
+                patch_id="read-only-demo",
+                edits=(ScenarioDefinitionEdit(cell_ref=read_only_cell_ref, value="patched"),),
+            ),
+        )
+
+
 def _location_inventory(workbook_path: Path) -> dict[str, list[str]]:
     inventory: dict[str, list[str]] = {}
     for table in discover_scenario_definition_tables(workbook_path):
         for location in table.scenario_locations:
             inventory.setdefault(location, []).append(str(table.label))
     return {location: sorted(labels) for location, labels in sorted(inventory.items())}
+
+
+def _first_read_only_or_formula_cell(tables: object) -> str:
+    for table in tables:
+        for row_index, row in enumerate(table.cell_refs):
+            for column_index, cell_ref in enumerate(row):
+                role_tag = table.column_role_tags[column_index] if table.column_role_tags else None
+                value = table.values[row_index][column_index] if table.values else None
+                if role_tag != "DIRECT" or (isinstance(value, str) and value.startswith("=")):
+                    return cell_ref
+    raise AssertionError("expected at least one read-only scenario-definition cell")

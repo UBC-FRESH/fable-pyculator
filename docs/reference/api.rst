@@ -47,6 +47,12 @@ Rendering And Execution
 .. automodule:: fable_pyculator.surface
    :members:
 
+Scenario-Definition Patches
+---------------------------
+
+.. automodule:: fable_pyculator.scenario_definitions
+   :members:
+
 Scenario Bundles
 ----------------
 
