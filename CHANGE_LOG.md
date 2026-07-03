@@ -4,6 +4,9 @@ This file records completed project work in chronological order.
 
 ## 2026-07-03
 
+- Fixed the 2021 loop notebook crash where rendering all default output tables with an `OUTPUT-*`
+  flavour filter raised on tables without matching output columns; default all-table rendering now
+  skips non-matching tables while explicit table requests still fail clearly.
 - Added an explicit 2021 loop notebook context-column proof cell for Abdulateef's output-table
   rendering bug, showing `trade_resultstrade` and checking `PRODUCT`/`YEAR` values when restored
   local 2021 artifacts are available.

@@ -152,15 +152,19 @@ def run_notebook_loop(
     )
     selected_output_table_names = _output_table_names(spec, output_table_names)
     selected_headline_series_names = _headline_series_names(spec, headline_series_names)
-    tables = {
-        table_name: output_table_frame(
-            run,
-            table_name,
-            column_flavour_tags=output_table_column_flavour_tags,
-            include_context_columns=include_context_columns,
-        )
-        for table_name in selected_output_table_names
-    }
+    tables = {}
+    for table_name in selected_output_table_names:
+        try:
+            tables[table_name] = output_table_frame(
+                run,
+                table_name,
+                column_flavour_tags=output_table_column_flavour_tags,
+                include_context_columns=include_context_columns,
+            )
+        except KeyError:
+            if output_table_names is None and output_table_column_flavour_tags is not None:
+                continue
+            raise
     headline_tables = {
         series_name: headline_frame(run, series_name)
         for series_name in selected_headline_series_names
