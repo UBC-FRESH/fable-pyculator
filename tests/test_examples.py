@@ -144,3 +144,34 @@ def test_fable_pyculator_2021_freshforge_run_notebook_is_static_template() -> No
     assert "Generated model not found yet" in code_source
     assert "generated_fable_2020_model" not in code_source
     assert "run_2020_notebook_loop" not in code_source
+
+
+def test_fable_pyculator_2021_scenario_definition_patch_notebook_is_static_template() -> None:
+    notebook_path = Path("examples/notebooks/fable-pyculator-2021-scenario-definition-patch.ipynb")
+
+    payload = json.loads(notebook_path.read_text(encoding="utf-8"))
+    code_cells = [cell for cell in payload["cells"] if cell["cell_type"] == "code"]
+    code_source = "\n".join("".join(cell["source"]) for cell in code_cells)
+    markdown_source = "\n".join(
+        "".join(cell["source"])
+        for cell in payload["cells"]
+        if cell["cell_type"] == "markdown"
+    )
+
+    assert payload["nbformat"] == 4
+    assert payload["cells"]
+    assert all(cell.get("execution_count") is None for cell in code_cells)
+    assert not any(cell.get("outputs") for cell in code_cells)
+    assert "DEFAULT_2021_WORKBOOK_PATH" in code_source
+    assert "DEFAULT_2021_GENERATED_MODEL_PATH" in code_source
+    assert "build_2021_notebook_spec" in code_source
+    assert "editable_scenario_definition_cells" in code_source
+    assert "load_scenario_definition_patch" in code_source
+    assert "validate_scenario_definition_patch" in code_source
+    assert "scenario_definition_patch=patch" in code_source
+    assert "RUN_MODEL = False" in code_source
+    assert "fable_2021_diet_target_demo.yaml" in code_source
+    assert "tmp/private-workbooks/2021_Open_FABLECalculator.xlsx" in markdown_source
+    assert "No source workbook was mutated" in markdown_source
+    assert "generated_fable_2020_model" not in code_source
+    assert "run_2020_notebook_loop" not in code_source

@@ -48,6 +48,17 @@ The tracked schema example lives at:
 
    examples/scenario-definition-patches/fable_2021_diet_target_demo.yaml
 
+Hands-On Notebook
+-----------------
+
+The tracked notebook example walks through the same validation flow, shows a sample of editable
+cells, and includes a gated generated-model run cell:
+
+- :download:`fable-pyculator-2021-scenario-definition-patch.ipynb <../../examples/notebooks/fable-pyculator-2021-scenario-definition-patch.ipynb>`
+
+The run cell is disabled by default with ``RUN_MODEL = False`` so alpha testers can inspect the
+patch boundary before executing a generated model.
+
 Validate A Patch
 ----------------
 

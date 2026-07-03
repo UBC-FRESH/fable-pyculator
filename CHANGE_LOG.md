@@ -2,6 +2,15 @@
 
 This file records completed project work in chronological order.
 
+## 2026-07-03
+
+- Published a GitHub-only Phase 26 checkpoint release,
+  `checkpoint-p26-scenario-definition-surface`, to mark the editable scenario-definition patch
+  milestone without publishing a new PyPI package or changing the installed alpha version.
+- Added the Abulateef-facing Phase 26 hands-on notebook
+  `examples/notebooks/fable-pyculator-2021-scenario-definition-patch.ipynb`, linking the editable
+  scenario-definition patch example into the docs and README as a concrete alpha-tester artifact.
+
 ## 2026-07-02
 
 - Activated Phase 26 on `feature/p26-editable-scenario-definition-surface`, created child issues
