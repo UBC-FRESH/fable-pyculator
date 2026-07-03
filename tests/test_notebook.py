@@ -9,6 +9,8 @@ from openpyxl.worksheet.table import Table
 from fable_pyculator import (
     DEFAULT_2021_GENERATED_MODEL_PATH,
     DEFAULT_2021_WORKBOOK_PATH,
+    FableCalculatorSpec,
+    OutputTable,
     build_2021_notebook_spec,
     build_2020_notebook_spec,
     build_notebook_spec,
@@ -134,6 +136,70 @@ def test_run_notebook_loop_preserves_explicit_rendered_artifact_subsets() -> Non
     assert set(result.output_tables) == {"ghg_resultsghg"}
     assert set(result.headline_frames) == {"ghg_total_co2e"}
     assert result.output_tables["ghg_resultsghg"].loc["2030", "TotalCO2e"] == 42
+
+
+def test_run_notebook_loop_skips_default_tables_without_matching_flavour_tags() -> None:
+    spec = FableCalculatorSpec(
+        output_tables=[
+            OutputTable(
+                name="production_totalresultsprod",
+                sheet="PRODUCTION",
+                range_ref="A2:B3",
+                cell_refs=(("PRODUCTION!A3", "PRODUCTION!B3"),),
+                row_labels=("rice",),
+                column_labels=("Product", "Value"),
+                values=(("Rice", 10),),
+                column_flavour_tags=("DIRECT", "DATA-1"),
+            ),
+            OutputTable(
+                name="trade_resultstrade",
+                sheet="TRADE",
+                range_ref="A2:C3",
+                cell_refs=(("TRADE!A3", "TRADE!B3", "TRADE!C3"),),
+                row_labels=("rice_2000",),
+                column_labels=("PRODUCT", "YEAR", "ExportQ_feas"),
+                values=(("Rice", 2000, 11.424),),
+                column_flavour_tags=("DIRECT", "AUX", "OUTPUT-8"),
+            ),
+        ]
+    )
+
+    result = run_notebook_loop(
+        lambda inputs=None: {"TRADE!C3": 11.424},
+        spec,
+        output_table_column_flavour_tags="OUTPUT-*",
+        include_figures=False,
+    )
+
+    assert set(result.output_tables) == {"trade_resultstrade"}
+    assert list(result.output_tables["trade_resultstrade"].columns) == ["PRODUCT", "YEAR", "ExportQ_feas"]
+    assert result.output_tables["trade_resultstrade"].loc["rice_2000", "PRODUCT"] == "Rice"
+
+
+def test_run_notebook_loop_preserves_explicit_missing_flavour_tag_errors() -> None:
+    spec = FableCalculatorSpec(
+        output_tables=[
+            OutputTable(
+                name="production_totalresultsprod",
+                sheet="PRODUCTION",
+                range_ref="A2:B3",
+                cell_refs=(("PRODUCTION!A3", "PRODUCTION!B3"),),
+                row_labels=("rice",),
+                column_labels=("Product", "Value"),
+                values=(("Rice", 10),),
+                column_flavour_tags=("DIRECT", "DATA-1"),
+            )
+        ]
+    )
+
+    with pytest.raises(KeyError, match="production_totalresultsprod"):
+        run_notebook_loop(
+            lambda inputs=None: {},
+            spec,
+            output_table_names=("production_totalresultsprod",),
+            output_table_column_flavour_tags="OUTPUT-*",
+            include_figures=False,
+        )
 
 
 def test_run_2020_notebook_loop_loads_ignored_model_path(tmp_path: Path) -> None:
