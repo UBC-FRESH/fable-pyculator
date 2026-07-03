@@ -4,6 +4,17 @@ This file records completed project work in chronological order.
 
 ## 2026-07-03
 
+- Activated Phase 27 on `feature/p27-alpha-tester-notebook-hardening`, created parent issue #194
+  and child issues #195 through #199, and scoped the phase around alpha-tester notebook reliability,
+  an opt-in 2021 notebook-loop smoke check, skipped output-table diagnostics, and notebook-failure
+  issue hygiene.
+- Added `scripts/smoke_2021_notebook_loop.py`, default skipped-output-table diagnostics on
+  `NotebookLoopResult`, a notebook-run failure issue template, and docs guidance clarifying that
+  workbook-cached context values and screenshots are display/debugging aids rather than generated
+  equivalence evidence.
+- Verified Phase 27 locally with Ruff, full pytest (`147` passed and `12` skipped), warning-clean
+  Sphinx docs, Read the Docs theme verification, public workbook checksums, release artifact checks,
+  `git diff --check`, and a restored-artifact 2021 smoke run that passed in about 213 seconds.
 - Fixed the 2021 loop notebook crash where rendering all default output tables with an `OUTPUT-*`
   flavour filter raised on tables without matching output columns; default all-table rendering now
   skips non-matching tables while explicit table requests still fail clearly.

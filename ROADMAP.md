@@ -44,6 +44,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 26 is closed: editable scenario-definition patches are tracked, PR #185 merged, and
   post-merge Test and Docs Pages workflows passed after rerunning a transient GitHub Pages deploy
   failure.
+- Phase 27 is active on `feature/p27-alpha-tester-notebook-hardening`: alpha-tester notebook
+  reliability, 2021 smoke hardening, skipped-table diagnostics, and notebook-failure issue hygiene
+  are being tracked under parent issue #194.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -2011,3 +2014,65 @@ Closeout evidence:
 - Post-merge Test workflow #28629339255 passed.
 - Post-merge Docs Pages workflow #28629339241 passed after rerunning a transient GitHub Pages deploy
   failure.
+
+## Phase 27: Alpha-Tester Notebook Reliability And 2021 Smoke Hardening
+
+GitHub parent issue: #194.
+
+Branch: `feature/p27-alpha-tester-notebook-hardening`.
+
+Status: active.
+
+Goal: harden the Abdulateef-facing 2021 notebook loop after recent output-table rendering fixes by
+adding a repeatable smoke path, clearer skipped-table diagnostics, and better notebook failure
+reporting.
+
+Tasks:
+
+- [ ] P27.1 Define notebook smoke scope and alpha-tester failure contract. Child issue: #195.
+- [ ] P27.2 Add opt-in 2021 notebook smoke script/test. Child issue: #196.
+- [ ] P27.3 Improve notebook-loop rendering diagnostics. Child issue: #197.
+- [ ] P27.4 Harden GitHub issue/reporting workflow for notebook failures. Child issue: #198.
+- [ ] P27.5 Update docs, verification, PR, deploy docs, and close phase. Child issue: #199.
+
+Scope:
+
+- Keep the 2021 loop notebook as a concrete, unexecuted alpha-tester artifact.
+- Add an opt-in restored-artifact smoke command for the 2021 notebook loop.
+- Record default filtered output tables skipped because no requested flavour tags matched.
+- Preserve explicit output-table request failures.
+- Keep screenshots and display captures as UI symptom evidence, not validation evidence.
+
+Out of scope:
+
+- New modelling semantics.
+- New generated-model equivalence claims.
+- Source workbook mutation.
+- FreshForge or Modelwright feature work unless a clear upstream bug is discovered.
+
+Implementation evidence:
+
+- Added `NotebookLoopResult.skipped_output_tables` so default filtered rendering records tables
+  skipped because no requested output-column flavour tags matched.
+- Added `scripts/smoke_2021_notebook_loop.py` for the restored-artifact 2021 loop smoke path.
+- Added an opt-in restored-artifact pytest smoke test gated by
+  `FABLE_PYCULATOR_RUN_2021_NOTEBOOK_SMOKE=1`.
+- Updated `examples/notebooks/fable-pyculator-2021-loop.ipynb` to print rendered/skipped table
+  counts and use `result.run.scenario_name`.
+- Added a notebook-run failure GitHub issue template.
+- Cleaned issue #190 body formatting after auditing recent Abdulateef notebook bug issues.
+- Recorded workbook-load investigation findings in
+  `planning/phase-27-alpha-tester-notebook-hardening.md`.
+
+Verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with `147` tests and `12` skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `scripts/check_release_artifacts.sh` passed.
+- `git diff --check` passed.
+- `.venv/bin/python scripts/smoke_2021_notebook_loop.py --json` passed against restored local
+  2021 artifacts in about 213 seconds, rendering 10 output tables, skipping 4 non-matching default
+  `OUTPUT-*` tables, and proving populated `trade_resultstrade` `PRODUCT`/`YEAR` context columns.
