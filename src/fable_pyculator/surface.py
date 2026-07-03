@@ -10,12 +10,14 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from numbers import Real
+from pathlib import Path
 import re
 from types import ModuleType
 from typing import Any
 
 from modelwright.wrappers import ModelFacade, cell
 
+from fable_pyculator.scenario_definitions import ScenarioDefinitionPatch, scenario_definition_input_mapping
 from fable_pyculator.spec import FableCalculatorSpec, HeadlineSeries, OutputTable, ScenarioDefinitionTable
 
 
@@ -39,11 +41,22 @@ def run_scenario(
     values: Mapping[str, object] | None = None,
     *,
     name: str = "scenario",
+    scenario_definition_patch: ScenarioDefinitionPatch | Mapping[str, Any] | str | Path | None = None,
 ) -> ScenarioRun:
     """Run a generated Modelwright model using FABLE parameter names."""
 
     facade = _facade(generated_model, spec)
     scenario_inputs = spec.input_mapping(dict(values or {}))
+    definition_inputs = scenario_definition_input_mapping(spec, scenario_definition_patch)
+    overlap = {
+        cell_ref: (scenario_inputs[cell_ref], definition_inputs[cell_ref])
+        for cell_ref in set(scenario_inputs) & set(definition_inputs)
+        if scenario_inputs[cell_ref] != definition_inputs[cell_ref]
+    }
+    if overlap:
+        conflicts = ", ".join(sorted(overlap))
+        raise ValueError(f"scenario inputs conflict with scenario-definition patch inputs: {conflicts}")
+    scenario_inputs.update(definition_inputs)
     scenario = facade.scenario(name=name, inputs=scenario_inputs)
     calculated = facade.calculate(scenario)
     return ScenarioRun(

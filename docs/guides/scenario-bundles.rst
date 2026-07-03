@@ -9,7 +9,8 @@ This feature is deliberately narrow:
 
 - bundle selections target discovered ``SCENARIOS selection`` controls such as ``gdp_scen``;
 - each selection is still expanded through ``FableCalculatorSpec.input_mapping``;
-- ``SCENARIOS definition`` table editing is not part of this workflow;
+- ``SCENARIOS definition`` table editing uses the separate :doc:`scenario-definition-editing` patch
+  surface and is not part of the bundle schema yet;
 - running a bundle does not rebuild a generated model or create new equivalence evidence.
 
 Bundle Format

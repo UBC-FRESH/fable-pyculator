@@ -1,0 +1,9 @@
+version: 1
+patch_id: diet-target-demo
+workbook_version: "2021"
+description: Public-safe example patch showing the scenario-definition edit schema.
+edits:
+  - table: DietImplRates
+    row_label: EATLancetAverage
+    column_label: ImplTiming
+    value: Linear

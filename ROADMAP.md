@@ -41,8 +41,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   alpha, PR #168 merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 25 is closed: FABLE benchmark matrix evidence cookbook/workflow is tracked, PR #179
   merged, and post-merge Test and Docs Pages workflows passed.
-- Phase 26 is planned under parent issue #172: FABLE should add an editable scenario-definition
-  parameter surface after matrix evidence workflows are documented.
+- Phase 26 is active on `feature/p26-editable-scenario-definition-surface`: FABLE adds a
+  conservative editable scenario-definition parameter surface that produces generated-model input
+  overrides without mutating source workbooks.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1949,12 +1950,20 @@ Implementation evidence:
 
 GitHub parent issue: #172.
 
-Status: planned. Child issues will be created when this phase is activated.
+Status: active on `feature/p26-editable-scenario-definition-surface`.
 
 Goal: expose FABLE scenario-definition table editing and validation as a first-class FABLE Pyculator
 modelling surface after benchmark matrix evidence workflows are documented.
 
-Planned scope:
+Tasks:
+
+- [x] P26.1 Define editable scenario-definition surface records. Child issue: #180.
+- [x] P26.2 Add patch validation, loading, writing, and input mapping. Child issue: #181.
+- [x] P26.3 Add notebook-loop execution integration. Child issue: #182.
+- [x] P26.4 Update docs, examples, and tests. Child issue: #183.
+- [ ] P26.5 Verify, PR, deploy docs, and close phase. Child issue: #184.
+
+Scope:
 
 - Add APIs for editable scenario-definition parameter surfaces.
 - Validate edited parameter tables before generated-model execution.
@@ -1967,3 +1976,31 @@ Out of scope:
 - Generic Modelwright workbook conversion logic.
 - Remote execution, caching, retries, or production scheduling.
 - New generated-model equivalence claims.
+
+Implementation evidence:
+
+- Added `fable_pyculator.scenario_definitions` with editable-cell records, patch records, patch
+  loading/writing, validation, and generated-model input mapping.
+- Integrated optional `scenario_definition_patch` inputs into `run_scenario`, `run_notebook_loop`,
+  `run_2020_notebook_loop`, and `run_2021_notebook_loop`.
+- Added `scripts/validate_fable_scenario_definition_patch.py` and a public-safe YAML patch schema
+  example under `examples/scenario-definition-patches/`.
+- Added Sphinx documentation for editable scenario-definition patches and linked it from the
+  notebook control, scenario bundle, README, index, and API docs.
+- Added unit, script, and workbook-backed tests for editable `DIRECT` cells, read-only role/formula
+  rejection, patch selectors, duplicate/ambiguous targets, generated-model input mapping, notebook
+  loop integration, and validation-script output.
+
+Verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with `140` tests and `11` workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `scripts/check_release_artifacts.sh` passed with a clean wheel install smoke test.
+- `git diff --check` passed.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -q tests/test_fable_workbook_scenario_definition_tables.py`
+  passed with `5` workbook-backed tests.
+- `.venv/bin/python scripts/validate_fable_scenario_definition_patch.py --patch examples/scenario-definition-patches/fable_2021_diet_target_demo.yaml --workbook-version 2021 --json`
+  passed against the restored 2021 workbook and produced one generated-model input override.

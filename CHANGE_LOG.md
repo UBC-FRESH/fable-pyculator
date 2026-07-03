@@ -4,6 +4,18 @@ This file records completed project work in chronological order.
 
 ## 2026-07-02
 
+- Activated Phase 26 on `feature/p26-editable-scenario-definition-surface`, created child issues
+  #180 through #184 under parent issue #172, and scoped the phase around a conservative
+  scenario-definition editing surface that produces generated-model input overrides without mutating
+  source workbooks.
+- Added `fable_pyculator.scenario_definitions`, optional scenario-definition patch integration for
+  `run_scenario` and notebook-loop helpers, `scripts/validate_fable_scenario_definition_patch.py`,
+  a public-safe patch schema example, and Sphinx documentation for validating non-formula `DIRECT`
+  scenario-definition cell edits as generated-model input overrides.
+- Verified the Phase 26 implementation with Ruff, full pytest (`140` passed and `11` skipped
+  workbook tests), warning-clean Sphinx docs, Read the Docs theme verification, public workbook
+  checksums, release artifact checks, `git diff --check`, and workbook-backed scenario-definition
+  tests (`5` passed), plus a real validation-script smoke test for the tracked 2021 example patch.
 - Activated Phase 25 on `feature/p25-fable-benchmark-matrix-evidence-cookbook`, created child
   issues #174 through #178 under parent issue #171, and scoped the phase around packaging FABLE
   2021 benchmark matrix evidence through Modelwright's generic matrix evidence aggregation while

@@ -98,6 +98,22 @@ def test_package_fable_matrix_evidence_script_help_documents_matrix_inputs() -> 
     assert "--require-evidence" in result.stdout
 
 
+def test_validate_fable_scenario_definition_patch_script_help_documents_patch_inputs() -> None:
+    script = Path("scripts/validate_fable_scenario_definition_patch.py")
+
+    result = subprocess.run(
+        [str(script), "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert os.access(script, os.X_OK)
+    assert "--patch" in result.stdout
+    assert "--workbook-version" in result.stdout
+    assert "--workbook-path" in result.stdout
+
+
 def test_run_fable_benchmark_evidence_script_default_json_skips_missing_artifacts(tmp_path: Path) -> None:
     script = Path("scripts/run_fable_benchmark_evidence.py")
 
@@ -237,6 +253,65 @@ def test_package_fable_matrix_evidence_script_missing_matrix_input_fails(tmp_pat
     payload = json.loads(result.stderr)
     assert payload["ok"] is False
     assert "requires --matrix-run or --matrix-summary" in payload["error"]
+
+
+def test_validate_fable_scenario_definition_patch_script_json_with_synthetic_patch(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    module = _load_script_module(
+        "validate_fable_scenario_definition_patch",
+        Path("scripts/validate_fable_scenario_definition_patch.py"),
+    )
+    patch_path = tmp_path / "patch.yaml"
+    patch_path.write_text("version: 1\npatch_id: demo\nedits: []\n", encoding="utf-8")
+
+    import fable_pyculator
+
+    monkeypatch.setattr(fable_pyculator, "load_scenario_definition_patch", lambda _: SimpleNamespace(to_dict=lambda: {"patch_id": "demo"}))
+    monkeypatch.setattr(fable_pyculator, "build_notebook_spec", lambda *_, **__: object())
+    monkeypatch.setattr(
+        fable_pyculator,
+        "validate_scenario_definition_patch",
+        lambda *_: SimpleNamespace(
+            patch=SimpleNamespace(to_dict=lambda: {"patch_id": "demo"}),
+            editable_cell_count=3,
+            edits=({"cell": {"cell_ref": "SCENARIOS definition!A4"}, "value": "A"},),
+            inputs={"SCENARIOS definition!A4": "A"},
+            notes=("No source workbook was mutated.",),
+        ),
+    )
+    monkeypatch.setattr(
+        fable_pyculator,
+        "editable_scenario_definition_cells",
+        lambda _: (SimpleNamespace(to_dict=lambda: {"cell_ref": "SCENARIOS definition!A4"}),),
+    )
+
+    exit_code = module.main(["--repo-root", str(tmp_path), "--patch", str(patch_path), "--json"])
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["ok"] is True
+    assert payload["editable_cell_count"] == 3
+    assert payload["inputs"] == {"SCENARIOS definition!A4": "A"}
+
+
+def test_validate_fable_scenario_definition_patch_script_missing_patch_fails(tmp_path: Path) -> None:
+    script = Path("scripts/validate_fable_scenario_definition_patch.py")
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(tmp_path), "--patch", str(tmp_path / "missing.yaml"), "--json"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stderr)
+    assert payload["ok"] is False
+    assert "scenario definition patch not found" in payload["error"]
 
 
 def test_build_fable_model_script_reports_missing_versioned_workbook(tmp_path: Path) -> None:

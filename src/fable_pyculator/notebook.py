@@ -26,6 +26,7 @@ from fable_pyculator.discovery import (
     discover_scenario_definition_tables,
     discover_selection_controls,
 )
+from fable_pyculator.scenario_definitions import ScenarioDefinitionPatch
 from fable_pyculator.spec import FableCalculatorSpec
 from fable_pyculator.surface import (
     ScenarioRun,
@@ -134,6 +135,7 @@ def run_notebook_loop(
     include_context_columns: bool = True,
     headline_series_names: Sequence[str] | None = DEFAULT_HEADLINE_SERIES,
     include_figures: bool = True,
+    scenario_definition_patch: ScenarioDefinitionPatch | Mapping[str, Any] | str | Path | None = None,
 ) -> NotebookLoopResult:
     """Run a generated model and render selected FABLE notebook artifacts.
 
@@ -141,7 +143,13 @@ def run_notebook_loop(
     output table and headline frame from the spec after a single generated-model execution.
     """
 
-    run = run_scenario(generated_model, spec, selections, name=scenario_name)
+    run = run_scenario(
+        generated_model,
+        spec,
+        selections,
+        name=scenario_name,
+        scenario_definition_patch=scenario_definition_patch,
+    )
     selected_output_table_names = _output_table_names(spec, output_table_names)
     selected_headline_series_names = _headline_series_names(spec, headline_series_names)
     tables = {
@@ -184,6 +192,7 @@ def run_2020_notebook_loop(
     include_context_columns: bool = True,
     headline_series_names: Sequence[str] | None = DEFAULT_HEADLINE_SERIES,
     include_figures: bool = True,
+    scenario_definition_patch: ScenarioDefinitionPatch | Mapping[str, Any] | str | Path | None = None,
 ) -> NotebookLoopResult:
     """Run the default 2020 FABLE-C notebook loop from ignored local artifacts."""
 
@@ -199,6 +208,7 @@ def run_2020_notebook_loop(
         include_context_columns=include_context_columns,
         headline_series_names=headline_series_names,
         include_figures=include_figures,
+        scenario_definition_patch=scenario_definition_patch,
     )
 
 
@@ -213,6 +223,7 @@ def run_2021_notebook_loop(
     include_context_columns: bool = True,
     headline_series_names: Sequence[str] | None = DEFAULT_HEADLINE_SERIES,
     include_figures: bool = True,
+    scenario_definition_patch: ScenarioDefinitionPatch | Mapping[str, Any] | str | Path | None = None,
 ) -> NotebookLoopResult:
     """Run the default 2021 FABLE-C notebook loop from ignored local artifacts.
 
@@ -232,6 +243,7 @@ def run_2021_notebook_loop(
         include_context_columns=include_context_columns,
         headline_series_names=headline_series_names,
         include_figures=include_figures,
+        scenario_definition_patch=scenario_definition_patch,
     )
 
 
