@@ -4,6 +4,10 @@ This file records completed project work in chronological order.
 
 ## 2026-07-03
 
+- Fixed Abdulateef's reported output-table rendering bug where context/support columns such as
+  `Product` and `Year` could display as missing when a generated model was built from narrow
+  `OUTPUT-*` refs; discovered output tables now retain cached workbook values for display-only
+  non-output columns while generated `OUTPUT-*` values remain the validation boundary.
 - Published a GitHub-only Phase 26 checkpoint release,
   `checkpoint-p26-scenario-definition-surface`, to mark the editable scenario-definition patch
   milestone without publishing a new PyPI package or changing the installed alpha version.

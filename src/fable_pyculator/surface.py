@@ -288,8 +288,16 @@ def _table_frame(
         include_context_columns=include_context_columns,
     )
     rows = [
-        [values.get(row[index]) for index in column_indices]
-        for row in table.cell_refs
+        [
+            _output_table_cell_value(
+                table,
+                values,
+                row_index=row_index,
+                column_index=column_index,
+            )
+            for column_index in column_indices
+        ]
+        for row_index, _row in enumerate(table.cell_refs)
     ]
     frame = pd.DataFrame(
         rows,
@@ -315,6 +323,23 @@ def _table_frame(
         }
     )
     return frame
+
+
+def _output_table_cell_value(
+    table: OutputTable,
+    values: Mapping[str, object],
+    *,
+    row_index: int,
+    column_index: int,
+) -> object:
+    cell_ref = table.cell_refs[row_index][column_index]
+    if cell_ref in values:
+        return values[cell_ref]
+    if _is_output_column(table, column_index):
+        return None
+    if not table.values:
+        return None
+    return table.values[row_index][column_index]
 
 
 def _scenario_definition_table_frame(table: ScenarioDefinitionTable) -> Any:
@@ -419,6 +444,13 @@ def _matched_column_flavour_tags(requested_tags: tuple[str, ...], available_tags
         elif requested_tag in available_tags:
             matched_tags.add(requested_tag)
     return matched_tags
+
+
+def _is_output_column(table: OutputTable, column_index: int) -> bool:
+    if not table.column_flavour_tags or column_index >= len(table.column_flavour_tags):
+        return False
+    tag = table.column_flavour_tags[column_index]
+    return tag is not None and tag.startswith("OUTPUT-")
 
 
 def _canonical_column_flavour_tag(value: str) -> str | None:

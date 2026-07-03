@@ -89,6 +89,10 @@ def test_discover_output_tables_finds_tables_on_canonical_output_sheets(tmp_path
         ("FOOD!A3", "FOOD!B3", "FOOD!C3"),
         ("FOOD!A4", "FOOD!B4", "FOOD!C4"),
     )
+    assert table.values == (
+        ("Calories", 2500, 2600),
+        ("Protein", 80, 82),
+    )
 
 
 def test_discover_scenario_definition_tables_preserves_table_values_and_tags(tmp_path: Path) -> None:
