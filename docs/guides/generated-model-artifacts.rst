@@ -40,6 +40,10 @@ ignored ``tmp/`` paths.
 
 To prepare or explicitly run a local 2021 rebuild from the public source workbook, see
 :doc:`2021-freshforge-rebuild-command`.
+To compare output-ref boundaries before choosing a rebuild target, see
+:doc:`output-ref-strategy-comparison`.
+To package compact evidence across an explicit output-ref strategy matrix run, see
+:doc:`fable-2021-benchmark-matrix-evidence-cookbook`.
 
 Spec Discovery Versus Model Generation
 --------------------------------------
@@ -113,3 +117,6 @@ After running a local Modelwright/FreshForge generated-model workflow, use
 ``tmp/generated-models/fable-YYYY/``. The command writes compact summaries under
 ``tmp/validation-evidence/fable-YYYY/`` and reports incomplete evidence unless explicit comparison
 counts are present. See :doc:`validation-evidence-packaging`.
+
+For manual benchmark orchestration around those artifacts, including extraction-only, FreshForge
+plan, and explicit FreshForge run modes, use :doc:`benchmark-evidence-workflow`.

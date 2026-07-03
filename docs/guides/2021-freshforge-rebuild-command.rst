@@ -31,6 +31,14 @@ The plan-only command uses FABLE Pyculator's workflow helpers to:
 - write a cached-workbook validation scenario;
 - write a downstream Modelwright FreshForge workflow document.
 
+If you are unsure which output-ref boundary to use, run the strategy-comparison command first:
+
+.. code-block:: bash
+
+   .venv/bin/python scripts/compare_fable_output_ref_strategies.py --json
+
+See :doc:`output-ref-strategy-comparison` for the comparison summary and claim boundary.
+
 On the full public 2021 FABLE-C workbook this preparation may still take a minute or two because it
 loads workbook structure and cached output values, but it does not execute the generated-model build.
 

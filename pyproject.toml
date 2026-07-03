@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fable-pyculator"
-version = "0.1.0a2"
+version = "0.1.0a4"
 description = "FABLE Calculator-specific notebook controls for Modelwright-generated Python models."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -31,7 +31,7 @@ classifiers = [
   "Topic :: Scientific/Engineering"
 ]
 dependencies = [
-  "modelwright[notebook]>=0.1.0a7",
+  "modelwright[notebook]>=0.1.0a8",
   "openpyxl>=3.1",
   "pandas>=2",
   "PyYAML>=6"
@@ -40,6 +40,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "build>=1.2",
+  "freshforge>=0.1.0a5,<0.2",
   "pytest>=8",
   "ruff>=0.8",
   "sphinx>=7",
@@ -49,6 +50,9 @@ dev = [
 docs = [
   "sphinx>=7",
   "sphinx-rtd-theme>=2"
+]
+freshforge = [
+  "freshforge>=0.1.0a5,<0.2"
 ]
 notebook = [
   "ipykernel>=6",
@@ -63,6 +67,7 @@ release = [
   "twine>=5"
 ]
 test = [
+  "freshforge>=0.1.0a5,<0.2",
   "pytest>=8"
 ]
 

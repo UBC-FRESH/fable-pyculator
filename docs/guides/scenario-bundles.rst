@@ -9,7 +9,8 @@ This feature is deliberately narrow:
 
 - bundle selections target discovered ``SCENARIOS selection`` controls such as ``gdp_scen``;
 - each selection is still expanded through ``FableCalculatorSpec.input_mapping``;
-- ``SCENARIOS definition`` table editing is not part of this workflow;
+- ``SCENARIOS definition`` table editing uses the separate :doc:`scenario-definition-editing` patch
+  surface and is not part of the bundle schema yet;
 - running a bundle does not rebuild a generated model or create new equivalence evidence.
 
 Bundle Format
@@ -130,3 +131,11 @@ The script can override bundle render settings for quick slices:
 
 Use ``--workbook-version``, ``--workbook-path``, ``--generated-model-path``, and ``--output-dir``
 when working with non-default local artifact paths.
+
+FreshForge Orchestration
+------------------------
+
+Use :doc:`scenario-bundle-freshforge-orchestration` when the same bundle should be represented as a
+FreshForge graph with one node per scenario, namespace-isolated artifacts, and a compact run summary.
+The direct runner remains the default path; FreshForge execution is explicit through
+``--freshforge-plan`` or ``--freshforge-run``.

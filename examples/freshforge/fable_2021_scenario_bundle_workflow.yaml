@@ -1,0 +1,77 @@
+workflow:
+  id: fable_2021_fable-2021-ssp-demo_scenario_bundle
+  name: "FABLE 2021 scenario bundle: fable-2021-ssp-demo"
+  description: Public-safe FreshForge graph for a FABLE Pyculator scenario-bundle run.
+parameters:
+  bundle_path: examples/scenario-bundles/fable_2021_ssp_demo.yaml
+nodes:
+  - id: prepare_bundle
+    provider: fable_pyculator.scenario_bundle_prepare
+    outputs:
+      bundle: bundle
+    parameters:
+      bundle_path: examples/scenario-bundles/fable_2021_ssp_demo.yaml
+      workbook_path: tmp/private-workbooks/2021_Open_FABLECalculator.xlsx
+      workbook_id: fable-c-2021
+    artifacts:
+      normalized_bundle: bundle.json
+      prepare_summary: prepare.json
+
+  - id: scenario_ssp1
+    provider: fable_pyculator.scenario_run
+    needs:
+      - prepare_bundle
+    inputs:
+      bundle: prepare_bundle.bundle
+    outputs:
+      scenario_result: ssp1
+    parameters:
+      bundle_path: examples/scenario-bundles/fable_2021_ssp_demo.yaml
+      workbook_path: tmp/private-workbooks/2021_Open_FABLECalculator.xlsx
+      workbook_id: fable-c-2021
+      generated_model_path: tmp/generated-models/fable-2021/generated_fable_2021_model.py
+      module_name: fable_pyculator_generated_fable_2021
+      scenario_id: ssp1
+    artifacts:
+      scenario_summary: scenarios/ssp1/scenario.json
+      scenario_inputs: scenarios/ssp1/scenario_inputs.csv
+      output_tables: scenarios/ssp1/output_tables
+      headline_frames: scenarios/ssp1/headline_frames
+      headline_figures: scenarios/ssp1/headline_figures
+
+  - id: scenario_ssp2
+    provider: fable_pyculator.scenario_run
+    needs:
+      - prepare_bundle
+    inputs:
+      bundle: prepare_bundle.bundle
+    outputs:
+      scenario_result: ssp2
+    parameters:
+      bundle_path: examples/scenario-bundles/fable_2021_ssp_demo.yaml
+      workbook_path: tmp/private-workbooks/2021_Open_FABLECalculator.xlsx
+      workbook_id: fable-c-2021
+      generated_model_path: tmp/generated-models/fable-2021/generated_fable_2021_model.py
+      module_name: fable_pyculator_generated_fable_2021
+      scenario_id: ssp2
+    artifacts:
+      scenario_summary: scenarios/ssp2/scenario.json
+      scenario_inputs: scenarios/ssp2/scenario_inputs.csv
+      output_tables: scenarios/ssp2/output_tables
+      headline_frames: scenarios/ssp2/headline_frames
+      headline_figures: scenarios/ssp2/headline_figures
+
+  - id: bundle_manifest
+    provider: fable_pyculator.scenario_bundle_manifest
+    needs:
+      - scenario_ssp1
+      - scenario_ssp2
+    inputs:
+      scenario_ssp1: scenario_ssp1.scenario_result
+      scenario_ssp2: scenario_ssp2.scenario_result
+    outputs:
+      manifest: manifest
+    parameters:
+      bundle_path: examples/scenario-bundles/fable_2021_ssp_demo.yaml
+    artifacts:
+      manifest: manifest.json

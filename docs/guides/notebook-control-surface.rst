@@ -132,6 +132,7 @@ The notebook can restore the matching 2021 generated model from the tracked comp
 Use ``run_2021_notebook_loop`` after the source workbook is restored locally:
 
 - :download:`fable-pyculator-2021-loop.ipynb <../../examples/notebooks/fable-pyculator-2021-loop.ipynb>`
+- :download:`fable-pyculator-2021-scenario-definition-patch.ipynb <../../examples/notebooks/fable-pyculator-2021-scenario-definition-patch.ipynb>`
 
 .. code-block:: python
 
@@ -161,6 +162,14 @@ instead of copying the same notebook-loop call by hand. Bundles currently automa
      --json
 
 See :doc:`scenario-bundles` for the bundle schema, result artifact layout, and run command.
+
+Scenario-Definition Patches
+---------------------------
+
+Use :doc:`scenario-definition-editing` when a run needs conservative edits to discovered
+``SCENARIOS definition`` cells. The patch surface validates non-formula ``DIRECT`` cells and turns
+valid edits into generated-model input overrides. It does not mutate source workbooks, and it remains
+separate from scenario bundles and FreshForge matrices in this phase.
 
 2021 FreshForge Build Plan
 --------------------------
@@ -226,9 +235,9 @@ Current Scope
 -------------
 
 The current implementation discovers high-level selection tables and renders native
-``SCENARIOS definition`` tables for inspection. The definition tables are not yet exposed as a full
-editable widget surface. Output table discovery maps Excel table cells into DataFrame surfaces;
-headline outputs are currently curated for FOOD, LAND, GHG, and WATER. The first curation is still
-benchmark-oriented. Generated-model equivalence remains a validation-phase claim rather than a
-wrapper API claim, and is currently limited to the recorded public 2020/2021 FABLE-C benchmark
-evidence.
+``SCENARIOS definition`` tables for inspection. Phase 26 adds a conservative patch surface for
+non-formula ``DIRECT`` cells, but it is not a full editable widget system and it does not write edited
+workbooks. Output table discovery maps Excel table cells into DataFrame surfaces; headline outputs
+are currently curated for FOOD, LAND, GHG, and WATER. The first curation is still benchmark-oriented.
+Generated-model equivalence remains a validation-phase claim rather than a wrapper API claim, and is
+currently limited to the recorded public 2020/2021 FABLE-C benchmark evidence.

@@ -1,0 +1,26 @@
+matrix:
+  id: fable_2021_ssp_demo_scenario_matrix
+  name: FABLE 2021 SSP demo scenario matrix
+  description: Public-safe FreshForge matrix for one FABLE Pyculator scenario bundle case per scenario.
+  workflow_template: fable_2021_scenario_bundle_matrix_template.yaml
+cases:
+  - id: ssp1
+    namespace: scenario/ssp1
+    variables:
+      scenario_id: ssp1
+      scenario_label: SSP1
+      bundle_path: examples/scenario-bundles/fable_2021_ssp_demo.yaml
+      workbook_path: tmp/private-workbooks/2021_Open_FABLECalculator.xlsx
+      workbook_id: fable-c-2021
+      generated_model_path: tmp/generated-models/fable-2021/generated_fable_2021_model.py
+      module_name: fable_pyculator_generated_fable_2021
+  - id: ssp2
+    namespace: scenario/ssp2
+    variables:
+      scenario_id: ssp2
+      scenario_label: SSP2
+      bundle_path: examples/scenario-bundles/fable_2021_ssp_demo.yaml
+      workbook_path: tmp/private-workbooks/2021_Open_FABLECalculator.xlsx
+      workbook_id: fable-c-2021
+      generated_model_path: tmp/generated-models/fable-2021/generated_fable_2021_model.py
+      module_name: fable_pyculator_generated_fable_2021

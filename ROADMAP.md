@@ -25,9 +25,25 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   tracked, PR #115 merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 17 is closed: `v0.1.0a2` is published to PyPI and GitHub as the FABLE workflow automation
   alpha, PR #121 merged, and post-merge Test and Docs Pages workflows passed.
-- Phases 18, 19, and 20 are planned backlog phases for post-alpha automation: output-ref strategy
-  comparison workflows, FreshForge-backed scenario-bundle orchestration, and opt-in benchmark
-  workflow upgrades. Child issues will be created only when each phase is activated.
+- Phase 18 is closed: output-ref strategy comparison workflows are tracked, PR #130 merged, and
+  post-merge Test and Docs Pages workflows passed.
+- Phase 19 is closed: FreshForge-backed scenario-bundle orchestration is tracked, PR #136 merged,
+  and post-merge Test and Docs Pages workflows passed.
+- Phase 20 is closed: opt-in benchmark evidence orchestration is tracked, PR #142 merged, and
+  post-merge Test and Docs Pages workflows passed.
+- Phase 21 is closed: `v0.1.0a3` is published to PyPI and GitHub as the benchmark workflow
+  automation alpha, PR #148 merged, and post-merge Test and Docs Pages workflows passed.
+- Phase 22 is closed: FreshForge matrix output-ref strategy runs are tracked, PR #155 merged, and
+  post-merge Test and Docs Pages workflows passed.
+- Phase 23 is closed: FreshForge matrix scenario-bundle runs are tracked, PR #162 merged, and
+  post-merge Test and Docs Pages workflows passed.
+- Phase 24 is closed: `v0.1.0a4` is published to PyPI and GitHub as the matrix workflow automation
+  alpha, PR #168 merged, and post-merge Test and Docs Pages workflows passed.
+- Phase 25 is closed: FABLE benchmark matrix evidence cookbook/workflow is tracked, PR #179
+  merged, and post-merge Test and Docs Pages workflows passed.
+- Phase 26 is closed: editable scenario-definition patches are tracked, PR #185 merged, and
+  post-merge Test and Docs Pages workflows passed after rerunning a transient GitHub Pages deploy
+  failure.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1432,12 +1448,23 @@ Local verification evidence:
 
 GitHub parent issue: #122.
 
-Status: planned backlog.
+Active branch: `feature/p18-output-ref-strategy-comparison-workflows`.
+
+Status: complete.
 
 Goal: compare FABLE output-ref strategies as explicit generated-model workflow boundaries before
 choosing validation or modelling targets.
 
-Child issues: create only when this phase is activated.
+- [x] P18.1 Define strategy comparison records and artifact paths. Child issue: #127.
+- [x] P18.2 Add strategy comparison preparation and optional run-summary ingestion. Child issue: #126.
+- [x] P18.3 Add script interface and public-safe examples. Child issue: #128.
+- [x] P18.4 Update docs and tests. Child issue: #125.
+- [x] P18.5 Verify, PR, deploy docs, and close phase. Child issue: #129.
+  - [x] Open PR #130 from `feature/p18-output-ref-strategy-comparison-workflows` to `main`.
+  - [x] Merge PR #130 to `main`.
+  - [x] Confirm post-merge Test workflow run #28557443902 passed.
+  - [x] Confirm post-merge Docs Pages workflow run #28557443878 passed and deployed.
+  - [x] Smoke-check the published Sphinx page for the output-ref strategy comparison guide.
 
 Dependencies:
 
@@ -1450,39 +1477,128 @@ Acceptance boundary:
   strategies with compact counts, artifacts, diagnostics, and validation-boundary summaries.
 - Must not claim new generated-model equivalence from strategy comparison alone.
 
+Implementation evidence:
+
+- Added `fable_pyculator.strategy_comparison` with public strategy case, path, entry, and result
+  records plus default FABLE output-ref strategy cases.
+- Added `compare_output_ref_strategies(...)` and `write_output_ref_strategy_comparison(...)` to
+  derive per-strategy output refs, cached comparable-output counts, validation scenarios, optional
+  FreshForge workflow JSON, and optional existing evidence summaries.
+- Added `scripts/compare_fable_output_ref_strategies.py` as a plan-first strategy comparison command.
+- Added Sphinx guide and API reference coverage, plus links from README, generated-model artifact,
+  FreshForge provider, rebuild-command, and validation-evidence packaging docs.
+
+Local verification:
+
+- `.venv/bin/python -m pytest tests/test_strategy_comparison.py tests/test_scripts.py -q` passed with
+  22 tests.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 90 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for the restored 2019, 2020,
+  and 2021 public workbooks.
+- `scripts/check_release_artifacts.sh` passed; the clean wheel install imported
+  `fable_pyculator 0.1.0a2` against published `modelwright 0.1.0a7`.
+- `git diff --check` passed.
+- Real local 2021 smoke comparison passed for `output-columns` and `headline-only` with
+  `--include-workflows --include-existing-evidence`, reporting 16,478 output-column refs and 99
+  headline refs while correctly marking absent per-strategy generated-model evidence as skipped.
+- Merged Phase 18 through PR #130 and confirmed post-merge Test workflow run #28557443902 plus
+  Docs Pages workflow run #28557443878 passed, including GitHub Pages deployment.
+- Smoke-checked the live Sphinx page at
+  `https://ubc-fresh.github.io/fable-pyculator/guides/output-ref-strategy-comparison.html`.
+
 ## Phase 19: FreshForge-Backed Scenario-Bundle Orchestration
 
 GitHub parent issue: #123.
 
-Status: planned backlog.
+Active branch: `main` after PR #136.
+
+Status: complete.
 
 Goal: upgrade existing FABLE Pyculator scenario bundles so repeated bundle runs can be orchestrated
 and summarized cleanly through FreshForge.
 
-Child issues: create only when this phase is activated.
+- [x] P19.1 Define FreshForge scenario-bundle workflow contract. Child issue: #131.
+- [x] P19.2 Add executable FABLE provider nodes for scenario-bundle runs. Child issue: #132.
+- [x] P19.3 Add script interface, examples, and summary artifacts. Child issue: #133.
+- [x] P19.4 Update docs and tests. Child issue: #134.
+- [x] P19.5 Verify, PR, deploy docs, and close phase. Child issue: #135.
+  - [x] Open PR #136 from `feature/p19-freshforge-scenario-bundle-orchestration` to `main`.
+  - [x] Merge PR #136 to `main`.
+  - [x] Confirm post-merge Test workflow run #28558440319 passed.
+  - [x] Confirm post-merge Docs Pages workflow run #28558440328 passed and deployed.
 
 Dependencies:
 
 - FreshForge Phase 7 for run namespaces and summaries.
-- FreshForge Phase 8 if the implementation needs generic matrix expansion.
-- Modelwright Phase 35 summaries if bundle workflows include generated-model rebuild stages.
+- Existing Phase 15 scenario-bundle APIs and generated-model artifact conventions.
 
 Acceptance boundary:
 
 - May orchestrate and summarize repeated selection-control scenario-bundle runs.
 - Must keep FABLE scenario semantics in FABLE Pyculator.
-- Must not add scenario-definition table editing, remote execution, or production scheduling.
+- Must preserve direct scenario-bundle execution as the default script/API path.
+- Must not add scenario-definition table editing, generated-model rebuild orchestration, remote
+  execution, caching, retries, production scheduling, or new generated-model equivalence claims.
+
+Implementation evidence:
+
+- Added `fable_pyculator.scenario_workflows` with FreshForge path and plan records, workflow
+  preparation, workflow execution, and compact run-summary writing for scenario bundles.
+- Extended the FABLE Pyculator FreshForge provider with executable `scenario_bundle_prepare`,
+  `scenario_run`, and `scenario_bundle_manifest` nodes while keeping earlier Phase 9 node types
+  plan-only.
+- Extended `scripts/run_fable_scenario_bundle.py` with explicit `--freshforge-plan`,
+  `--freshforge-run`, `--run-namespace`, `--workflow-path`, and `--run-summary-path` options while
+  preserving direct dry-run/run behavior.
+- Added a public-safe FreshForge scenario-bundle workflow example for the 2021 SSP demo bundle and
+  Sphinx guide/API coverage.
+
+Local verification:
+
+- `.venv/bin/python -m pytest tests/test_scenario_workflows.py tests/test_scripts.py -q` passed with
+  22 tests.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 96 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for the restored 2019, 2020,
+  and 2021 public workbooks.
+- `scripts/check_release_artifacts.sh` passed; the clean wheel install imported
+  `fable_pyculator 0.1.0a2` against published `modelwright 0.1.0a7`.
+- `git diff --check` passed.
+- `.venv/bin/freshforge validate examples/freshforge/fable_2021_scenario_bundle_workflow.yaml --json`
+  passed.
+- `.venv/bin/freshforge plan examples/freshforge/fable_2021_scenario_bundle_workflow.yaml --json`
+  passed.
+- Real local 2021 smoke plan passed with
+  `.venv/bin/python scripts/run_fable_scenario_bundle.py --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml --freshforge-plan --json`,
+  reporting a 4-node FreshForge workflow.
+- Merged Phase 19 through PR #136 and confirmed post-merge Test workflow run #28558440319 plus
+  Docs Pages workflow run #28558440328 passed, including GitHub Pages deployment.
 
 ## Phase 20: Opt-In Benchmark Workflow Upgrade
 
 GitHub parent issue: #124.
 
-Status: planned backlog.
+Active branch: `feature/p20-opt-in-benchmark-workflow-upgrade`.
+
+Status: complete.
 
 Goal: upgrade the existing manual benchmark evidence workflow from extraction-only summaries toward
 repeatable benchmark execution when restored public workbook artifacts are available.
 
-Child issues: create only when this phase is activated.
+- [x] P20.1 Define opt-in benchmark workflow contract. Child issue: #137.
+- [x] P20.2 Add benchmark orchestration script and evidence backend selection. Child issue: #138.
+- [x] P20.3 Upgrade manual GitHub Actions workflow. Child issue: #139.
+- [x] P20.4 Update docs and tests. Child issue: #140.
+- [x] P20.5 Verify, PR, deploy docs, and close phase. Child issue: #141.
+  - [x] Open PR #142 from `feature/p20-opt-in-benchmark-workflow-upgrade` to `main`.
+  - [x] Merge PR #142 to `main`.
+  - [x] Confirm post-merge Test workflow run #28558959744 passed.
+  - [x] Confirm post-merge Docs Pages workflow run #28558959735 passed and deployed.
 
 Dependencies:
 
@@ -1496,3 +1612,402 @@ Acceptance boundary:
 - Must not run by default on every PR.
 - Must not upload source workbooks, raw generated models, raw validation reports, or unsupported
   equivalence claims.
+
+Implementation evidence:
+
+- Added `fable_pyculator.benchmarks` with FABLE benchmark path and summary records, conservative
+  benchmark evidence packaging, Modelwright-generic evidence backend selection, FABLE-local fallback,
+  optional FreshForge plan/run summary handling, and compact Markdown/JSON writers.
+- Added `scripts/run_fable_benchmark_evidence.py` with `evidence-only`, `freshforge-plan`, and
+  explicit `freshforge-run` modes plus workbook version, output-ref strategy, scenario-bundle,
+  namespace, required-artifact, and JSON flags.
+- Upgraded `.github/workflows/benchmark-evidence.yml` to remain `workflow_dispatch` only while
+  exposing benchmark mode, output-ref strategy, scenario-bundle, required-artifact, and namespace
+  inputs; uploads remain restricted to compact summaries under `tmp/validation-evidence/**` and
+  `tmp/benchmark-evidence-summary.json`.
+- Added Sphinx documentation for the opt-in benchmark evidence workflow and linked it from README,
+  validation evidence packaging, validation scope, generated-model artifact, scenario-bundle
+  FreshForge orchestration, and API reference docs.
+
+Local verification:
+
+- `.venv/bin/python -m pytest tests/test_benchmarks.py tests/test_benchmark_evidence_workflow.py tests/test_scripts.py -q`
+  passed with 31 tests.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 108 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for the restored 2019, 2020,
+  and 2021 public workbooks.
+- `scripts/check_release_artifacts.sh` passed; the clean wheel install imported
+  `fable_pyculator 0.1.0a2` against published `modelwright 0.1.0a7`.
+- `git diff --check` passed.
+- Real local smoke passed with `.venv/bin/python scripts/run_fable_benchmark_evidence.py --json`,
+  selecting the `modelwright` evidence backend and reporting incomplete equivalence when explicit
+  comparison counts were unavailable.
+- Merged Phase 20 through PR #142 and confirmed post-merge Test workflow run #28558959744 plus
+  Docs Pages workflow run #28558959735 passed, including GitHub Pages deployment.
+
+## Phase 21: v0.1.0a3 Benchmark Workflow Automation Alpha Release
+
+GitHub parent issue: #143.
+
+Release branch: `feature/p21-v0.1.0a3-release`.
+
+Status: complete after PR #148, tag `v0.1.0a3`, PyPI publication, GitHub prerelease, and clean
+PyPI install smoke tests.
+
+Goal: publish `fable-pyculator==0.1.0a3` to GitHub and PyPI as the benchmark workflow automation
+alpha release after FreshForge `v0.1.0a3` and Modelwright `v0.1.0a8`.
+
+- [x] P21.1 Bump FABLE Pyculator version and dependency metadata. Child issue: #144.
+  - [x] Bump package and import metadata to `0.1.0a3`.
+  - [x] Bump FABLE Pyculator FreshForge provider metadata to `0.1.0a3`.
+  - [x] Raise the Modelwright dependency floor to `modelwright[notebook]>=0.1.0a8`.
+  - [x] Update version assertions and release artifact checks.
+- [x] P21.2 Update release docs and FreshForge/Modelwright guidance. Child issue: #145.
+  - [x] Update the release deployment guide for the `v0.1.0a3` alpha boundary.
+  - [x] Update README alpha-line language for the benchmark workflow automation release.
+  - [x] Update FreshForge installation guidance to use `v0.1.0a3`.
+- [x] P21.3 Verify FABLE Pyculator release artifacts and smoke tests. Child issue: #146.
+  - [x] Run local quality, tests, docs, theme, checksum, and release artifact checks.
+  - [x] Smoke-test benchmark evidence packaging entry points.
+- [x] P21.4 Tag, publish PyPI/GitHub release, and close phase. Child issue: #147.
+  - [x] Open and merge release PR after CI passes.
+  - [x] Create annotated tag `v0.1.0a3`.
+  - [x] Publish to PyPI through trusted publishing.
+  - [x] Create GitHub prerelease and verify clean PyPI install.
+
+Acceptance boundary:
+
+- May claim output-ref strategy comparison workflows, FreshForge-backed scenario-bundle
+  orchestration, opt-in benchmark evidence packaging, and dependency alignment with Modelwright
+  `0.1.0a8` plus FreshForge `v0.1.0a3`.
+- Must not claim stable public API compatibility, production readiness, arbitrary FABLE
+  country-calculator support, scenario-definition table editing, or new generated-model equivalence
+  beyond recorded public 2020/2021 evidence.
+
+Local verification:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 108 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for the restored 2019, 2020,
+  and 2021 public workbooks.
+- `scripts/check_release_artifacts.sh` passed; the clean wheel install imported
+  `fable_pyculator 0.1.0a3` against published `modelwright 0.1.0a8`.
+- `.venv/bin/python scripts/run_fable_benchmark_evidence.py --json` passed, selecting the
+  `modelwright` evidence backend and reporting incomplete equivalence when explicit comparison
+  counts were unavailable.
+- `git diff --check` passed.
+
+Release evidence:
+
+- PR #148 merged to `main`.
+- Post-merge Test workflow run #28559940344 passed.
+- Post-merge Docs Pages workflow run #28559940366 passed and deployed.
+- Annotated tag `v0.1.0a3` was pushed.
+- Release workflow run #28559980122 built artifacts and published `fable-pyculator==0.1.0a3` to
+  PyPI.
+- PyPI listed both `fable_pyculator-0.1.0a3-py3-none-any.whl` and
+  `fable_pyculator-0.1.0a3.tar.gz`.
+- GitHub prerelease `v0.1.0a3` was created with the workflow-built wheel and sdist.
+- Clean PyPI install of `fable-pyculator[notebook]==0.1.0a3` imported
+  `fable_pyculator 0.1.0a3` with `modelwright 0.1.0a8` and smoke-tested the benchmark, strategy
+  comparison, and FreshForge scenario-workflow API exports.
+
+## Phase 22: FreshForge Matrix Output-Ref Strategy Runs
+
+GitHub parent issue: #149.
+
+Active branch: `feature/p22-freshforge-strategy-matrices`.
+
+Status: complete after PR #155 and post-merge Test and Docs Pages workflows.
+
+Goal: connect output-ref strategy comparison with FreshForge Phase 8 matrices so users can prepare
+one explicit matrix across strategy cases and optionally plan or run it through FreshForge.
+
+- [x] P22.1 Define strategy matrix contract and artifacts. Child issue: #150.
+- [x] P22.2 Add matrix document writer and optional planner/runner integration. Child issue: #151.
+- [x] P22.3 Update strategy comparison CLI, docs, and examples. Child issue: #152.
+- [x] P22.4 Add tests and verification. Child issue: #153.
+- [x] P22.5 PR, docs deploy, and close phase. Child issue: #154.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator can prepare FreshForge matrix documents for output-ref strategy
+  comparisons.
+- May claim users can explicitly plan or run those matrices when FreshForge Phase 8 is installed.
+- Must keep FreshForge optional and avoid normal import-time FreshForge imports.
+- Must not claim new generated-model equivalence from matrix creation, planning, or execution unless
+  explicit validation evidence exists.
+- Must not add scenario-bundle matrices in this phase.
+
+Implementation evidence:
+
+- Added FreshForge-free strategy matrix records, matrix YAML/template writers, and lazy FreshForge
+  plan/run adapters to `fable_pyculator.strategy_comparison`.
+- Extended `scripts/compare_fable_output_ref_strategies.py` with `--include-matrix`,
+  `--matrix-plan`, explicit `--matrix-run`, `--matrix-path`, `--workdir`, and `--fail-fast`.
+- Updated the output-ref strategy comparison guide and README with compare-only, matrix-writing,
+  matrix-planning, and explicit matrix-run examples.
+
+Local verification:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 115 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for restored public workbook
+  artifacts.
+- `scripts/check_release_artifacts.sh` passed.
+- `git diff --check` passed.
+- Real local 2021 smoke passed with
+  `.venv/bin/python scripts/compare_fable_output_ref_strategies.py --strategy headline-only --include-matrix --json`,
+  writing the strategy matrix and workflow template under ignored `tmp/strategy-comparisons/`.
+- Real local 2021 FreshForge matrix planning smoke passed with
+  `.venv/bin/python scripts/compare_fable_output_ref_strategies.py --strategy headline-only --matrix-plan --json`.
+
+Closeout evidence:
+
+- PR #155 merged to `main` with squash commit `6ef33e6`.
+- Post-merge Test workflow passed.
+- Post-merge Docs Pages workflow passed and deployed.
+
+## Phase 23: FreshForge Matrix Scenario-Bundle Runs
+
+GitHub parent issue: #156.
+
+Phase branch: `feature/p23-freshforge-scenario-bundle-matrices`.
+
+Status: complete.
+
+Goal: add FreshForge matrix orchestration for existing FABLE scenario bundles so each scenario can
+run as a namespaced matrix case with compact planning/run summaries.
+
+- [x] P23.1 Define scenario-bundle matrix contract and artifacts. Child issue: #157.
+- [x] P23.2 Add matrix document writer and optional planner/runner integration. Child issue: #158.
+- [x] P23.3 Update scenario-bundle CLI, docs, and examples. Child issue: #159.
+- [x] P23.4 Add tests and verification. Child issue: #160.
+- [x] P23.5 PR, docs deploy, and close phase. Child issue: #161.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator can prepare FreshForge matrix documents for scenario-bundle cases.
+- May claim users can explicitly plan or run scenario-bundle matrices when FreshForge Phase 8 is
+  installed.
+- Must keep FreshForge optional and avoid normal import-time FreshForge imports.
+- Must preserve direct scenario-bundle execution and existing FreshForge workflow mode.
+- Must not add scenario-definition table editing, generated-model rebuilding, remote execution,
+  caching, retries, or new generated-model equivalence claims.
+
+Implementation evidence:
+
+- Added scenario-bundle matrix path and plan records, matrix/template builders, and lazy matrix
+  plan/run/summary helpers to `fable_pyculator.scenario_workflows`.
+- Extended `scripts/run_fable_scenario_bundle.py` with `--freshforge-matrix-plan`,
+  `--freshforge-matrix-run`, `--matrix-path`, `--matrix-template-path`, `--matrix-summary-path`, and
+  `--fail-fast`.
+- Added public-safe scenario-bundle matrix examples under `examples/freshforge/`.
+- Updated README and the FreshForge scenario-bundle orchestration guide.
+
+Local verification:
+
+- `.venv/bin/python -m pytest tests/test_scenario_workflows.py tests/test_scripts.py -q` passed with
+  35 tests.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 121 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for restored public workbook
+  artifacts.
+- `scripts/check_release_artifacts.sh` passed.
+- `git diff --check` passed.
+- Real local 2021 matrix-plan smoke passed with
+  `.venv/bin/python scripts/run_fable_scenario_bundle.py --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml --freshforge-matrix-plan --json`.
+- Public-safe example matrix planning passed with
+  `.venv/bin/freshforge matrix plan examples/freshforge/fable_2021_scenario_bundle_matrix.yaml --json`.
+
+Closeout evidence:
+
+- PR #162 merged to `main` with squash commit `9ea77e6`.
+- Post-merge Test workflow passed: run `28562394428`.
+- Post-merge Docs Pages workflow passed and deployed: run `28562394444`.
+
+## Phase 24: v0.1.0a4 Matrix Workflow Automation Alpha Release
+
+GitHub parent issue: #163.
+
+Release branch: `feature/p24-v0.1.0a4-release`.
+
+Status: complete after PR #168, tag `v0.1.0a4`, PyPI publication, GitHub prerelease, and clean
+PyPI install smoke testing.
+
+Goal: publish `fable-pyculator==0.1.0a4` to GitHub and PyPI as the matrix workflow automation
+alpha after FreshForge `v0.1.0a4`.
+
+- [x] P24.1 Bump version and dependency guidance. Child issue: #164.
+  - [x] Bump package and import metadata to `0.1.0a4`.
+  - [x] Bump FABLE Pyculator FreshForge provider metadata to `0.1.0a4`.
+  - [x] Update FreshForge installation guidance to `v0.1.0a4`.
+  - [x] Update version assertions and release artifact checks.
+- [x] P24.2 Update release docs, README, roadmap, and changelog. Child issue: #165.
+  - [x] Update README alpha language for strategy and scenario-bundle matrices.
+  - [x] Update the release deployment guide for the `v0.1.0a4` alpha boundary.
+  - [x] Record Phase 24 in the roadmap and changelog.
+- [x] P24.3 Verify artifacts, tag, publish PyPI/GitHub release. Child issue: #166.
+  - [x] Run local quality, tests, docs, workbook checksum, and release artifact checks.
+  - [x] Create annotated tag `v0.1.0a4`.
+  - [x] Verify the release workflow publishes `fable-pyculator==0.1.0a4` to PyPI.
+  - [x] Create GitHub prerelease with checked artifacts attached.
+  - [x] Run a clean PyPI install smoke test.
+- [x] P24.4 PR, docs deploy, and close phase. Child issue: #167.
+  - [x] Open and merge release PR after CI passes.
+  - [x] Confirm post-merge Test and Docs Pages workflows.
+  - [x] Update roadmap and changelog closeout evidence.
+
+Acceptance boundary:
+
+- May claim FABLE Pyculator has a PyPI/GitHub alpha release for output-ref strategy matrices and
+  scenario-bundle matrices.
+- May point users to FreshForge `v0.1.0a4` for optional matrix planning/running.
+- Must keep FreshForge optional rather than a required runtime dependency.
+- Must not claim stable API, production readiness, arbitrary country-calculator support,
+  scenario-definition table editing, remote execution, or new generated-model equivalence.
+
+Local verification:
+
+- `.venv/bin/python -m pip install -e .[dev,notebook,docs]` refreshed editable metadata for
+  `fable-pyculator 0.1.0a4` with published `modelwright 0.1.0a8`.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with 121 tests and 9 skipped workbook tests.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed for restored public workbook
+  artifacts.
+- `scripts/check_release_artifacts.sh` passed; the clean wheel install imported
+  `fable_pyculator 0.1.0a4` against published `modelwright 0.1.0a8`.
+- `git diff --check` passed.
+
+Closeout evidence:
+
+- Phase 24 PR #168 merged to `main` at `238165b`.
+- Post-merge Test workflow passed: run `28562906226`.
+- Post-merge Docs Pages workflow passed and deployed: run `28562906254`.
+- Annotated tag `v0.1.0a4` was pushed.
+- Release workflow run #28562950207 built artifacts and published `fable-pyculator==0.1.0a4` to
+  PyPI.
+- Downloaded workflow-built artifacts passed `twine check`.
+- GitHub prerelease `v0.1.0a4` was created with the workflow-built wheel and sdist.
+- Clean PyPI install of `fable-pyculator[notebook]==0.1.0a4` imported
+  `fable_pyculator 0.1.0a4` with `modelwright 0.1.0a8` and smoke-tested the matrix helper exports.
+
+## Phase 25: FABLE Benchmark Matrix Evidence Cookbook
+
+GitHub parent issue: #171.
+
+Status: complete.
+
+Goal: consume Modelwright Phase 38 matrix evidence aggregation to document and package a FABLE-facing
+2021 benchmark matrix workflow.
+
+Planned scope:
+
+- [x] P25.1 Define FABLE benchmark matrix evidence path contract. Child issue: #174.
+- [x] P25.2 Add matrix evidence packaging helpers. Child issue: #175.
+- [x] P25.3 Add script/workflow cookbook commands. Child issue: #176.
+- [x] P25.4 Update docs, examples, and tests. Child issue: #177.
+- [x] P25.5 Verify, PR, deploy docs, and close phase. Child issue: #178.
+
+Scope:
+
+- Document compare-only, matrix-plan, and explicit matrix-run workflows for 2021 FABLE output-ref
+  strategy cases.
+- Package FABLE-facing summaries from generic Modelwright matrix evidence.
+- Keep generated-model equivalence claims tied only to explicit comparable/match/mismatch evidence.
+
+Out of scope:
+
+- Editable scenario-definition parameters.
+- New generated-model equivalence claims without evidence.
+- FreshForge core feature work.
+- Remote execution, caching, retries, or production scheduling.
+
+Implementation evidence:
+
+- Added FABLE-facing benchmark matrix evidence records and helpers that delegate generic matrix
+  aggregation to Modelwright Phase 38.
+- Added `scripts/package_fable_matrix_evidence.py` for compact matrix evidence packaging.
+- Added the 2021 benchmark matrix evidence cookbook and linked it from adjacent docs.
+- Local verification passed with Ruff, full pytest (`130` passed, `9` skipped workbook tests),
+  warning-clean Sphinx docs, Read the Docs theme verification, public workbook checksums, release
+  artifact checks, and `git diff --check`.
+- PR #179 merged to `main`; post-merge Test workflow #28627076860 passed and post-merge Docs Pages
+  workflow #28627076848 passed after rerunning a transient GitHub Pages deploy failure.
+
+## Phase 26: Editable Scenario-Definition Parameter Surface
+
+GitHub parent issue: #172.
+
+Status: complete.
+
+Goal: expose FABLE scenario-definition table editing and validation as a first-class FABLE Pyculator
+modelling surface after benchmark matrix evidence workflows are documented.
+
+Tasks:
+
+- [x] P26.1 Define editable scenario-definition surface records. Child issue: #180.
+- [x] P26.2 Add patch validation, loading, writing, and input mapping. Child issue: #181.
+- [x] P26.3 Add notebook-loop execution integration. Child issue: #182.
+- [x] P26.4 Update docs, examples, and tests. Child issue: #183.
+- [x] P26.5 Verify, PR, deploy docs, and close phase. Child issue: #184.
+
+Scope:
+
+- Add APIs for editable scenario-definition parameter surfaces.
+- Validate edited parameter tables before generated-model execution.
+- Integrate later with scenario bundles and FreshForge matrices.
+- Keep workbook-version assumptions explicit.
+
+Out of scope:
+
+- Arbitrary country-calculator support.
+- Generic Modelwright workbook conversion logic.
+- Remote execution, caching, retries, or production scheduling.
+- New generated-model equivalence claims.
+
+Implementation evidence:
+
+- Added `fable_pyculator.scenario_definitions` with editable-cell records, patch records, patch
+  loading/writing, validation, and generated-model input mapping.
+- Integrated optional `scenario_definition_patch` inputs into `run_scenario`, `run_notebook_loop`,
+  `run_2020_notebook_loop`, and `run_2021_notebook_loop`.
+- Added `scripts/validate_fable_scenario_definition_patch.py` and a public-safe YAML patch schema
+  example under `examples/scenario-definition-patches/`.
+- Added Sphinx documentation for editable scenario-definition patches and linked it from the
+  notebook control, scenario bundle, README, index, and API docs.
+- Added unit, script, and workbook-backed tests for editable `DIRECT` cells, read-only role/formula
+  rejection, patch selectors, duplicate/ambiguous targets, generated-model input mapping, notebook
+  loop integration, and validation-script output.
+
+Verification evidence:
+
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/python -m pytest` passed with `140` tests and `11` workbook-backed skips.
+- `.venv/bin/sphinx-build -b html docs _build/html -W` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `sha256sum -c benchmarks/fable-calculator/checksums.sha256` passed.
+- `scripts/check_release_artifacts.sh` passed with a clean wheel install smoke test.
+- `git diff --check` passed.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -q tests/test_fable_workbook_scenario_definition_tables.py`
+  passed with `5` workbook-backed tests.
+- `.venv/bin/python scripts/validate_fable_scenario_definition_patch.py --patch examples/scenario-definition-patches/fable_2021_diet_target_demo.yaml --workbook-version 2021 --json`
+  passed against the restored 2021 workbook and produced one generated-model input override.
+
+Closeout evidence:
+
+- PR #185 merged to `main` with merge commit `5e08862`.
+- Post-merge Test workflow #28629339255 passed.
+- Post-merge Docs Pages workflow #28629339241 passed after rerunning a transient GitHub Pages deploy
+  failure.

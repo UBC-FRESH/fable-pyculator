@@ -11,12 +11,17 @@ Modelwright-generated Python models.
    guides/artifacts
    guides/workbook-structure
    guides/notebook-control-surface
+   guides/scenario-definition-editing
    guides/scenario-bundles
+   guides/scenario-bundle-freshforge-orchestration
    guides/2020-notebook-workflow
    guides/generated-model-artifacts
    guides/freshforge-provider-integration
+   guides/output-ref-strategy-comparison
    guides/2021-freshforge-rebuild-command
    guides/validation-evidence-packaging
+   guides/benchmark-evidence-workflow
+   guides/fable-2021-benchmark-matrix-evidence-cookbook
    guides/validation-scope
    guides/release-deployment
 

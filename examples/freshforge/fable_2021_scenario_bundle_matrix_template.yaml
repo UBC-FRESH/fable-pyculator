@@ -1,0 +1,49 @@
+workflow:
+  id: fable_scenario_${matrix.scenario_id}
+  name: FABLE scenario ${matrix.scenario_label}
+  description: Public-safe template for one FABLE scenario-bundle matrix case.
+nodes:
+  - id: prepare_bundle
+    provider: fable_pyculator.scenario_bundle_prepare
+    outputs:
+      bundle: bundle
+    parameters:
+      bundle_path: ${matrix.bundle_path}
+      workbook_path: ${matrix.workbook_path}
+      workbook_id: ${matrix.workbook_id}
+    artifacts:
+      normalized_bundle: bundle.json
+      prepare_summary: prepare.json
+  - id: scenario_${matrix.scenario_id}
+    provider: fable_pyculator.scenario_run
+    needs:
+      - prepare_bundle
+    inputs:
+      bundle: prepare_bundle.bundle
+    outputs:
+      scenario_result: ${matrix.scenario_id}
+    parameters:
+      bundle_path: ${matrix.bundle_path}
+      workbook_path: ${matrix.workbook_path}
+      workbook_id: ${matrix.workbook_id}
+      generated_model_path: ${matrix.generated_model_path}
+      module_name: ${matrix.module_name}
+      scenario_id: ${matrix.scenario_id}
+    artifacts:
+      scenario_summary: scenarios/${matrix.scenario_id}/scenario.json
+      scenario_inputs: scenarios/${matrix.scenario_id}/scenario_inputs.csv
+      output_tables: scenarios/${matrix.scenario_id}/output_tables
+      headline_frames: scenarios/${matrix.scenario_id}/headline_frames
+      headline_figures: scenarios/${matrix.scenario_id}/headline_figures
+  - id: bundle_manifest
+    provider: fable_pyculator.scenario_bundle_manifest
+    needs:
+      - scenario_${matrix.scenario_id}
+    inputs:
+      scenario_${matrix.scenario_id}: scenario_${matrix.scenario_id}.scenario_result
+    outputs:
+      manifest: manifest
+    parameters:
+      bundle_path: ${matrix.bundle_path}
+    artifacts:
+      manifest: manifest.json

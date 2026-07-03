@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
@@ -40,9 +41,111 @@ def main(argv: Sequence[str] | None = None) -> int:
             repo_root=repo_root,
             output_dir=args.output_dir,
         )
+        freshforge_paths = _freshforge_paths(
+            workbook_version=workbook_version,
+            bundle_id=bundle.bundle_id,
+            repo_root=repo_root,
+            output_dir=args.output_dir,
+            workflow_path=args.workflow_path,
+            run_summary_path=args.run_summary_path,
+        )
+        matrix_paths = _freshforge_matrix_paths(
+            workbook_version=workbook_version,
+            bundle_id=bundle.bundle_id,
+            repo_root=repo_root,
+            output_dir=args.output_dir,
+            matrix_path=args.matrix_path,
+            workflow_template_path=args.matrix_template_path,
+            matrix_summary_path=args.matrix_summary_path,
+        )
         spec = _build_spec(build_paths.workbook_path, workbook_version=workbook_version)
         _validate_bundle(bundle, spec)
         render_overrides = _render_overrides(args)
+        if args.freshforge_matrix_plan or args.freshforge_matrix_run:
+            matrix_plan = _prepare_freshforge_matrix(
+                bundle,
+                bundle_path=args.bundle,
+                workbook_path=build_paths.workbook_path,
+                generated_model_path=generated_model_path,
+                paths=matrix_paths,
+                repo_root=repo_root,
+                spec=spec,
+            )
+            plan_payload = _plan_freshforge_matrix(matrix_plan)
+            run_payload = None
+            if args.freshforge_matrix_run:
+                run_result = _run_freshforge_matrix(matrix_plan, fail_fast=args.fail_fast)
+                run_payload = _write_freshforge_matrix_summary(
+                    run_result,
+                    matrix_paths,
+                    path=args.matrix_summary_path,
+                )
+            return _emit(
+                _summary(
+                    bundle=bundle,
+                    repo_root=repo_root,
+                    workbook_path=build_paths.workbook_path,
+                    generated_model_path=generated_model_path,
+                    artifact_paths=artifact_paths,
+                    mode="freshforge-matrix-run" if args.freshforge_matrix_run else "freshforge-matrix-plan",
+                    render_overrides=render_overrides,
+                    manifest=None,
+                    freshforge={
+                        "matrix": _rel(matrix_paths.matrix_path, repo_root),
+                        "matrix_template": _rel(matrix_paths.workflow_template_path, repo_root),
+                        "matrix_summary": _rel(matrix_paths.matrix_summary_path, repo_root),
+                        "case_count": matrix_plan.case_count,
+                        "plan": plan_payload,
+                        "run": run_payload,
+                    },
+                ),
+                json_output=args.json_output,
+            )
+        if args.freshforge_plan or args.freshforge_run:
+            run_namespace = args.run_namespace or (_timestamp_namespace() if args.freshforge_run else None)
+            plan = _prepare_freshforge_workflow(
+                bundle,
+                bundle_path=args.bundle,
+                workbook_path=build_paths.workbook_path,
+                generated_model_path=generated_model_path,
+                paths=freshforge_paths,
+                repo_root=repo_root,
+                spec=spec,
+                run_namespace=run_namespace,
+            )
+            run_payload = None
+            if args.freshforge_run:
+                run_result = _run_freshforge_workflow(plan, run_namespace=run_namespace)
+                run_payload = _write_freshforge_summary(
+                    run_result,
+                    freshforge_paths,
+                    run_namespace=run_namespace,
+                    path=args.run_summary_path,
+                )
+            return _emit(
+                _summary(
+                    bundle=bundle,
+                    repo_root=repo_root,
+                    workbook_path=build_paths.workbook_path,
+                    generated_model_path=generated_model_path,
+                    artifact_paths=artifact_paths,
+                    mode="freshforge-run" if args.freshforge_run else "freshforge-plan",
+                    render_overrides=render_overrides,
+                    manifest=None,
+                    freshforge={
+                        "workflow": _rel(freshforge_paths.workflow_path, repo_root),
+                        "run_namespace": run_namespace,
+                        "run_summary": (
+                            _rel(Path(run_payload["run_summary"]), repo_root)
+                            if run_payload is not None
+                            else _rel(freshforge_paths.namespaced_run_summary_path(run_namespace), repo_root)
+                        ),
+                        "run": run_payload,
+                        "node_count": len(plan.workflow.get("nodes", [])),
+                    },
+                ),
+                json_output=args.json_output,
+            )
         if args.dry_run:
             return _emit(
                 _summary(
@@ -54,6 +157,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     mode="dry-run",
                     render_overrides=render_overrides,
                     manifest=None,
+                    freshforge=None,
                 ),
                 json_output=args.json_output,
             )
@@ -78,6 +182,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             mode="run",
             render_overrides=render_overrides,
             manifest=manifest,
+            freshforge=None,
         ),
         json_output=args.json_output,
     )
@@ -119,6 +224,17 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--include-figures", action="store_true", help="Write headline PNG figures.")
     parser.add_argument("--dry-run", action="store_true", help="Validate and report planned artifacts without running.")
+    parser.add_argument("--freshforge-plan", action="store_true", help="Write and report a FreshForge workflow without running it.")
+    parser.add_argument("--freshforge-run", action="store_true", help="Run the scenario bundle through FreshForge.")
+    parser.add_argument("--freshforge-matrix-plan", action="store_true", help="Write and plan one FreshForge matrix case per scenario.")
+    parser.add_argument("--freshforge-matrix-run", action="store_true", help="Run one FreshForge matrix case per scenario.")
+    parser.add_argument("--run-namespace", default=None, help="FreshForge run namespace. Defaults to a timestamp for --freshforge-run.")
+    parser.add_argument("--workflow-path", default=None, help="FreshForge workflow JSON path.")
+    parser.add_argument("--run-summary-path", default=None, help="FreshForge run summary JSON path.")
+    parser.add_argument("--matrix-path", default=None, help="FreshForge matrix YAML path.")
+    parser.add_argument("--matrix-template-path", default=None, help="FreshForge matrix workflow-template YAML path.")
+    parser.add_argument("--matrix-summary-path", default=None, help="FreshForge matrix summary JSON path.")
+    parser.add_argument("--fail-fast", action="store_true", help="Stop FreshForge matrix execution after the first failed case.")
     parser.add_argument("--json", dest="json_output", action="store_true", help="Emit machine-readable JSON.")
     return parser
 
@@ -151,6 +267,18 @@ def _artifact_paths(**kwargs: Any) -> Any:
     return fable_scenario_bundle_artifact_paths(**kwargs)
 
 
+def _freshforge_paths(**kwargs: Any) -> Any:
+    from fable_pyculator import fable_scenario_bundle_freshforge_paths
+
+    return fable_scenario_bundle_freshforge_paths(**kwargs)
+
+
+def _freshforge_matrix_paths(**kwargs: Any) -> Any:
+    from fable_pyculator import fable_scenario_bundle_freshforge_matrix_paths
+
+    return fable_scenario_bundle_freshforge_matrix_paths(**kwargs)
+
+
 def _build_spec(workbook_path: Path, *, workbook_version: str) -> Any:
     from fable_pyculator import build_notebook_spec
     from fable_pyculator.workbook import suppress_benign_openpyxl_warnings
@@ -181,6 +309,48 @@ def _write_artifacts(run_result: Any, artifact_paths: Any) -> dict[str, Any]:
     from fable_pyculator import write_scenario_bundle_artifacts
 
     return write_scenario_bundle_artifacts(run_result, artifact_paths)
+
+
+def _prepare_freshforge_workflow(bundle: Any, **kwargs: Any) -> Any:
+    from fable_pyculator import prepare_scenario_bundle_freshforge_workflow
+
+    return prepare_scenario_bundle_freshforge_workflow(bundle, **kwargs)
+
+
+def _run_freshforge_workflow(plan: Any, **kwargs: Any) -> Any:
+    from fable_pyculator import run_scenario_bundle_freshforge_workflow
+
+    return run_scenario_bundle_freshforge_workflow(plan, **kwargs)
+
+
+def _write_freshforge_summary(run_result: Any, paths: Any, **kwargs: Any) -> dict[str, Any]:
+    from fable_pyculator import write_scenario_bundle_freshforge_summary
+
+    return write_scenario_bundle_freshforge_summary(run_result, paths, **kwargs)
+
+
+def _prepare_freshforge_matrix(bundle: Any, **kwargs: Any) -> Any:
+    from fable_pyculator import prepare_scenario_bundle_freshforge_matrix
+
+    return prepare_scenario_bundle_freshforge_matrix(bundle, **kwargs)
+
+
+def _plan_freshforge_matrix(plan: Any) -> dict[str, Any]:
+    from fable_pyculator import plan_scenario_bundle_freshforge_matrix
+
+    return plan_scenario_bundle_freshforge_matrix(plan)
+
+
+def _run_freshforge_matrix(plan: Any, **kwargs: Any) -> Any:
+    from fable_pyculator import run_scenario_bundle_freshforge_matrix
+
+    return run_scenario_bundle_freshforge_matrix(plan, **kwargs)
+
+
+def _write_freshforge_matrix_summary(run_result: Any, paths: Any, **kwargs: Any) -> dict[str, Any]:
+    from fable_pyculator import write_scenario_bundle_freshforge_matrix_summary
+
+    return write_scenario_bundle_freshforge_matrix_summary(run_result, paths, **kwargs)
 
 
 def _generated_model_path(
@@ -220,6 +390,7 @@ def _summary(
     mode: str,
     render_overrides: dict[str, Any],
     manifest: dict[str, Any] | None,
+    freshforge: dict[str, Any] | None,
 ) -> dict[str, Any]:
     return {
         "ok": True,
@@ -240,6 +411,7 @@ def _summary(
             if value is not None
         },
         "manifest": manifest,
+        "freshforge": freshforge,
     }
 
 
@@ -254,6 +426,16 @@ def _emit(payload: dict[str, Any], *, json_output: bool) -> int:
         print("Artifacts:")
         for label, path in payload["artifacts"].items():
             print(f"- {label}: {path}")
+        if payload.get("freshforge") is not None and "workflow" in payload["freshforge"]:
+            print("FreshForge:")
+            print(f"- workflow: {payload['freshforge']['workflow']}")
+            print(f"- namespace: {payload['freshforge']['run_namespace']}")
+            print(f"- run summary: {payload['freshforge']['run_summary']}")
+        elif payload.get("freshforge") is not None and "matrix" in payload["freshforge"]:
+            print("FreshForge matrix:")
+            print(f"- matrix: {payload['freshforge']['matrix']}")
+            print(f"- cases: {payload['freshforge']['case_count']}")
+            print(f"- matrix summary: {payload['freshforge']['matrix_summary']}")
     return 0
 
 
@@ -271,6 +453,10 @@ def _rel(path: Path, repo_root: Path) -> str:
         return path.relative_to(repo_root).as_posix()
     except ValueError:
         return path.as_posix()
+
+
+def _timestamp_namespace() -> str:
+    return datetime.now(timezone.utc).strftime("run/%Y%m%dT%H%M%SZ")
 
 
 if __name__ == "__main__":

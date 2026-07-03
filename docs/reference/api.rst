@@ -47,16 +47,40 @@ Rendering And Execution
 .. automodule:: fable_pyculator.surface
    :members:
 
+Scenario-Definition Patches
+---------------------------
+
+.. automodule:: fable_pyculator.scenario_definitions
+   :members:
+
 Scenario Bundles
 ----------------
 
 .. automodule:: fable_pyculator.scenarios
    :members:
 
+Scenario-Bundle FreshForge Workflows
+------------------------------------
+
+.. automodule:: fable_pyculator.scenario_workflows
+   :members:
+
+Benchmark Evidence
+------------------
+
+.. automodule:: fable_pyculator.benchmarks
+   :members:
+
 Validation Evidence
 -------------------
 
 .. automodule:: fable_pyculator.validation
+   :members:
+
+Output-Ref Strategy Comparison
+------------------------------
+
+.. automodule:: fable_pyculator.strategy_comparison
    :members:
 
 FreshForge Workflow Helpers

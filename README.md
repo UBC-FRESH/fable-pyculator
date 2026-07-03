@@ -178,11 +178,17 @@ start with plan-only preparation. The generic command defaults to the public 202
 .venv/bin/python scripts/build_fable_model.py
 ```
 
+To compare output-ref boundaries before choosing a rebuild target, run:
+
+```bash
+.venv/bin/python scripts/compare_fable_output_ref_strategies.py --json
+```
+
 Use `--workbook-version 2020` or `--workbook-version 2021` to choose a workbook version by
-convention, and use `--output-ref-strategy headline-only`, `--table-name ghg_resultsghg`, or
-`--column-flavour-tag OUTPUT-8` to compare smaller generated-model boundaries. The older
-`scripts/build_fable_2021_model.py` command remains a 2021 shortcut. Use `--run` only after
-reviewing the generated `tmp/generated-models/fable-YYYY/` workflow artifacts.
+convention. Add `--include-matrix` or `--matrix-plan` to write or inspect a FreshForge matrix across
+the default strategy cases; use `--matrix-run` only after reviewing the generated matrix and local
+artifacts. The older `scripts/build_fable_2021_model.py` command remains a 2021 shortcut. Use
+`--run` only after reviewing the generated `tmp/generated-models/fable-YYYY/` workflow artifacts.
 
 FABLE Pyculator discovers wrapper metadata and renders notebook surfaces. It does not currently
 generate Modelwright `contract.json`, `expressions.json`, or `constants.json` files from a FABLE
@@ -206,6 +212,44 @@ Remove `--dry-run` after the matching workbook and generated model are restored 
 outputs are written under ignored `tmp/scenario-runs/fable-YYYY/<bundle-id>/` paths. See
 `docs/guides/scenario-bundles.rst` for the bundle schema and artifact layout.
 
+To validate conservative `SCENARIOS definition` table edits without mutating the source workbook,
+use a scenario-definition patch:
+
+```bash
+.venv/bin/python scripts/validate_fable_scenario_definition_patch.py \
+  --patch examples/scenario-definition-patches/fable_2021_diet_target_demo.yaml \
+  --workbook-version 2021 \
+  --json
+```
+
+Valid patches target non-formula `DIRECT` cells and become generated-model input overrides. Read-only
+role tags such as `SCEN`, `DATA-*`, and `CALC` fail before model execution. See
+`docs/guides/scenario-definition-editing.rst`.
+
+When repeated bundle runs need explicit graph planning, namespace-isolated artifacts, and a compact
+FreshForge run summary, use the FreshForge-backed path:
+
+```bash
+.venv/bin/python scripts/run_fable_scenario_bundle.py \
+  --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml \
+  --freshforge-plan \
+  --json
+```
+
+Switch to `--freshforge-run --run-namespace scenario/demo` only after the plan and local artifacts
+look right. See `docs/guides/scenario-bundle-freshforge-orchestration.rst`.
+
+To treat each scenario as a FreshForge matrix case, use:
+
+```bash
+.venv/bin/python scripts/run_fable_scenario_bundle.py \
+  --bundle examples/scenario-bundles/fable_2021_ssp_demo.yaml \
+  --freshforge-matrix-plan \
+  --json
+```
+
+Switch to `--freshforge-matrix-run` only after the matching workbook and generated model are restored.
+
 To package compact validation evidence from existing local generated-model artifacts, use:
 
 ```bash
@@ -216,11 +260,35 @@ This writes sanitized summaries under `tmp/validation-evidence/fable-YYYY/`. Mis
 produce a skipped summary by default; use `--require-artifacts` when absence should fail. See
 `docs/guides/validation-evidence-packaging.rst` for the evidence status and claim boundary.
 
+For the opt-in benchmark workflow wrapper, which can package evidence, prepare a FreshForge plan, or
+explicitly run the restored local benchmark workflow, use:
+
+```bash
+.venv/bin/python scripts/run_fable_benchmark_evidence.py --mode evidence-only --json
+```
+
+Switch to `--mode freshforge-plan` or `--mode freshforge-run` only when local artifacts are restored
+and the run is intentional. The manual GitHub workflow uploads only compact summaries under
+`tmp/validation-evidence/**`; it does not upload private workbooks, generated models, raw reports, or
+raw generated values. See `docs/guides/benchmark-evidence-workflow.rst`.
+
+To package compact evidence from an explicit FreshForge output-ref strategy matrix run, use:
+
+```bash
+.venv/bin/python scripts/package_fable_matrix_evidence.py --workbook-version 2021 --json
+```
+
+That command expects a matrix run summary such as
+`tmp/strategy-comparisons/fable-2021/matrix-run-summary.json` and writes sanitized matrix summaries
+under `tmp/validation-evidence/fable-2021/matrix/`. See
+`docs/guides/fable-2021-benchmark-matrix-evidence-cookbook.rst`.
+
 Tracked notebook example:
 
 ```text
 examples/notebooks/fable-pyculator-2020-loop.ipynb
 examples/notebooks/fable-pyculator-2021-loop.ipynb
+examples/notebooks/fable-pyculator-2021-scenario-definition-patch.ipynb
 examples/notebooks/fable-pyculator-2021-freshforge-build-plan.ipynb
 examples/notebooks/fable-pyculator-2021-freshforge-run.ipynb
 ```
@@ -229,8 +297,9 @@ The 2020 notebook is intentionally committed after a successful 2020 benchmark r
 render the example tables and figure directly in the browser. The 2021 notebook is a runnable
 artifact-wiring template: it still requires the ignored local workbook, but it can restore the
 validated generated model from the tracked compressed 2021 archive. The FreshForge notebooks show
-how to rebuild that model from the source workbook: one notebook plans the graph, and the run
-companion gates the full FreshForge/Modelwright build behind `RUN_FRESHFORGE = False`.
+how to validate a scenario-definition patch without mutating the workbook. The FreshForge notebooks
+show how to rebuild the 2021 model from the source workbook: one notebook plans the graph, and the
+run companion gates the full FreshForge/Modelwright build behind `RUN_FRESHFORGE = False`.
 
 In VSCode, point the notebook kernel at the `.venv` created in the `fable-pyculator` repo root.
 The notebook setup cell prints the active environment prefix and warns if the selected kernel does
@@ -240,12 +309,13 @@ The Sphinx guide expands this into a full workflow under
 `docs/guides/2020-notebook-workflow.rst`, with validation boundaries recorded in
 `docs/guides/validation-scope.rst`.
 
-`fable-pyculator` is pre-release. The current alpha line is `0.1.0a2`; alpha releases must not be
+`fable-pyculator` is pre-release. The current alpha line is `0.1.0a4`; alpha releases must not be
 described as stable public API compatibility, full editable scenario-definition widgets, production
 readiness, or arbitrary country-calculator support. Generated-model equivalence claims are limited
-to the exact 2020 and 2021 public FABLE-C validation evidence recorded in the docs. The `0.1.0a2`
-line adds the current FABLE workflow automation surface: FreshForge planning/run examples,
-version-general build helpers, scenario bundles, and compact validation-evidence packaging.
+to the exact 2020 and 2021 public FABLE-C validation evidence recorded in the docs. Work after the
+`0.1.0a4` release adds the current FABLE matrix workflow automation surface plus a conservative
+scenario-definition patch surface that produces generated-model input overrides without mutating
+source workbooks.
 
 The public API is intentionally small while the FABLE-specific conventions are being discovered from
 real country calculators.
