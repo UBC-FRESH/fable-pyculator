@@ -78,6 +78,12 @@ tagged ``DIRECT`` or ``AUX`` are kept by default so filtered frames still includ
        include_context_columns=False,
    )
 
+When a generated model was built from a narrow ``OUTPUT-*`` output-ref set, the generated run may not
+emit context/support cells such as ``Year`` or ``Product``. FABLE Pyculator fills those non-output
+display columns from cached workbook table values discovered with the notebook spec. Generated run
+values still take precedence, and missing ``OUTPUT-*`` cells remain missing so display context does
+not become validation evidence.
+
 2020 Notebook Loop
 ------------------
 

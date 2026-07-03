@@ -225,11 +225,13 @@ def discover_output_tables(
     """
 
     workbook = load_fable_workbook(workbook_path, data_only=False, read_only=False)
+    cached_workbook = load_fable_workbook(workbook_path, data_only=True, read_only=False)
     tables: list[OutputTable] = []
     for sheet_name in sheet_names:
         if sheet_name not in workbook.sheetnames:
             continue
         worksheet = workbook[sheet_name]
+        cached_worksheet = cached_workbook[sheet_name] if sheet_name in cached_workbook.sheetnames else worksheet
         for table_name in worksheet.tables.keys():
             table = worksheet.tables[table_name]
             min_col, min_row, max_col, max_row = range_boundaries(table.ref)
@@ -254,6 +256,10 @@ def discover_output_tables(
                 )
                 for row in range(min_row + 1, max_row + 1)
             )
+            values = tuple(
+                tuple(cached_worksheet.cell(row, column).value for column in range(min_col, max_col + 1))
+                for row in range(min_row + 1, max_row + 1)
+            )
             tables.append(
                 OutputTable(
                     name=_parameter_name(sheet_name, table_name),
@@ -262,6 +268,7 @@ def discover_output_tables(
                     cell_refs=cell_refs,
                     row_labels=row_labels,
                     column_labels=column_labels,
+                    values=values,
                     column_flavour_tags=flavour_tags,
                     raw_column_flavour_tags=raw_flavour_tags,
                     column_flavour_tag_refs=flavour_tag_refs,

@@ -170,6 +170,55 @@ def test_output_table_frame_filters_by_prefix_and_wildcard_column_flavour_tags()
     assert output_wildcard.attrs["matched_column_flavour_tags"] == ("OUTPUT-8", "OUTPUT-9")
 
 
+def test_output_table_frame_fills_context_columns_from_cached_table_values() -> None:
+    spec = FableCalculatorSpec(
+        output_tables=[
+            OutputTable(
+                name="trade_resultstrade",
+                label="ResultsTrade",
+                sheet="TRADE",
+                range_ref="A2:E4",
+                cell_refs=(
+                    ("TRADE!A3", "TRADE!B3", "TRADE!C3", "TRADE!D3", "TRADE!E3"),
+                    ("TRADE!A4", "TRADE!B4", "TRADE!C4", "TRADE!D4", "TRADE!E4"),
+                ),
+                row_labels=("rice_2000", "wheat_2000"),
+                column_labels=("Product", "Year", "ExportQ_targ", "ExportQ_feas", "ImportQ_feas"),
+                values=(
+                    ("Rice", 2000, 11.424, 11.424, 0.0),
+                    ("Wheat", 2000, 6.016, 6.016, 0.0),
+                ),
+                column_flavour_tags=("DIRECT", "AUX", "OUTPUT-8", "OUTPUT-8", "OUTPUT-8"),
+            )
+        ]
+    )
+    run = run_scenario(
+        lambda inputs=None: {
+            "TRADE!C3": 11.424,
+            "TRADE!D3": 11.424,
+            "TRADE!E3": 0.0,
+            "TRADE!C4": 6.016,
+            "TRADE!D4": 6.016,
+        },
+        spec,
+    )
+
+    frame = output_table_frame(run, "trade_resultstrade", column_flavour_tags="OUTPUT-*")
+    output_only_frame = output_table_frame(
+        run,
+        "trade_resultstrade",
+        column_flavour_tags="OUTPUT-*",
+        include_context_columns=False,
+    )
+
+    assert list(frame.columns) == ["Product", "Year", "ExportQ_targ", "ExportQ_feas", "ImportQ_feas"]
+    assert frame.loc["rice_2000", "Product"] == "Rice"
+    assert frame.loc["rice_2000", "Year"] == 2000
+    assert frame.loc["rice_2000", "ExportQ_targ"] == 11.424
+    assert frame["ImportQ_feas"].isna().loc["wheat_2000"]
+    assert list(output_only_frame.columns) == ["ExportQ_targ", "ExportQ_feas", "ImportQ_feas"]
+
+
 def test_output_table_frame_reports_missing_or_unknown_column_flavour_tags() -> None:
     missing_metadata_spec = FableCalculatorSpec(
         output_tables=[

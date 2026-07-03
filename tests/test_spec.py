@@ -2,7 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-from fable_pyculator import FableCalculatorSpec, OutputIndicator, ScenarioParameter, SelectionControl, SelectionOption
+from fable_pyculator import (
+    FableCalculatorSpec,
+    OutputIndicator,
+    OutputTable,
+    ScenarioParameter,
+    SelectionControl,
+    SelectionOption,
+)
 
 
 def test_spec_maps_named_parameters_to_cell_refs() -> None:
@@ -64,3 +71,28 @@ def test_spec_maps_selection_controls_to_x_marker_cells() -> None:
         "SCENARIOS selection!A21": None,
         "SCENARIOS selection!A22": None,
     }
+
+
+def test_output_table_values_are_normalized_and_validated() -> None:
+    table = OutputTable(
+        name="food_results",
+        sheet="FOOD",
+        range_ref="A1:B2",
+        cell_refs=[["FOOD!A2", "FOOD!B2"]],  # type: ignore[arg-type]
+        row_labels=["Calories"],  # type: ignore[arg-type]
+        column_labels=["Metric", "2030"],  # type: ignore[arg-type]
+        values=[["Calories", 2600]],
+    )
+
+    assert table.values == (("Calories", 2600),)
+
+    with pytest.raises(ValueError, match="value row 0 has 1 values"):
+        OutputTable(
+            name="bad_results",
+            sheet="FOOD",
+            range_ref="A1:B2",
+            cell_refs=(("FOOD!A2", "FOOD!B2"),),
+            row_labels=("Calories",),
+            column_labels=("Metric", "2030"),
+            values=(("Calories",),),
+        )
