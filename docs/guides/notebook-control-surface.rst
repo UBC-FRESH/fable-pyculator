@@ -132,6 +132,7 @@ The notebook can restore the matching 2021 generated model from the tracked comp
 Use ``run_2021_notebook_loop`` after the source workbook is restored locally:
 
 - :download:`fable-pyculator-2021-loop.ipynb <../../examples/notebooks/fable-pyculator-2021-loop.ipynb>`
+- :download:`fable-pyculator-2021-scenario-definition-patch.ipynb <../../examples/notebooks/fable-pyculator-2021-scenario-definition-patch.ipynb>`
 
 .. code-block:: python
 
