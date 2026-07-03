@@ -15,7 +15,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -53,6 +53,7 @@ class NotebookLoopResult:
     output_tables: dict[str, Any]
     headline_frames: dict[str, Any]
     headline_figures: dict[str, Any]
+    skipped_output_tables: dict[str, str] = field(default_factory=dict)
 
 
 def load_generated_model(
@@ -153,6 +154,7 @@ def run_notebook_loop(
     selected_output_table_names = _output_table_names(spec, output_table_names)
     selected_headline_series_names = _headline_series_names(spec, headline_series_names)
     tables = {}
+    skipped_tables = {}
     for table_name in selected_output_table_names:
         try:
             tables[table_name] = output_table_frame(
@@ -163,6 +165,9 @@ def run_notebook_loop(
             )
         except KeyError:
             if output_table_names is None and output_table_column_flavour_tags is not None:
+                skipped_tables[table_name] = (
+                    f"no columns matched flavour filter {output_table_column_flavour_tags!r}"
+                )
                 continue
             raise
     headline_tables = {
@@ -182,6 +187,7 @@ def run_notebook_loop(
         output_tables=tables,
         headline_frames=headline_tables,
         headline_figures=figures,
+        skipped_output_tables=skipped_tables,
     )
 
 

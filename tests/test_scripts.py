@@ -114,6 +114,41 @@ def test_validate_fable_scenario_definition_patch_script_help_documents_patch_in
     assert "--workbook-path" in result.stdout
 
 
+def test_smoke_2021_notebook_loop_script_help_documents_context_proof() -> None:
+    script = Path("scripts/smoke_2021_notebook_loop.py")
+
+    result = subprocess.run(
+        [str(script), "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert os.access(script, os.X_OK)
+    assert "--workbook-path" in result.stdout
+    assert "--generated-model-path" in result.stdout
+    assert "--proof-context-column" in result.stdout
+    assert "OUTPUT-*" in result.stdout
+
+
+def test_smoke_2021_notebook_loop_script_json_skips_missing_artifacts(tmp_path: Path) -> None:
+    script = Path("scripts/smoke_2021_notebook_loop.py")
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(tmp_path), "--json"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["status"] == "skipped"
+    assert payload["workbook_path"] == "tmp/private-workbooks/2021_Open_FABLECalculator.xlsx"
+    assert payload["generated_model_path"] == "tmp/generated-models/fable-2021/generated_fable_2021_model.py"
+    assert payload["missing_artifacts"] == ["workbook_path", "generated_model_path"]
+
+
 def test_run_fable_benchmark_evidence_script_default_json_skips_missing_artifacts(tmp_path: Path) -> None:
     script = Path("scripts/run_fable_benchmark_evidence.py")
 

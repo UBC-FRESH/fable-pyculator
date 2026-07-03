@@ -171,6 +171,17 @@ The 2021 example notebook can materialize
 Phase 8 validated that generated model against the public 2021 workbook with 281,922 comparable
 outputs, 281,922 matches, and 0 mismatches.
 
+To smoke-test the same Abdulateef-facing notebook loop path after restoring local artifacts, run:
+
+```bash
+.venv/bin/python scripts/smoke_2021_notebook_loop.py --json
+```
+
+The smoke check renders default `OUTPUT-*` output tables, reports any skipped non-matching tables,
+and verifies that the `trade_resultstrade` context columns `PRODUCT` and `YEAR` are populated.
+Those context values are display context from cached workbook table values, not additional
+generated-model equivalence evidence. On restored 2021 artifacts this smoke can take a few minutes.
+
 To rebuild a generated model from a local source workbook with the FreshForge/Modelwright workflow,
 start with plan-only preparation. The generic command defaults to the public 2021 path convention:
 
@@ -296,7 +307,9 @@ examples/notebooks/fable-pyculator-2021-freshforge-run.ipynb
 The 2020 notebook is intentionally committed after a successful 2020 benchmark run so GitHub can
 render the example tables and figure directly in the browser. The 2021 notebook is a runnable
 artifact-wiring template: it still requires the ignored local workbook, but it can restore the
-validated generated model from the tracked compressed 2021 archive. The FreshForge notebooks show
+validated generated model from the tracked compressed 2021 archive. The 2021 notebook prints a
+rendered/skipped table summary and contains an explicit `trade_resultstrade` context-column proof for
+alpha testers. The FreshForge notebooks show
 how to validate a scenario-definition patch without mutating the workbook. The FreshForge notebooks
 show how to rebuild the 2021 model from the source workbook: one notebook plans the graph, and the
 run companion gates the full FreshForge/Modelwright build behind `RUN_FRESHFORGE = False`.

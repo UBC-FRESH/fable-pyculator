@@ -112,3 +112,8 @@ Current evidence supports early notebook wrapper workflows for the inspected pub
 FABLE-C workbooks, plus full comparable-output validation for the tracked 2021 compressed generated
 model artifact. It does not support claims of production readiness, arbitrary country-calculator
 support, or FABLE-P Canada equivalence.
+
+Screenshots and notebook display captures are useful for diagnosing alpha-tester UI symptoms, such
+as missing context columns in rendered tables. They are not validation evidence by themselves.
+Generated-model equivalence claims remain tied to explicit comparable-output, match, and mismatch
+counts from the recorded validation workflow.

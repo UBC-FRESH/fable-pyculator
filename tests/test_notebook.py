@@ -172,6 +172,9 @@ def test_run_notebook_loop_skips_default_tables_without_matching_flavour_tags() 
     )
 
     assert set(result.output_tables) == {"trade_resultstrade"}
+    assert result.skipped_output_tables == {
+        "production_totalresultsprod": "no columns matched flavour filter 'OUTPUT-*'"
+    }
     assert list(result.output_tables["trade_resultstrade"].columns) == ["PRODUCT", "YEAR", "ExportQ_feas"]
     assert result.output_tables["trade_resultstrade"].loc["rice_2000", "PRODUCT"] == "Rice"
 
@@ -275,6 +278,7 @@ def test_run_2021_notebook_loop_loads_2021_model_path(tmp_path: Path) -> None:
         "SCENARIOS selection!A4": None,
     }
     assert result.headline_frames["ghg_total_co2e"].loc[0, "value"] == 84
+    assert result.skipped_output_tables == {}
 
 
 def test_2021_default_paths_are_separate_from_2020_artifacts() -> None:

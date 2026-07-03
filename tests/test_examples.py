@@ -58,6 +58,9 @@ def test_fable_pyculator_2021_notebook_uses_2021_artifact_paths_only() -> None:
     assert "DEFAULT_2021_GENERATED_MODEL_PATH" in code_source
     assert "build_2021_notebook_spec" in code_source
     assert "run_2021_notebook_loop" in code_source
+    assert "result.run.scenario_name" in code_source
+    assert "result.run.name" not in code_source
+    assert "skipped_output_tables" in code_source
     assert 'result.output_tables["trade_resultstrade"]' in code_source
     assert 'expected_context_columns = ["PRODUCT", "YEAR"]' in code_source
     assert "Missing context values in first rows" in code_source
