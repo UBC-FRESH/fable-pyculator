@@ -4,6 +4,9 @@ This file records completed project work in chronological order.
 
 ## 2026-07-03
 
+- Added an explicit 2021 loop notebook context-column proof cell for Abdulateef's output-table
+  rendering bug, showing `trade_resultstrade` and checking `PRODUCT`/`YEAR` values when restored
+  local 2021 artifacts are available.
 - Fixed Abdulateef's reported output-table rendering bug where context/support columns such as
   `Product` and `Year` could display as missing when a generated model was built from narrow
   `OUTPUT-*` refs; discovered output tables now retain cached workbook values for display-only
