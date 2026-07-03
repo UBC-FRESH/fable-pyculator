@@ -41,9 +41,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   alpha, PR #168 merged, and post-merge Test and Docs Pages workflows passed.
 - Phase 25 is closed: FABLE benchmark matrix evidence cookbook/workflow is tracked, PR #179
   merged, and post-merge Test and Docs Pages workflows passed.
-- Phase 26 is active on `feature/p26-editable-scenario-definition-surface`: FABLE adds a
-  conservative editable scenario-definition parameter surface that produces generated-model input
-  overrides without mutating source workbooks.
+- Phase 26 is closed: editable scenario-definition patches are tracked, PR #185 merged, and
+  post-merge Test and Docs Pages workflows passed after rerunning a transient GitHub Pages deploy
+  failure.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 
@@ -1950,7 +1950,7 @@ Implementation evidence:
 
 GitHub parent issue: #172.
 
-Status: active on `feature/p26-editable-scenario-definition-surface`.
+Status: complete.
 
 Goal: expose FABLE scenario-definition table editing and validation as a first-class FABLE Pyculator
 modelling surface after benchmark matrix evidence workflows are documented.
@@ -1961,7 +1961,7 @@ Tasks:
 - [x] P26.2 Add patch validation, loading, writing, and input mapping. Child issue: #181.
 - [x] P26.3 Add notebook-loop execution integration. Child issue: #182.
 - [x] P26.4 Update docs, examples, and tests. Child issue: #183.
-- [ ] P26.5 Verify, PR, deploy docs, and close phase. Child issue: #184.
+- [x] P26.5 Verify, PR, deploy docs, and close phase. Child issue: #184.
 
 Scope:
 
@@ -2004,3 +2004,10 @@ Verification evidence:
   passed with `5` workbook-backed tests.
 - `.venv/bin/python scripts/validate_fable_scenario_definition_patch.py --patch examples/scenario-definition-patches/fable_2021_diet_target_demo.yaml --workbook-version 2021 --json`
   passed against the restored 2021 workbook and produced one generated-model input override.
+
+Closeout evidence:
+
+- PR #185 merged to `main` with merge commit `5e08862`.
+- Post-merge Test workflow #28629339255 passed.
+- Post-merge Docs Pages workflow #28629339241 passed after rerunning a transient GitHub Pages deploy
+  failure.

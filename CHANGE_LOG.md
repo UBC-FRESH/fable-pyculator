@@ -16,6 +16,8 @@ This file records completed project work in chronological order.
   workbook tests), warning-clean Sphinx docs, Read the Docs theme verification, public workbook
   checksums, release artifact checks, `git diff --check`, and workbook-backed scenario-definition
   tests (`5` passed), plus a real validation-script smoke test for the tracked 2021 example patch.
+- Merged Phase 26 through PR #185 and confirmed post-merge Test workflow #28629339255 passed plus
+  Docs Pages workflow #28629339241 passed after rerunning a transient GitHub Pages deploy failure.
 - Activated Phase 25 on `feature/p25-fable-benchmark-matrix-evidence-cookbook`, created child
   issues #174 through #178 under parent issue #171, and scoped the phase around packaging FABLE
   2021 benchmark matrix evidence through Modelwright's generic matrix evidence aggregation while
