@@ -42,7 +42,7 @@ dev = [
   "build>=1.2",
   "freshforge>=0.1.0a5,<0.2",
   "pytest>=8",
-  "ruff>=0.8",
+  "ruff>=0.8,<0.16",
   "sphinx>=7",
   "sphinx-rtd-theme>=2",
   "twine>=5"
@@ -60,7 +60,7 @@ notebook = [
   "matplotlib>=3.8"
 ]
 quality = [
-  "ruff>=0.8"
+  "ruff>=0.8,<0.16"
 ]
 release = [
   "build>=1.2",

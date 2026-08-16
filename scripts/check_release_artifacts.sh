@@ -48,6 +48,7 @@ dist_dir = Path(sys.argv[1])
 root_dir = Path(sys.argv[2])
 approved_generated_archives = {
     Path("examples/fable_2021/generated_fable_2021_model.py.xz"),
+    Path("examples/fable_2024/generated_fable_2024_model.py.xz"),
 }
 forbidden_parts = {
     ".venv",

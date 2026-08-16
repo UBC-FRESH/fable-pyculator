@@ -86,6 +86,17 @@ def test_fable_pyculator_2021_generated_model_archive_is_readable() -> None:
     assert "def _sf_iferror" in source_prefix
 
 
+def test_fable_pyculator_2024_generated_model_archive_is_readable() -> None:
+    archive_path = Path("examples/fable_2024/generated_fable_2024_model.py.xz")
+
+    assert archive_path.exists()
+    with lzma.open(archive_path, "rt", encoding="utf-8") as archive:
+        source_prefix = archive.read(10000)
+
+    assert "Source workbook: 2024_Open_FABLECalculator.xlsx" in source_prefix
+    assert "def _sf_iferror" in source_prefix
+
+
 def test_fable_pyculator_2021_freshforge_build_plan_notebook_is_static_template() -> None:
     notebook_path = Path("examples/notebooks/fable-pyculator-2021-freshforge-build-plan.ipynb")
 
