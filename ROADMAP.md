@@ -47,6 +47,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 27 is closed: alpha-tester notebook reliability, 2021 smoke hardening, skipped-table
   diagnostics, and notebook-failure issue hygiene are tracked, PR #201 merged, and post-merge Test
   and Docs Pages workflows passed.
+- Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
+  (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
+  evidence in the example README.
 - Keep Sphinx docs deployment as a phase closeout gate: every phase PR must pass the docs build, and
   the merge to `main` must trigger the GitHub Pages deployment workflow.
 

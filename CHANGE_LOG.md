@@ -2,6 +2,18 @@
 
 This file records completed project work in chronological order.
 
+## 2026-08-15
+
+- Added the tracked `examples/fable_2024/` generated-model artifact (compressed
+  `generated_fable_2024_model.py.xz`, about 1.7 MiB) for the 2024 FABLE Calculator (Canada)
+  workbook, generated with Modelwright `0.1.0a9`. The README records provenance and validation
+  evidence: 536,593 extracted cells, 410,299 formula cells, 10,274 declared outputs with zero
+  runtime errors, and a 94% exact-match rate on a 300-output cached-value sample with remaining
+  mismatches at 0.05-0.3% relative.
+- Restored the 2024 source workbook under `tmp/private-workbooks/` and added its checksum to
+  `benchmarks/fable-calculator/checksums.sha256`; added a generated-model archive readability test
+  in `tests/test_examples.py`.
+
 ## 2026-07-03
 
 - Activated Phase 27 on `feature/p27-alpha-tester-notebook-hardening`, created parent issue #194
