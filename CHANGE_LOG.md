@@ -13,6 +13,10 @@ This file records completed project work in chronological order.
 - Restored the 2024 source workbook under `tmp/private-workbooks/` and added its checksum to
   `benchmarks/fable-calculator/checksums.sha256`; added a generated-model archive readability test
   in `tests/test_examples.py`.
+- Fixed two repo-wide CI gates uncovered by the example PR: pinned `ruff>=0.8,<0.16` in the quality
+  and dev extras (CI's newer ruff 0.16 rule set fails the repo's existing import sorting), and added
+  the 2024 archive to the approved generated-model archive allowlist in
+  `scripts/check_release_artifacts.sh`.
 
 ## 2026-07-03
 
