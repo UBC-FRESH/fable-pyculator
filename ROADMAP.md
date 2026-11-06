@@ -2262,4 +2262,7 @@ Verification evidence:
 
 Closeout evidence:
 
-- Pending PR, issue mapping, and post-merge Test and Docs Pages workflows.
+- PR #214 squash-merged to `main` as `a6758db`.
+- Post-merge Test workflow `42308703202` and Docs Pages workflow `42308703198` passed.
+- Parent issue #203 and child issue #212 are closed; completed child issues #204-#211 and #213 were
+  closed with closeout comments.
