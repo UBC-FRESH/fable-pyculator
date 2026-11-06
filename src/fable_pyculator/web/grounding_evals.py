@@ -72,6 +72,20 @@ DEFAULT_CASES: tuple[GroundingCase, ...] = (
         expected_paths=("docs/guides/web-portal.rst",),
         required_terms=("does not", "recompute"),
     ),
+    GroundingCase(
+        case_id="github_issue_filing",
+        question=(
+            "How would you file a bug report for this repository on the user's behalf? Which "
+            "template, issue level, labels, validation command, and gh command would you use? "
+            "Cite the workflow doc and template path."
+        ),
+        expected_paths=(
+            "docs/guides/github-issue-workflow.rst",
+            ".github/ISSUE_TEMPLATE/task.md",
+        ),
+        required_terms=("gh issue create", "--body-file", "check_issue_body.py", "bug", "task"),
+        forbidden_terms=("invent the issue number", "without confirmation"),
+    ),
 )
 
 
@@ -198,6 +212,8 @@ def structural_failures(
         "build_notebook_spec",
         "class ModelFacade",
         "TotalResultsWF",
+        "GitHub issue filing",
+        "check_issue_body.py",
         "2024",
     ):
         if term not in cheat_sheet.markdown:

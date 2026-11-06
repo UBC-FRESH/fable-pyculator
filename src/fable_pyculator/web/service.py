@@ -985,37 +985,20 @@ def _quality_warnings(
     mismatch = _ghg_cached_mismatch(headline_frames, table_frames, spec=spec)
     if mismatch is not None:
         years, maximum, max_year = mismatch
-        if version == "2021":
-            warnings.append(
-                {
-                    "code": "landseq_translation_mismatch",
-                    "severity": "warn",
-                    "title": "2021 LandSeq translation differs from the workbook",
-                    "message": (
-                        "The generated model translates calc_landemis[ToRegeneration] using "
-                        "RegenForPasture/RegenForCropland (columns H/P) instead of "
-                        "TargExpPasture/TargExpCropland (K/U). This changes LandSeq and the derived "
-                        f"GHG total at {len(years)} native year(s); the largest difference is "
-                        f"{maximum:.3g} MtCO2e in {max_year}."
-                    ),
-                    "scope": "2021 GHG / LandSeq",
-                }
-            )
-        else:
-            warnings.append(
-                {
-                    "code": "ghg_cached_mismatch",
-                    "severity": "warn",
-                    "title": "GHG components differ from cached workbook totals",
-                    "message": (
-                        f"The derived GHG series differs from cached ResultsGHG[TotalCO2e] at "
-                        f"{len(years)} native year(s); the largest difference is {maximum:.3g} MtCO2e "
-                        f"in {max_year}. Cached values may reflect a different scenario/GWP, or an "
-                        "individual generated-model component may differ."
-                    ),
-                    "scope": "ghg_total_co2e vs cached TotalCO2e",
-                }
-            )
+        warnings.append(
+            {
+                "code": "ghg_cached_mismatch",
+                "severity": "warn",
+                "title": "GHG components differ from cached workbook totals",
+                "message": (
+                    f"The derived GHG series differs from cached ResultsGHG[TotalCO2e] at "
+                    f"{len(years)} native year(s); the largest difference is {maximum:.3g} MtCO2e "
+                    f"in {max_year}. Cached values may reflect a different scenario/GWP, or an "
+                    "individual generated-model component may differ."
+                ),
+                "scope": "ghg_total_co2e vs cached TotalCO2e",
+            }
+        )
     skipped = [
         str(summary.get("label") or summary.get("name"))
         for summary in table_summaries

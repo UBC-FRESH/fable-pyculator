@@ -21,6 +21,11 @@ The 2021 notebook materializes the compressed model into ignored working space:
 tmp/generated-models/fable-2021/generated_fable_2021_model.py
 ```
 
+The tracked archive is authoritative. If the working model already exists but differs, force
+materialization from the archive or remove the working file before preparing; the portal otherwise
+uses the existing working model. A stale working model can silently change results even when the
+tracked archive is correct.
+
 ## Validation Evidence
 
 Phase 8 generated this model from the public 2021 FABLE Calculator workbook using Modelwright, after

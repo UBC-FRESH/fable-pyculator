@@ -41,9 +41,14 @@ This file records completed project work in chronological order.
   `notebook.py` and answered the exact `build_notebook_spec` signature in 25.5 s; after a service
   restart the saved chat listed, reloaded, and continued the same OpenCode session in 10.4 s.
 - Added a grounding evaluation suite: deterministic structural checks plus opt-in live assistant
-  questions that require citations to expected source paths and expected terms. The live suite passed
-  all four cases (`notebook_signature`, `modelwright_facade`, `fable_2024_water`,
-  `portal_read_only`) against the real OpenCode CLI.
+  questions that require citations to expected source paths and expected terms. The live suite
+  covers `notebook_signature`, `modelwright_facade`, `fable_2024_water`, `portal_read_only`, and
+  `github_issue_filing`; the new issue-filing case passed in 28.0 s against the real OpenCode CLI.
+- Added the UBC-FRESH phase/task issue templates, a GitHub issue workflow guide, and
+  `scripts/check_issue_body.py`. The portal assistant now classifies issue requests by type and
+  scale, asks for missing reproduction/scope/acceptance details, drafts the canonical body, validates
+  it, confirms with the user, posts with `gh issue create --body-file`, links child tasks to the
+  parent, and reads the issue back; the grounding checks include a dedicated issue-filing case.
 - Added a Playwright browser smoke (`scripts/browser_smoke.py` and a gated pytest wrapper) covering
   the + Ask overlay, Enter/Shift+Enter behavior, markdown rendering, and live assistant chat
   persistence across a full page reload; it passed locally.
@@ -72,15 +77,16 @@ This file records completed project work in chronological order.
   notes that `LandSeqAffor` is excluded because it is not a declared `OUTPUT-8` cell in that
   artifact.
 - Validated the derived GHG series against cached workbook `TotalCO2e`: 2020 matched to ~1e-12 at
-  every year; 2021 and 2024 showed late-year differences because individual generated-model
-  components differ from cached workbook cells (notably 2021 `LandSeq` at 2050). The headline
-  intentionally reports generated-model outputs, not cached workbook values, and says so in its
-  description.
-- Live 2024 GHG smoke: `59.99 → 95.61 MtCO2e` with default `gwp_scen = SAR`; cached workbook values
-  use `AR6`, so they are not directly comparable. Live 2021 GHG smoke: `430.13 → 186.52 MtCO2e`.
-  Root-caused the 2050 `LandSeq` discrepancy: the generated model translates
-  `calc_landemis[ToRegeneration]` using `RegenForPasture`/`RegenForCropland` (H/P) instead of
-  `TargExpPasture`/`TargExpCropland` (K/U); the data-quality warning now names this mismatch.
+  every year; 2024 late-year differences remain because individual generated-model components and
+  GWP assumptions differ from the cached workbook. The headline intentionally reports
+  generated-model outputs, not cached workbook values, and says so in its description.
+- Investigated a live 2021 `LandSeq`/GHG discrepancy at 2050. The apparent generated-model defect was
+  a stale 85 MB local working model that omitted six `SCENARIOS definition` row-50 formulas
+  (`EQ50`-`EV50`). The tracked 122 MB 2021 archive already contains those formulas and, when
+  re-materialized, matches the cached 2050 outputs (`GHG!AI28 -302.1950203334845`,
+  `LAND!V27 25000.0`, `LAND!X27 81407.07618113697`). The local working model was replaced from the
+  archive; no tracked-artifact repair was needed. The live 2021 smoke is now
+  `430.13 → 107.63 MtCO2e` with no GHG data-quality warning.
 - Live 2024 horizon-2070 smoke: headline series extended to 2070 (`food 1,611.3`, `GHG 110.14`,
   `land 896,559.0`); `land_resultsland` had 15 rows; grouped `food_results_diets` extended from
   187 to 255 rows; grouped `trade_resultstrade` extended from 990 to 1,350 rows.

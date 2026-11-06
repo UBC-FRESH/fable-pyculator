@@ -108,6 +108,9 @@ def test_assistant_persists_chat_and_grounds_new_sessions(tmp_path: Path, monkey
     assert "Documentation digest" in cheat_sheet.text
     assert "Source API index" in cheat_sheet.text
     assert "build_notebook_spec" in cheat_sheet.text
+    assert "GitHub issue filing" in cheat_sheet.text
+    assert "check_issue_body.py" in cheat_sheet.text
+    assert "gh issue create" in cheat_sheet.text
 
 
 def test_chat_store_metadata_pin_archive_search_and_markdown(tmp_path: Path) -> None:

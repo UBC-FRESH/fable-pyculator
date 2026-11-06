@@ -2113,6 +2113,7 @@ Tasks:
 - [x] P28.6 Add compact validation-evidence and scenario-bundle browsing.
 - [x] P28.7 Add the optional local assistant bridge and CLI entry point.
 - [x] P28.8 Add tests, documentation, and roadmap/changelog evidence.
+- [x] P28.10 Add GitHub issue-filing guidance, templates, and validation to the portal assistant.
 - [ ] P28.9 Open the PR, map issues, deploy docs, and close the phase.
 
 Scope:
@@ -2174,6 +2175,10 @@ Implementation evidence:
   evals, and all portal static assets.
 - Added deployment support: optional HTTP Basic auth, a `scripts/run_portal.sh` environment
   wrapper, systemd/nginx examples, proxy root-path support, and the web-deployment guide.
+- Added the UBC-FRESH phase/task issue templates and `docs/guides/github-issue-workflow.rst`; the
+  portal assistant now asks for issue type, scope, scale, impact, and verification details, drafts
+  the canonical body, runs `scripts/check_issue_body.py`, confirms with the user, posts with
+  `gh issue create --body-file`, links child tasks to the parent, and reads the issue back.
 - Added run-scoped data-quality notes to Results for the 2070 extension, 2024 land component
   fallback, missing 2024 water series, GHG-vs-cached divergence, and unextended tables; notes are
   persisted in `run.json` as `quality_warnings`.
@@ -2199,7 +2204,7 @@ Verification evidence:
   passed.
 - `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
   passed after formatting.
-- `.venv/bin/python -m pytest -q` passed with `193` tests and `15` skips.
+- `.venv/bin/python -m pytest -q` passed with `198` tests and `15` skips.
 - `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1 .venv/bin/python -m pytest -q tests/web/test_browser_e2e.py`
   passed against real Chromium and a live assistant chat across a page reload.
 - `scripts/evaluate_assistant_grounding.py` structural checks passed, and
@@ -2224,10 +2229,12 @@ Verification evidence:
   exactly 11 differences, all `LAND!AA17:AA27` (`#REF!` → `896,559.0`).
 - Live 2024 GHG smoke after the derivation: `59.99 → 95.61 MtCO2e` with the workbook default
   `gwp_scen = SAR`; cached workbook GHG values use `AR6`, so they are not directly comparable.
-- Live 2021 GHG smoke after the derivation: `430.13 → 186.52 MtCO2e`. Root-caused the 2050
-  `LandSeq` discrepancy to generated-model translation of `calc_landemis[ToRegeneration]` using
-  `RegenForPasture`/`RegenForCropland` (H/P) instead of `TargExpPasture`/`TargExpCropland` (K/U);
-  the data-quality warning now names the exact translation mismatch.
+- Investigated a live 2021 `LandSeq`/GHG discrepancy at 2050. The apparent generated-model defect
+  was a stale 85 MB local working model that omitted six `SCENARIOS definition` row-50 formulas
+  (`EQ50`-`EV50`). The tracked 122 MB archive already contains those formulas and, when
+  re-materialized, matches the cached 2050 outputs (`GHG!AI28 -302.1950203334845`,
+  `LAND!V27 25000.0`, `LAND!X27 81407.07618113697`); no tracked-artifact repair was needed. The
+  live 2021 smoke is now `430.13 → 107.63 MtCO2e` with no GHG data-quality warning.
 - Live 2024 horizon-2070 run: headline series extended to 2070 (`food 1,611.3`, `GHG 110.14`,
   `land 896,559.0`); `land_resultsland` rendered 15 rows; grouped `food_results_diets` extended
   from 187 to 255 rows; grouped `trade_resultstrade` extended from 990 to 1,350 rows.

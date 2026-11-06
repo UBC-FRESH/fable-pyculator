@@ -113,7 +113,10 @@ Assistant
    ``GET /api/assistant/cheatsheet.md``. The agent must open the full cited file when a question
    needs exact signatures, behaviour, examples, or caveats. The bridge invokes the installed
    ``opencode`` CLI in the repository root and passes compact portal context. The service never
-   reads provider keys.
+   reads provider keys. For issue-filing requests, the assistant follows
+   :doc:`github-issue-workflow`: it asks for missing type, scope, scale, and verification details,
+   drafts the canonical phase/task body, validates it with ``scripts/check_issue_body.py``, shows the
+   draft for confirmation, and posts it with ``gh issue create --body-file``.
 
 Service surface
 ---------------
@@ -211,7 +214,7 @@ the selected run, such as:
 - 2070 trend-extension warning;
 - 2024 land-total component fallback;
 - missing 2024 water-footprint series;
-- derived GHG versus cached `TotalCO2e` divergence, including the specific 2021 LandSeq translation mismatch;
+- derived GHG versus cached `TotalCO2e` divergence;
 - output tables that could not be extended.
 
 Warnings are persisted in `run.json` as `quality_warnings` and are available from

@@ -25,6 +25,7 @@ _FABLE_DOCS = (
     "docs/index.rst",
     "docs/guides/web-portal.rst",
     "docs/guides/notebook-control-surface.rst",
+    "docs/guides/github-issue-workflow.rst",
     "docs/guides/workbook-structure.rst",
     "docs/guides/generated-model-artifacts.rst",
     "docs/guides/validation-scope.rst",
@@ -35,6 +36,10 @@ _FABLE_DOCS = (
     "AGENTS.md",
     "ROADMAP.md",
     "CHANGE_LOG.md",
+)
+_FABLE_ISSUE_TEMPLATES = (
+    ".github/ISSUE_TEMPLATE/phase.md",
+    ".github/ISSUE_TEMPLATE/task.md",
 )
 _FABLE_CODE = (
     "src/fable_pyculator/spec.py",
@@ -48,6 +53,7 @@ _FABLE_CODE = (
     "src/fable_pyculator/web/service.py",
     "src/fable_pyculator/web/assistant.py",
     "src/fable_pyculator/web/artifacts.py",
+    "scripts/check_issue_body.py",
 )
 _MODELWRIGHT_DOCS = (
     "README.md",
@@ -163,9 +169,12 @@ def build_cheat_sheet(
     modelwright = modelwright_root(repo_root)
     fable_docs = _existing_paths(repo_root, _FABLE_DOCS)
     fable_code = _existing_paths(repo_root, _FABLE_CODE)
+    fable_issue_templates = _existing_paths(repo_root, _FABLE_ISSUE_TEMPLATES)
     modelwright_docs = _existing_paths(modelwright, _MODELWRIGHT_DOCS) if modelwright else []
     modelwright_code = _existing_paths(modelwright, _MODELWRIGHT_CODE) if modelwright else _installed_modelwright_code()
-    required = [str(path) for path in fable_docs + fable_code + modelwright_docs + modelwright_code]
+    required = [
+        str(path) for path in fable_docs + fable_code + fable_issue_templates + modelwright_docs + modelwright_code
+    ]
     lines: list[str] = [
         "# FABLE Pyculator assistant grounding sheet",
         "",
@@ -225,12 +234,66 @@ def build_cheat_sheet(
             "- The GHG headline is derived from declared OUTPUT-8 components because `TotalCO2e` is a",
             "  CALC cell. Values are generated-model outputs, not workbook-cached totals. The 2024 series",
             "  excludes `LandSeqAffor`, which is not a declared OUTPUT-8 cell in the current artifact.",
-            "- Known 2021 issue: the generated model translates `calc_landemis[ToRegeneration]` using",
-            "  `RegenForPasture`/`RegenForCropland` instead of `TargExpPasture`/`TargExpCropland`,",
-            "  causing a LandSeq/derived-GHG difference at 2050.",
+            "- The tracked 2021 archive is authoritative. A stale 85 MB local working model previously",
+            "  omitted `SCENARIOS definition` row-50 formulas and produced a false 2050 LandSeq/GHG",
+            "  discrepancy. The tracked 122 MB archive contains those formulas and matches the cached",
+            "  workbook at 2050; if a local working model differs, re-materialize it from the archive",
+            "  before preparing.",
             "- 2024 was generated with the Modelwright 0.1.0a9 runtime-hardening line; 2021 is the",
             "  validated public 2021 FABLE-C generated model. Verify claims against the tracked example",
             "  READMEs and local artifacts rather than assuming they are interchangeable.",
+            "",
+            "## GitHub issue filing",
+            "",
+            "Use `docs/guides/github-issue-workflow.rst`, `.github/ISSUE_TEMPLATE/task.md`, and",
+            "`.github/ISSUE_TEMPLATE/phase.md`. The default for a bug, feature request, documentation",
+            "change, or maintenance item is a task issued under the active phase, with the `task` label",
+            "plus a type label such as `bug`, `enhancement`, `documentation`, or `question`.",
+            "",
+            "Before drafting, ask for any missing details: issue type, scope and scale (task, new phase,",
+            "or checklist subtask), affected versions/areas, impact and urgency, reproduction and",
+            "expected/actual behaviour for bugs, desired outcome for features, in/out-of-scope items,",
+            "acceptance criteria, verification evidence, and whether the content is safe to publish.",
+            "Inspect `ROADMAP.md` and `gh issue list` for the active parent issue and next task ID. If no",
+            "open parent exists, ask whether to create one from `phase.md` or attach to an existing phase.",
+            "Never invent issue numbers, task IDs, labels, or repository state.",
+            "",
+            "Task body sections, in order:",
+            "",
+            "```text",
+            "Task identifier: P<n>.<m>",
+            "Parent phase issue: #<parent>",
+            "Status: planned",
+            "Branch: `feature/p<n>-<slug>`",
+            "Related planning: `ROADMAP.md` (Phase <n>)",
+            "Goal:",
+            "Scope:",
+            "Out of scope:",
+            "Subtasks:",
+            "- [ ] First subtask.",
+            "Acceptance criteria:",
+            "Verification:",
+            "Artifacts:",
+            "Risks:",
+            "Completion metadata:",
+            "```",
+            "",
+            "Write the body to an ignored file, validate it, show the draft, and get explicit",
+            "confirmation before posting:",
+            "",
+            "```bash",
+            "python scripts/check_issue_body.py --kind task \\",
+            '  --title "P28.10: Add an example task" --file tmp/issue-example.md',
+            "gh issue create --repo UBC-FRESH/fable-pyculator \\",
+            '  --title "P28.10: Add an example task" --body-file tmp/issue-example.md \\',
+            "  --label task --label enhancement",
+            "gh issue view <child> --json number,title,state,body,labels,url",
+            "```",
+            "",
+            "Use `--body-file`, never hand-built escaped strings. Link a task to its parent through the",
+            "`sub_issues` API when needed. If `gh` is unavailable or unauthenticated, report the exact",
+            "failure and keep a draft manifest under `tmp/`; do not claim the issue was filed. Never",
+            "include secrets, private workbook contents, personal home paths, or raw transcripts.",
             "",
             "## Artifact path contract",
             "",

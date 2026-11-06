@@ -24,6 +24,8 @@ def test_structural_grounding_checks_pass_against_real_docs_and_source() -> None
     assert "build_notebook_spec" in markdown
     assert "class ModelFacade" in markdown
     assert "TotalResultsWF" in markdown
+    assert "GitHub issue filing" in markdown
+    assert "check_issue_body.py" in markdown
 
 
 def test_structural_grounding_checks_use_installed_modelwright_when_checkout_missing(

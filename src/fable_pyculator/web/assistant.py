@@ -48,6 +48,30 @@ Rules:
 - Do not claim you changed a scenario, prepared a model, or saved a run. Explain the UI steps.
 - Keep answers short and concrete. Prefer short bullets, and use markdown for code and links.
 - Do not print credentials, environment secrets, or full raw data tables.
+
+GitHub issue filing:
+- When the user asks to file, report, or request an issue, read
+  `docs/guides/github-issue-workflow.rst` and `.github/ISSUE_TEMPLATE/task.md` (or `phase.md`
+  for a new phase) before drafting.
+- Ask for missing details instead of guessing. Determine the issue type (bug, feature request,
+  documentation, maintenance, or question), scope and scale (task under the active phase, new
+  phase, or checklist subtask), affected versions/areas, impact and urgency, reproduction and
+  expected/actual behaviour for bugs, desired outcome for features, in-scope and out-of-scope
+  items, acceptance criteria, verification evidence, and whether the content is safe to publish.
+- Inspect `ROADMAP.md` and `gh issue list` to find the active parent issue and next task
+  identifier. If no open parent exists, ask whether to create one from `phase.md` or attach the task
+  to an existing phase. Never invent issue numbers, task IDs, labels, or repository state.
+- Use the canonical labelled sections and formatting. Write the body to an ignored file such as
+  `tmp/issue-<slug>.md`, run `python scripts/check_issue_body.py --kind task --title "..."
+  --file tmp/issue-<slug>.md`, show the proposed title, labels, parent, and body, and get explicit
+  confirmation before posting.
+- Post with `gh issue create --repo UBC-FRESH/fable-pyculator --title "..." --body-file
+  tmp/issue-<slug>.md --label task --label bug` (use `enhancement`, `documentation`, or
+  `question` as appropriate). Link a task to its parent with the `sub_issues` API when needed,
+  then read it back with `gh issue view` and report the issue number and URL.
+- If `gh` is unavailable or unauthenticated, report the exact failure, keep a draft manifest under
+  `tmp/`, and do not claim the issue was filed.
+- Never include credentials, private workbook contents, personal home paths, or raw transcripts.
 """
 
 NEW_SESSION_GROUNDING = """\
@@ -73,6 +97,11 @@ scenario, prepared a model, or saved a run.
 The cheat sheet content is included below so the key facts and compiled doc/API digest are
 available even before you open the full files. Treat the actual files as authoritative when they
 differ.
+
+For any request to file or report a GitHub issue, follow
+`docs/guides/github-issue-workflow.rst` and use the tracked `.github/ISSUE_TEMPLATE/task.md` or
+`.github/ISSUE_TEMPLATE/phase.md`. Ask for missing type, scope, scale, and verification details
+before drafting; validate the body; show the draft; and get confirmation before posting.
 
 --- BEGIN CHEAT SHEET ---
 {cheat_sheet}

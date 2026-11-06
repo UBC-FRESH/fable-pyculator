@@ -12,7 +12,7 @@ The structural suite builds the current cheat sheet from real repository files a
 - every expected source/doc path exists and appears in the cheat sheet's required-reading list;
 - the sheet contains the documentation digest and AST-generated source API index;
 - known facts are present, including ``build_notebook_spec``, ``class ModelFacade``,
-  ``TotalResultsWF``, and the 2024 version difference.
+  ``TotalResultsWF``, the 2024 version difference, and the GitHub issue-filing protocol.
 
 Run it from the repository root:
 
@@ -37,7 +37,8 @@ claims are absent:
 
 The live suite is opt-in because it depends on local agent authentication, model availability, and
 network timing. It uses the same new-session grounding prompt as the portal, including the compiled
-cheat sheet.
+cheat sheet. The current cases cover the notebook API signature, Modelwright's ``ModelFacade``, the
+2024 missing water series, the portal's read-only boundary, and GitHub issue filing.
 
 The corresponding pytest entry point is gated:
 
