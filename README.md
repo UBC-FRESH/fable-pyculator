@@ -136,6 +136,27 @@ Assistant grounding and browser checks:
 .venv/bin/python scripts/browser_smoke.py --root . --server-python .venv/bin/python --live-agent
 ```
 
+Deployment:
+
+```bash
+# Local
+scripts/run_portal.sh
+
+# Authenticated remote bind
+FABLE_PORTAL_HOST=0.0.0.0 \
+FABLE_PORTAL_ALLOW_REMOTE=1 \
+FABLE_PORTAL_AUTH_USER=operator \
+FABLE_PORTAL_AUTH_PASSWORD='a-long-random-password' \
+scripts/run_portal.sh
+
+# Jupyter/codeserver proxy prefix
+FABLE_PORTAL_ROOT_PATH=/user/me/proxy/8768 \
+FABLE_PORTAL_ALLOW_REMOTE=1 \
+scripts/run_portal.sh
+```
+
+Example systemd and nginx files are under `deploy/`; see `docs/guides/web-deployment.rst`.
+
 
 
 The current Modelwright benchmark metadata points to this public FABLE Calculator Dropbox folder:

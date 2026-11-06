@@ -9,6 +9,7 @@ be started without a notebook::
 from __future__ import annotations
 
 import argparse
+import os
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -72,6 +73,16 @@ def _parser() -> argparse.ArgumentParser:
         help="Enable the optional local assistant (installed opencode CLI).",
     )
     web.add_argument(
+        "--auth-user",
+        default=os.environ.get("FABLE_PORTAL_AUTH_USER"),
+        help="Optional HTTP Basic auth user (env: FABLE_PORTAL_AUTH_USER).",
+    )
+    web.add_argument(
+        "--auth-password",
+        default=os.environ.get("FABLE_PORTAL_AUTH_PASSWORD"),
+        help="Optional HTTP Basic auth password (env: FABLE_PORTAL_AUTH_PASSWORD).",
+    )
+    web.add_argument(
         "--agent-model",
         default=DEFAULT_AGENT_MODEL,
         help="Model identifier passed to the local assistant (blank to use opencode's default).",
@@ -106,6 +117,8 @@ def _web(args: argparse.Namespace) -> int:
         allow_agent=args.allow_agent,
         agent_model=args.agent_model or None,
         agent_timeout=args.agent_timeout,
+        auth_user=args.auth_user,
+        auth_password=args.auth_password,
     )
     try:
         run_server(

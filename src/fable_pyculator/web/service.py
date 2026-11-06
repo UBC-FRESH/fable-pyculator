@@ -200,6 +200,8 @@ class PortalConfig:
     agent_command: tuple[str, ...] = ("opencode", "run", "--format", "json", "--auto")
     agent_model: str | None = DEFAULT_AGENT_MODEL
     agent_timeout: float = 600.0
+    auth_user: str | None = None
+    auth_password: str | None = None
     title: str = "FABLE Pyculator"
 
     def __post_init__(self) -> None:
@@ -210,6 +212,8 @@ class PortalConfig:
             else self.repo_root / "runtime" / "portal"
         )
         self.versions = tuple(dict.fromkeys(str(version) for version in self.versions))
+        if bool(self.auth_user) != bool(self.auth_password):
+            raise ValueError("auth_user and auth_password must be configured together")
 
 
 class PortalState:

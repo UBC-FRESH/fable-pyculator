@@ -6,6 +6,8 @@ notebook package does not depend on FastAPI.
 
 from __future__ import annotations
 
+import base64
+import secrets
 import sys
 from pathlib import Path
 from typing import Any
@@ -89,6 +91,28 @@ def create_app(config: PortalConfig) -> FastAPI:
 
     state = PortalState(config)
     app = FastAPI(title=config.title, version=__version__)
+
+    if config.auth_user and config.auth_password:
+        expected_auth = base64.b64encode(f"{config.auth_user}:{config.auth_password}".encode("utf-8")).decode("ascii")
+
+        @app.middleware("http")
+        async def _basic_auth(request: Request, call_next):
+            root_path = str(request.scope.get("root_path", ""))
+            path = request.url.path
+            if root_path and path.startswith(root_path):
+                path = path[len(root_path) :] or "/"
+            if path == "/api/health":
+                return await call_next(request)
+            header = request.headers.get("authorization", "")
+            supplied = header[6:].strip() if header.lower().startswith("basic ") else ""
+            if not supplied or not secrets.compare_digest(supplied, expected_auth):
+                return Response(
+                    status_code=401,
+                    content="Authentication required\n",
+                    headers={"WWW-Authenticate": 'Basic realm="FABLE Pyculator"'},
+                    media_type="text/plain",
+                )
+            return await call_next(request)
 
     @app.exception_handler(PortalError)
     async def _portal_error(_: Request, error: PortalError) -> JSONResponse:

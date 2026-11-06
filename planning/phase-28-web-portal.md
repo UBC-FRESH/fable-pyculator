@@ -93,6 +93,14 @@ Results pages include a run-scoped data-quality panel. Warnings are persisted in
 `quality_warnings` and cover the 2070 trend extension, the 2024 land component fallback, missing 2024
 water data, derived GHG versus cached `TotalCO2e` divergence, and tables that were not extended.
 
+## Deployment
+
+`scripts/run_portal.sh` reads `FABLE_PORTAL_*` environment variables, supports a proxy
+`FABLE_PORTAL_ROOT_PATH`, and can require optional HTTP Basic auth. Example systemd and nginx files
+live under `deploy/`, with the full recipe in `docs/guides/web-deployment.rst`. The portal remains
+loopback-only unless `FABLE_PORTAL_ALLOW_REMOTE=1` is set. Basic auth protects every path except the
+health check.
+
 ## Out of scope
 
 - authentication or multi-user accounts;

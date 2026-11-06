@@ -103,8 +103,12 @@ This file records completed project work in chronological order.
   Markdown export.
 - Re-ran `scripts/check_release_artifacts.sh`; it passed and the wheel contains chats, cheat-sheet,
   grounding evals, and all portal static assets.
+- Added deployment support: optional built-in HTTP Basic auth, `scripts/run_portal.sh`, proxy
+  `FABLE_PORTAL_ROOT_PATH`, example systemd unit, environment template, nginx config, and
+  `docs/guides/web-deployment.rst`. Live test confirmed unauthenticated health checks remain public
+  while the SPA/API require auth under a proxy prefix.
 - Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
-  full test suite (`190` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
+  full test suite (`192` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
   headline tests (`2` passed), a warning-clean Sphinx build, Read the Docs theme verification, the
   release artifact check, and real restored-artifact 2021/2024/2020 preparation and runs.
 

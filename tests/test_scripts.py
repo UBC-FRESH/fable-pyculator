@@ -1195,3 +1195,18 @@ def test_repair_fable_2024_generated_model_xml_like_expression() -> None:
     assert result == {"status": "repaired", "cells": 11}
     assert "_sf_sumifs(_range('4_calc_land', 37, 29, 37, 39)" in patched
     assert "#REF!" not in patched
+
+
+def test_run_portal_script_help_documents_proxy_auth_and_remote_flags() -> None:
+    script = Path("scripts/run_portal.sh")
+    result = subprocess.run(
+        [str(script), "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "FABLE_PORTAL_ROOT_PATH" in result.stdout
+    assert "FABLE_PORTAL_ALLOW_REMOTE" in result.stdout
+    assert "FABLE_PORTAL_AUTH_USER" in result.stdout
+    assert "FABLE_PORTAL_AUTH_PASSWORD" in result.stdout

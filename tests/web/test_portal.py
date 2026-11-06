@@ -387,3 +387,21 @@ def test_bind_guard_allows_only_loopback_by_default() -> None:
     with pytest.raises(ValueError, match="Refusing non-loopback"):
         validate_bind("0.0.0.0", allow_remote=False)
     validate_bind("0.0.0.0", allow_remote=True)
+
+
+def test_optional_http_basic_auth_protects_portal(tmp_path: Path) -> None:
+    import base64
+
+    config = _config(tmp_path)
+    config.auth_user = "operator"
+    config.auth_password = "secret"
+    app = create_app(config)
+    token = base64.b64encode(b"operator:secret").decode("ascii")
+
+    with TestClient(app) as client:
+        assert client.get("/api/health").status_code == 200
+        assert client.get("/").status_code == 401
+        assert client.get("/api/options").status_code == 401
+        response = client.get("/", headers={"Authorization": f"Basic {token}"})
+        assert response.status_code == 200
+        assert "FABLE Pyculator" in response.text
