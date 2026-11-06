@@ -46,7 +46,7 @@ __all__ = [
 
 JobStatus = Literal["queued", "running", "ok", "error"]
 Report = Callable[[int, str], None]
-SPEC_CACHE_VERSION = "2026-11-06-land-component-fallback"
+SPEC_CACHE_VERSION = "2026-11-06-land-totallandfin"
 
 
 class PortalError(RuntimeError):
@@ -504,6 +504,7 @@ class PortalState:
             table_summaries: list[dict[str, Any]] = []
             table_files: dict[str, str] = {}
             for table_name, frame in result.output_tables.items():
+                frame = _repair_known_output_table(version, table_name, frame)
                 payload = _frame_payload(frame, name=table_name)
                 slug = _slug(table_name)
                 relative = Path("tables") / f"{slug}.json"
@@ -521,6 +522,7 @@ class PortalState:
                         "row_count": len(payload["rows"]),
                         "column_count": len(payload["columns"]),
                         "file": str(relative),
+                        "display_repair": payload.get("display_repair"),
                     }
                 )
 
@@ -816,7 +818,40 @@ def _frame_payload(frame: pd.DataFrame, *, name: str) -> dict[str, Any]:
         "selected_column_flavour_tags": jsonable(attrs.get("selected_column_flavour_tags")),
         "matched_column_flavour_tags": jsonable(attrs.get("matched_column_flavour_tags")),
         "column_flavour_tags": jsonable(attrs.get("column_flavour_tags")),
+        "display_repair": attrs.get("display_repair"),
     }
+
+
+def _repair_known_output_table(
+    version: str,
+    table_name: str,
+    frame: pd.DataFrame,
+) -> pd.DataFrame:
+    """Repair known broken display values without changing generated-model semantics.
+
+    The 2024 generated model still contains the pre-repair ``LAND!AA`` ``#REF!`` expressions. Until
+    that artifact is regenerated, the portal replaces only the displayed LAND TOTAL column with the
+    workbook's ``TotallandFin`` component sum and records the repair in ``DataFrame.attrs``.
+    """
+
+    if version != "2024" or table_name != "land_resultsland":
+        return frame
+    components = ("Cropland", "Pasture", "Urban", "ForPlantations", "OtherForest", "OtherLand")
+    if "TOTAL" not in frame.columns or not all(component in frame.columns for component in components):
+        return frame
+    total = frame["TOTAL"]
+    if not any(isinstance(value, str) and "#REF!" in value for value in total):
+        return frame
+    repaired = frame.copy()
+    numeric = repaired.loc[:, list(components)].apply(pd.to_numeric, errors="coerce")
+    repaired["TOTAL"] = numeric.sum(axis=1, min_count=len(components))
+    repaired.attrs.update(frame.attrs)
+    repaired.attrs["display_repair"] = (
+        "The generated model's LAND TOTAL column is #REF!; this table displays the workbook's "
+        "TotallandFin component sum instead (LoggedForest is represented inside OtherForest and is "
+        "not added separately)."
+    )
+    return repaired
 
 
 def _headline_summary(spec: Any, frames: Mapping[str, pd.DataFrame]) -> list[dict[str, Any]]:

@@ -44,9 +44,9 @@ The default headline curation is version-tolerant. The 2020 and 2021 workbooks e
 GHG, and WATER headline series; the 2024 Canada workbook has no ``TotalResultsWF`` water-footprint
 table, so its portal preparation succeeds with FOOD, LAND, and GHG headline series. The 2024
 ``LAND[TOTAL]`` formula is also broken with ``#REF!`` in the workbook itself; the portal shows a
-clearly labelled *Total land area (component sum)* series and records the omitted broken correction
-term in the series description. Missing tables are skipped rather than reported as a failed
-preparation.
+clearly labelled *Total land area (component sum)* series that reproduces the workbook's valid
+``calc_land_cor[TotallandFin]`` total and records the broken source formula in the series
+description. Missing tables are skipped rather than reported as a failed preparation.
 
 The workflow artifact may instead be present as the approved compressed archive:
 

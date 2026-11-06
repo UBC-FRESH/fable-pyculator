@@ -2151,7 +2151,10 @@ Implementation evidence:
   Playwright Chromium smoke for overlay, Enter/Shift+Enter, markdown, and reload-persistence checks.
 - Fixed the FABLE 2024 broken `ResultsLand[TOTAL]` headline by falling back to a labelled component
   sum when the workbook TOTAL formula contains `#REF!`, and bumped the spec-cache version so stale
-  specs rebuild automatically.
+  specs rebuild automatically. Added `scripts/repair_fable_2024_land_total.py` and repaired the local
+  workbook formula and cached totals from `calc_land_cor[TotallandFin]`; the portal also applies the
+  same component repair to the stale generated model's displayed LAND TOTAL column with an explicit
+  warning note.
 - Wired `scripts/evaluate_assistant_grounding.py` into the Test workflow; live agent and Chromium
   checks remain opt-in.
 - Added `src/fable_pyculator/cli.py` and the `fable-pyculator web` entry point.
@@ -2174,7 +2177,7 @@ Verification evidence:
   passed.
 - `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
   passed after formatting.
-- `.venv/bin/python -m pytest -q` passed with `168` tests and `15` skips.
+- `.venv/bin/python -m pytest -q` passed with `173` tests and `15` skips.
 - `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1 .venv/bin/python -m pytest -q tests/web/test_browser_e2e.py`
   passed against real Chromium and a live assistant chat across a page reload.
 - `scripts/evaluate_assistant_grounding.py` structural checks passed, and
@@ -2188,9 +2191,10 @@ Verification evidence:
   A second app instance reloaded the prepared spec from cache in 0.54 s.
 - Real restored-artifact 2024 preparation and scenario execution passed: 47.7 s prepare, 108.5 s run,
   24 controls, 17 output tables, 3 headline series, and saved tables.
-- After the land-total fallback, a real 2024 run prepared in 48.0 s and ran in 115.1 s, reporting
-  numeric total land area (`897,510.9` for 2000 and `897,217.8` for 2050) with the component-sum
-  label and broken-workbook-total explanation preserved.
+- After the land-total fallback, a real 2024 run prepared in 1.0 s from cache and ran in 105.7 s,
+  reporting numeric total land area (`896,559.0`) with the component-sum label matching the
+  workbook's `calc_land_cor[TotallandFin]` total. The displayed `land_resultsland` TOTAL column also
+  shows the repaired value with an explicit display-repair note instead of `#REF!`.
 - Real restored-artifact 2020 preparation and scenario execution passed: 137.0 s prepare,
   167.2 s run, 16 controls, 14 output tables, 4 headline series, and saved tables.
 - The live local assistant returned markdown in 11.9 s with an OpenCode session id, and a second turn

@@ -40,12 +40,11 @@ SCENARIO_DEFINITION_COLUMN_ROLE_TAG_PATTERN = re.compile(
     re.IGNORECASE,
 )
 SCENARIO_DEFINITION_LOCATION_PATTERN = re.compile(r"^S\.\d+(?:\.[A-Z])?\.?$", re.IGNORECASE)
-LAND_TOTAL_COMPONENT_HEADERS = (
+LAND_TOTAL_FALLBACK_HEADERS = (
     "Cropland",
     "Pasture",
     "Urban",
     "ForPlantations",
-    "LoggedForest",
     "OtherForest",
     "OtherLand",
 )
@@ -455,7 +454,8 @@ def _land_headline_points(
         and "#REF!" in str(worksheet.cell(row, total_column).value)
         for row in range(min_row + 1, max_row + 1)
     )
-    if not broken_total:
+    fallback_schema = all(header in headers for header in LAND_TOTAL_FALLBACK_HEADERS) and "LoggedForest" in headers
+    if not fallback_schema and not broken_total:
         return (
             _headline_points(
                 worksheet,
@@ -468,7 +468,7 @@ def _land_headline_points(
             None,
         )
 
-    component_columns = tuple(_required_header(headers, header, table_name) for header in LAND_TOTAL_COMPONENT_HEADERS)
+    component_columns = tuple(_required_header(headers, header, table_name) for header in LAND_TOTAL_FALLBACK_HEADERS)
     points: list[HeadlinePoint] = []
     for row in range(min_row + 1, max_row + 1):
         year = worksheet.cell(row, year_column).value
@@ -480,10 +480,17 @@ def _land_headline_points(
                 cell_refs=tuple(f"{worksheet.title}!{get_column_letter(column)}{row}" for column in component_columns),
             )
         )
-    note = (
-        f"The workbook's {table_name}[{total_header}] formulas contain #REF!; this fallback sums "
-        f"{', '.join(LAND_TOTAL_COMPONENT_HEADERS)} and omits the workbook's broken correction term."
-    )
+    if broken_total:
+        note = (
+            f"The workbook's {table_name}[{total_header}] formulas contain #REF!; this fallback "
+            f"matches calc_land_cor[TotallandFin] by summing "
+            f"{', '.join(LAND_TOTAL_FALLBACK_HEADERS)} (LoggedForest is not added separately)."
+        )
+    else:
+        note = (
+            "This version's total matches calc_land_cor[TotallandFin] by summing "
+            f"{', '.join(LAND_TOTAL_FALLBACK_HEADERS)} (LoggedForest is not added separately)."
+        )
     return tuple(points), "sum", "Total land area (component sum)", note
 
 

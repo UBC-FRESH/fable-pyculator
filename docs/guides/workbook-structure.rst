@@ -59,10 +59,28 @@ and GHG headline series for 2024 and skips the unsupported water-footprint serie
 older fail-fast behavior.
 
 The 2024 ``LAND`` sheet also has a broken ``ResultsLand[TOTAL]`` formula containing ``#REF!``.
-Excel caches that column as ``#REF!``, so the model faithfully reproduces an unusable total. Default
-curation detects this and uses a clearly labelled *Total land area (component sum)* series that sums
-``Cropland``, ``Pasture``, ``Urban``, ``ForPlantations``, ``LoggedForest``, ``OtherForest``, and
-``OtherLand``. Its description records that the workbook's broken correction term was omitted.
+Excel caches that column as ``#REF!``, so the model faithfully reproduces an unusable total. The
+workbook still contains a valid ``calc_land_cor[TotallandFin]`` total, and the intended correction
+term was ``calc_land_cor[CalcLoggedForest]``. Default curation detects the broken total and uses a
+clearly labelled *Total land area (component sum)* series that sums ``Cropland``, ``Pasture``,
+``Urban``, ``ForPlantations``, ``OtherForest``, and ``OtherLand``; ``LoggedForest`` is not added
+separately because it is already represented inside the other-forest total. This reproduces the
+workbook's ``TotallandFin`` value exactly. The series description records the broken source formula.
+
+A reproducible local repair is available:
+
+.. code-block:: bash
+
+   python scripts/repair_fable_2024_land_total.py
+
+It replaces ``SUMIFS(#REF!, …)`` with ``SUMIFS(calc_land_cor[CalcLoggedForest], …)`` in
+``LAND!AA17:AA27`` and updates the cached values to the workbook's ``calc_land_cor[TotallandFin]``
+totals. It edits the xlsx XML directly so openpyxl does not rewrite the whole workbook, and keeps a
+``.xlsx.bak`` backup.
+
+Until the tracked 2024 generated model is rebuilt from the repaired workbook, the portal also applies
+the same component repair to the displayed ``land_resultsland`` TOTAL column and shows an explicit
+warning note under that table. It does not change generated-model validation semantics.
 
 The adjacent report sheet is:
 

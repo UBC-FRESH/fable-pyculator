@@ -223,7 +223,9 @@ def test_package_fable_matrix_evidence_script_default_json_with_synthetic_backen
         "package_fable_benchmark_matrix_evidence",
         lambda **kwargs: _fake_matrix_summary(calls, kwargs),
     )
-    monkeypatch.setattr(fable_pyculator, "write_fable_benchmark_matrix_evidence", lambda summary, paths: summary.to_dict())
+    monkeypatch.setattr(
+        fable_pyculator, "write_fable_benchmark_matrix_evidence", lambda summary, paths: summary.to_dict()
+    )
 
     exit_code = module.main(["--repo-root", str(tmp_path), "--matrix-run", str(tmp_path / "matrix-run.json"), "--json"])
 
@@ -241,7 +243,9 @@ def test_package_fable_matrix_evidence_script_accepts_matrix_summary_and_require
     capsys,
     tmp_path: Path,
 ) -> None:
-    module = _load_script_module("package_fable_matrix_evidence_summary", Path("scripts/package_fable_matrix_evidence.py"))
+    module = _load_script_module(
+        "package_fable_matrix_evidence_summary", Path("scripts/package_fable_matrix_evidence.py")
+    )
     paths = _fake_matrix_evidence_paths(tmp_path, matrix_summary_path=tmp_path / "matrix-summary.json")
     calls: dict[str, object] = {}
 
@@ -253,7 +257,9 @@ def test_package_fable_matrix_evidence_script_accepts_matrix_summary_and_require
         "package_fable_benchmark_matrix_evidence",
         lambda **kwargs: _fake_matrix_summary(calls, kwargs),
     )
-    monkeypatch.setattr(fable_pyculator, "write_fable_benchmark_matrix_evidence", lambda summary, paths: summary.to_dict())
+    monkeypatch.setattr(
+        fable_pyculator, "write_fable_benchmark_matrix_evidence", lambda summary, paths: summary.to_dict()
+    )
 
     exit_code = module.main(
         [
@@ -304,7 +310,11 @@ def test_validate_fable_scenario_definition_patch_script_json_with_synthetic_pat
 
     import fable_pyculator
 
-    monkeypatch.setattr(fable_pyculator, "load_scenario_definition_patch", lambda _: SimpleNamespace(to_dict=lambda: {"patch_id": "demo"}))
+    monkeypatch.setattr(
+        fable_pyculator,
+        "load_scenario_definition_patch",
+        lambda _: SimpleNamespace(to_dict=lambda: {"patch_id": "demo"}),
+    )
     monkeypatch.setattr(fable_pyculator, "build_notebook_spec", lambda *_, **__: object())
     monkeypatch.setattr(
         fable_pyculator,
@@ -337,7 +347,15 @@ def test_validate_fable_scenario_definition_patch_script_missing_patch_fails(tmp
     script = Path("scripts/validate_fable_scenario_definition_patch.py")
 
     result = subprocess.run(
-        [sys.executable, str(script), "--repo-root", str(tmp_path), "--patch", str(tmp_path / "missing.yaml"), "--json"],
+        [
+            sys.executable,
+            str(script),
+            "--repo-root",
+            str(tmp_path),
+            "--patch",
+            str(tmp_path / "missing.yaml"),
+            "--json",
+        ],
         check=False,
         capture_output=True,
         text=True,
@@ -550,7 +568,11 @@ def test_run_fable_scenario_bundle_script_matrix_run_reports_summary(
     monkeypatch.setattr(
         module,
         "_write_freshforge_matrix_summary",
-        lambda result, paths, **_: {"status": "success", "case_count": 2, "matrix_summary": str(paths.matrix_summary_path)},
+        lambda result, paths, **_: {
+            "status": "success",
+            "case_count": 2,
+            "matrix_summary": str(paths.matrix_summary_path),
+        },
     )
 
     exit_code = module.main(
@@ -675,7 +697,9 @@ def test_run_fable_scenario_bundle_script_reports_missing_generated_model(
     capsys,
     tmp_path: Path,
 ) -> None:
-    module = _load_script_module("run_fable_scenario_bundle_missing_model", Path("scripts/run_fable_scenario_bundle.py"))
+    module = _load_script_module(
+        "run_fable_scenario_bundle_missing_model", Path("scripts/run_fable_scenario_bundle.py")
+    )
 
     monkeypatch.setattr(module, "_load_bundle", lambda _: _fake_bundle())
     monkeypatch.setattr(module, "_build_paths", lambda **_: _fake_build_paths(tmp_path))
@@ -1084,9 +1108,9 @@ def _fake_freshforge_paths(root: Path) -> SimpleNamespace:
     return SimpleNamespace(
         output_dir=output_dir,
         workflow_path=output_dir / "workflow.json",
-        namespaced_run_summary_path=lambda namespace=None: output_dir
-        / (namespace or "")
-        / "freshforge-run-summary.json",
+        namespaced_run_summary_path=lambda namespace=None: (
+            output_dir / (namespace or "") / "freshforge-run-summary.json"
+        ),
     )
 
 
@@ -1107,3 +1131,38 @@ def _fake_build_paths(root: Path) -> FableFreshForgeBuildPaths:
         validation_scenario_path=artifact_dir / "validation-scenario.json",
         evaluation_report_path=artifact_dir / "evaluation-report.json",
     )
+
+
+def test_repair_fable_2024_land_total_script_help() -> None:
+    script = Path("scripts/repair_fable_2024_land_total.py")
+    result = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "--check" in result.stdout
+    assert "--workbook" in result.stdout
+    assert "ResultsLand[TOTAL]" in result.stdout
+
+
+def test_repair_fable_2024_land_total_xml_replaces_ref_and_cached_value() -> None:
+    script = Path("scripts/repair_fable_2024_land_total.py")
+    spec = importlib.util.spec_from_file_location("repair_fable_2024_land_total", script)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    xml = (
+        '<c r="AA17" s="813" t="e"><f ca="1">'
+        "ResultsLand[[#This Row],[Cropland]]-SUMIFS(#REF!,calc_land_cor[Year],"
+        "ResultsLand[[#This Row],[Year]])</f><v>#REF!</v></c>"
+    )
+    patched, count = module._repair_sheet_xml(xml, {"AA17": 896559.0})
+
+    assert count == 1
+    assert "calc_land_cor[CalcLoggedForest]" in patched
+    assert "#REF!" not in patched
+    assert 't="e"' not in patched
+    assert "<v>896559.0</v>" in patched

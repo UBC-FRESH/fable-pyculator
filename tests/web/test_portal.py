@@ -21,6 +21,7 @@ from fable_pyculator.web import app as portal_app
 from fable_pyculator.web.app import create_app, is_loopback, validate_bind
 from fable_pyculator.web.artifacts import artifact_paths, materialize_generated_model
 from fable_pyculator.web.service import PortalConfig
+from fable_pyculator.web.service import _repair_known_output_table
 from fable_pyculator.web.spec_io import spec_from_payload, spec_summary, spec_to_payload
 
 
@@ -321,6 +322,28 @@ def test_agent_info_and_assistant_session_passthrough(tmp_path: Path, monkeypatc
     assert payload["actions"][0]["tool"] == "read"
     assert captured["request"].session == "ses_123"
     assert captured["request"].model == config.agent_model
+
+
+def test_2024_land_table_display_repair_uses_totallandfin_components() -> None:
+    frame = pd.DataFrame(
+        {
+            "Year": [2000, 2050],
+            "Cropland": [41138.0, 49013.7],
+            "Pasture": [20351.4, 50791.1],
+            "Urban": [778.9, 1960.9],
+            "ForPlantations": [0.0, 0.0],
+            "LoggedForest": [951.9, 658.7],
+            "OtherForest": [346850.0, 344663.1],
+            "OtherLand": [487440.6, 444858.0],
+            "TOTAL": ["#REF!", "#REF!"],
+        }
+    )
+
+    repaired = _repair_known_output_table("2024", "land_resultsland", frame)
+
+    assert repaired["TOTAL"].tolist() == pytest.approx([896559.0, 891286.8])
+    assert "TotallandFin" in repaired.attrs["display_repair"]
+    assert _repair_known_output_table("2021", "land_resultsland", frame) is frame
 
 
 def test_bind_guard_allows_only_loopback_by_default() -> None:

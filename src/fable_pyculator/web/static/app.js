@@ -1,4 +1,4 @@
-import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28c";
+import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28e";
 
 const API = new URL("api/", document.baseURI);
 const PAGES = ["overview", "workbench", "results", "compare", "validation", "artifacts"];
@@ -665,6 +665,7 @@ function renderTable(payload) {
   const note = rows.length > limit ? `<p class="hint">Showing the first ${limit} of ${rows.length} rows; CSV export contains all rows.</p>` : "";
   return `
     <div class="table-meta">${pill(`${rows.length} rows`)} ${pill(`${columns.length} columns`)} ${payload.sheet ? pill(payload.sheet) : ""} ${payload.selected_column_flavour_tags ? pill(`flavour ${payload.selected_column_flavour_tags}`) : ""}</div>
+    ${payload.display_repair ? `<p class="table-note">${escapeHtml(payload.display_repair)}</p>` : ""}
     <div class="table-wrap"><table><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></div>
     ${note}`;
 }

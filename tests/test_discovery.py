@@ -281,13 +281,12 @@ def test_curate_default_headline_series_falls_back_when_land_total_is_ref(tmp_pa
 
     assert land_series.aggregation == "sum"
     assert land_series.label == "Total land area (component sum)"
-    assert len(land_series.points[0].cell_refs) == 7
+    assert len(land_series.points[0].cell_refs) == 6
     assert land_series.points[0].cell_refs == (
         "LAND!B2",
         "LAND!C2",
         "LAND!D2",
         "LAND!E2",
-        "LAND!F2",
         "LAND!G2",
         "LAND!H2",
     )

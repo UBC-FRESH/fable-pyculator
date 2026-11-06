@@ -92,8 +92,15 @@ tracked compressed generated model. The portal decompresses the approved archive
 caches workbook discovery and saved runs under ignored `runtime/portal/` paths. Default headline
 curation is version-tolerant: 2020/2021 expose FOOD, LAND, GHG, and WATER; the 2024 Canada workbook
 exposes FOOD, LAND, and GHG because it has no `TotalResultsWF` water-footprint table. The 2024
-`LAND[TOTAL]` formula contains `#REF!`, so the land headline uses a clearly labelled sum of the
-valid land-cover components and records the broken workbook total in its description. Real 2021
+`LAND[TOTAL]` formula contains `#REF!`, so the land headline uses a clearly labelled component sum
+that reproduces the workbook's valid `calc_land_cor[TotallandFin]` value and records the broken
+source formula in its description. To repair a local copy of the workbook itself, run:
+
+```bash
+.venv/bin/python scripts/repair_fable_2024_land_total.py
+```
+
+Real 2021
 preparation takes about two minutes on a warm local checkout and a scenario run takes about a
 minute; both run as background jobs with progress reporting.
 
