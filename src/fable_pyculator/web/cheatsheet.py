@@ -193,6 +193,8 @@ def build_cheat_sheet(
         "  or recompute FABLE results in the browser.",
         "- Scenario runs use the native FABLE horizon (2050) by default. The optional 2070 mode extends",
         "  2055-2070 with a 2035-2050 linear trend and labels those values as non-native projections.",
+        "- Results pages show run-scoped data-quality warnings for trend extension, land component",
+        "  fallback, missing water data, GHG-vs-cached divergence, and unextended tables.",
         "",
         "## Served model instances",
         "",

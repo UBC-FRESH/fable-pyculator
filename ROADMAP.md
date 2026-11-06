@@ -2168,6 +2168,9 @@ Implementation evidence:
   multi-row-per-year tables are extended group-by-group on text identity columns when possible, and
   unsupported tables stay native with an explicit note. Every extended run records the method and
   non-native warning.
+- Added run-scoped data-quality notes to Results for the 2070 extension, 2024 land component
+  fallback, missing 2024 water series, GHG-vs-cached divergence, and unextended tables; notes are
+  persisted in `run.json` as `quality_warnings`.
 - Wired `scripts/evaluate_assistant_grounding.py` into the Test workflow; live agent and Chromium
   checks remain opt-in.
 - Added `src/fable_pyculator/cli.py` and the `fable-pyculator web` entry point.
@@ -2190,7 +2193,7 @@ Verification evidence:
   passed.
 - `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
   passed after formatting.
-- `.venv/bin/python -m pytest -q` passed with `184` tests and `15` skips.
+- `.venv/bin/python -m pytest -q` passed with `188` tests and `15` skips.
 - `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1 .venv/bin/python -m pytest -q tests/web/test_browser_e2e.py`
   passed against real Chromium and a live assistant chat across a page reload.
 - `scripts/evaluate_assistant_grounding.py` structural checks passed, and

@@ -549,6 +549,14 @@ class PortalState:
                 series_name: _frame_payload(frame, name=series_name) for series_name, frame in headline_frames.items()
             }
             headline_summary = _headline_summary(prepared.spec, headline_frames)
+            quality_warnings = _quality_warnings(
+                version=version,
+                spec=prepared.spec,
+                horizon=horizon,
+                headline_frames=headline_frames,
+                table_frames=table_frames,
+                table_summaries=table_summaries,
+            )
             paths = artifact_paths(self.config.repo_root, version)
             provenance = {
                 "portal_version": __version__,
@@ -578,6 +586,7 @@ class PortalState:
                     if horizon == 2070
                     else None
                 ),
+                "quality_warnings": quality_warnings,
                 "selections": jsonable(dict(selections)),
                 "input_count": len(result.run.inputs),
                 "inputs": jsonable(result.run.inputs),
@@ -882,6 +891,163 @@ def _repair_known_output_table(
         "not added separately)."
     )
     return repaired
+
+
+def _quality_warnings(
+    *,
+    version: str,
+    spec: Any,
+    horizon: int,
+    headline_frames: Mapping[str, pd.DataFrame],
+    table_frames: Mapping[str, pd.DataFrame],
+    table_summaries: Sequence[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Return run-scoped data-quality notes for the Results panel."""
+
+    warnings: list[dict[str, Any]] = []
+    if horizon == 2070:
+        warnings.append(
+            {
+                "code": "trend_extension_2070",
+                "severity": "warn",
+                "title": "2070 values are trend extensions",
+                "message": EXTENSION_NOTE,
+                "scope": "headline series and extended output tables",
+            }
+        )
+    land = next((series for series in spec.headline_series if series.name == "land_total_area"), None)
+    if land is not None and (
+        "component sum" in (land.label or "").casefold() or "totallandfin" in (land.description or "").casefold()
+    ):
+        warnings.append(
+            {
+                "code": "land_component_sum",
+                "severity": "info",
+                "title": "Land total uses a component sum",
+                "message": (
+                    "The workbook's ResultsLand[TOTAL] total is not usable as-is. The land series "
+                    "reproduces calc_land_cor[TotallandFin] from the component columns and records "
+                    "the source caveat in its description."
+                ),
+                "scope": "land_total_area",
+            }
+        )
+    if version == "2024" and not any(series.name == "water_total_footprint" for series in spec.headline_series):
+        warnings.append(
+            {
+                "code": "water_unavailable_2024",
+                "severity": "info",
+                "title": "Water-footprint series is unavailable",
+                "message": (
+                    "The 2024 Canada workbook has no TotalResultsWF table, so no water-footprint "
+                    "headline series is exposed."
+                ),
+                "scope": "WATER",
+            }
+        )
+    mismatch = _ghg_cached_mismatch(headline_frames, table_frames, spec=spec)
+    if mismatch is not None:
+        years, maximum, max_year = mismatch
+        warnings.append(
+            {
+                "code": "ghg_cached_mismatch",
+                "severity": "warn",
+                "title": "GHG components differ from cached workbook totals",
+                "message": (
+                    f"The derived GHG series differs from cached ResultsGHG[TotalCO2e] at "
+                    f"{len(years)} native year(s); the largest difference is {maximum:.3g} MtCO2e "
+                    f"in {max_year}. Cached values may reflect a different scenario/GWP, or an "
+                    "individual generated-model component may differ."
+                ),
+                "scope": "ghg_total_co2e vs cached TotalCO2e",
+            }
+        )
+    skipped = [
+        str(summary.get("label") or summary.get("name"))
+        for summary in table_summaries
+        if "not applied" in str(summary.get("extension_note") or "").casefold()
+    ]
+    if skipped:
+        warnings.append(
+            {
+                "code": "tables_not_extended",
+                "severity": "info",
+                "title": "Some tables were not extended to 2070",
+                "message": (
+                    "These tables have no usable identity/trend grouping and remain at native 2050: "
+                    + ", ".join(skipped)
+                ),
+                "scope": "output tables",
+            }
+        )
+    return warnings
+
+
+def _cached_ghg_from_spec(spec: Any | None) -> dict[int, float]:
+    if spec is None:
+        return {}
+    table = next((item for item in spec.output_tables if item.name == "ghg_resultsghg"), None)
+    if table is None or not table.values:
+        return {}
+    labels = [str(label).casefold() for label in table.column_labels]
+    try:
+        year_index = labels.index("year")
+        total_index = labels.index("totalco2e")
+    except ValueError:
+        return {}
+    cached: dict[int, float] = {}
+    for row in table.values:
+        if len(row) <= max(year_index, total_index):
+            continue
+        year = _coerce_year(row[year_index])
+        value = row[total_index]
+        if year is not None and isinstance(value, int | float) and not isinstance(value, bool):
+            cached[year] = float(value)
+    return cached
+
+
+def _ghg_cached_mismatch(
+    headline_frames: Mapping[str, pd.DataFrame],
+    table_frames: Mapping[str, pd.DataFrame],
+    *,
+    spec: Any | None = None,
+) -> tuple[list[int], float, int] | None:
+    headline = headline_frames.get("ghg_total_co2e")
+    if headline is None:
+        return None
+    cached = _cached_ghg_from_spec(spec)
+    if not cached:
+        table = table_frames.get("ghg_resultsghg")
+        if table is None or table.empty:
+            return None
+        year_column = next((column for column in table.columns if str(column).casefold() == "year"), None)
+        if year_column is None or "TotalCO2e" not in table.columns:
+            return None
+        for _, row in table.iterrows():
+            year = _coerce_year(row.get(year_column))
+            value = row.get("TotalCO2e")
+            if year is not None and isinstance(value, int | float) and not isinstance(value, bool):
+                cached[year] = float(value)
+    mismatches: list[tuple[int, float]] = []
+    for _, row in headline.iterrows():
+        year = _coerce_year(row.get("year"))
+        value = row.get("value")
+        if (
+            year is None
+            or year > NATIVE_LAST_YEAR
+            or year not in cached
+            or not isinstance(value, int | float)
+            or isinstance(value, bool)
+        ):
+            continue
+        difference = abs(float(value) - cached[year])
+        tolerance = max(1e-6, abs(cached[year]) * 1e-6)
+        if difference > tolerance:
+            mismatches.append((year, difference))
+    if not mismatches:
+        return None
+    max_year, maximum = max(mismatches, key=lambda item: item[1])
+    return [year for year, _ in mismatches], maximum, max_year
 
 
 def _extend_frame_to_2070(frame: pd.DataFrame) -> pd.DataFrame:

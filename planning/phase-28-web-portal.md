@@ -86,6 +86,12 @@ Every extended run records `horizon: 2070`, `extension.method: linear_trend_2035
 explicit note that 2055-2070 are not native FABLE results. The generated model and source workbook
 are never modified by this projection.
 
+## Data quality panel
+
+Results pages include a run-scoped data-quality panel. Warnings are persisted in `run.json` as
+`quality_warnings` and cover the 2070 trend extension, the 2024 land component fallback, missing 2024
+water data, derived GHG versus cached `TotalCO2e` divergence, and tables that were not extended.
+
 ## Out of scope
 
 - authentication or multi-user accounts;

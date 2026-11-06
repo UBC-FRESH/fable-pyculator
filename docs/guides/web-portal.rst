@@ -200,6 +200,21 @@ The native FABLE workbooks and generated models end at 2050. The portal optional
 Use it from the Workbench **Horizon** selector. Select **Native FABLE horizon (2050)** for actual
 model results.
 
+Data-quality warnings
+---------------------
+
+The Results page shows a run-scoped **Data quality** panel. It includes only the notes that apply to
+the selected run, such as:
+
+- 2070 trend-extension warning;
+- 2024 land-total component fallback;
+- missing 2024 water-footprint series;
+- derived GHG versus cached `TotalCO2e` divergence;
+- output tables that could not be extended.
+
+Warnings are persisted in `run.json` as `quality_warnings` and are available from
+`GET /api/runs/{run_id}`.
+
 Security and limitations
 ------------------------
 

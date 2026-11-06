@@ -116,6 +116,10 @@ The Workbench can optionally extend a run to **2070** using a linear trend over 
 a clearly labelled presentation-layer projection, not native FABLE output. Native results end at
 2050. Multi-row-per-year tables are extended group-by-group when a text identity column is available; tables without a usable trend stay native with an explicit note.
 
+Results pages show run-scoped **data-quality notes** for caveats such as a 2070 extension, the 2024
+land component fallback, missing 2024 water data, GHG-vs-cached divergence, and tables that were not
+extended.
+
 Assistant grounding and browser checks:
 
 ```bash

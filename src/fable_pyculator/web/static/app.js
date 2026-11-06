@@ -1,4 +1,4 @@
-import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28h";
+import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28i";
 
 const API = new URL("api/", document.baseURI);
 const PAGES = ["overview", "workbench", "results", "compare", "validation", "artifacts"];
@@ -545,6 +545,23 @@ function renderRunDetail(record) {
   const extensionNote = record.extension
     ? `<p class="table-note">${escapeHtml(record.extension.note || "2070 trend extension is active.")}</p>`
     : "";
+  const qualityWarnings = record.quality_warnings || [];
+  const qualityPanel = qualityWarnings.length
+    ? `<section class="quality-panel" aria-label="Data quality warnings">
+        <div class="quality-head"><h3>Data quality</h3>${pill(`${qualityWarnings.length} note${qualityWarnings.length === 1 ? "" : "s"}`, "warn")}</div>
+        <ul class="quality-list">
+          ${qualityWarnings
+            .map(
+              (warning) => `<li class="quality-item ${escapeHtml(warning.severity || "info")}">
+                <strong>${escapeHtml(warning.title || warning.code || "Note")}</strong>
+                <p>${escapeHtml(warning.message || "")}</p>
+                ${warning.scope ? `<small>${escapeHtml(warning.scope)}</small>` : ""}
+              </li>`,
+            )
+            .join("")}
+        </ul>
+      </section>`
+    : "";
   const kpis = (record.headline_summary || [])
     .map((item) => {
       const delta = item.delta === null || item.delta === undefined ? "—" : formatSigned(item.delta);
@@ -606,6 +623,7 @@ function renderRunDetail(record) {
     </div>
     <div class="chip-row">${selectionChips || `<span class="hint">No explicit selection overrides.</span>`}</div>
     ${extensionNote}
+    ${qualityPanel}
     ${provenance}
     <div class="kpi-grid">${kpis || `<p class="hint">No headline series were declared for this version.</p>`}</div>
     <section class="section">

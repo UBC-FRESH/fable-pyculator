@@ -94,8 +94,11 @@ This file records completed project work in chronological order.
   on text identity columns when possible; tables without a usable trend stay native with an explicit
   note. Every extended run records the method and a warning that 2055-2070 are not native FABLE
   results.
+- Added run-scoped **data-quality notes** to Results: 2070 extension, 2024 land component fallback,
+  missing 2024 water series, derived GHG versus cached `TotalCO2e` divergence, and tables that were
+  not extended. Notes are persisted in `run.json` as `quality_warnings`.
 - Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
-  full test suite (`184` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
+  full test suite (`188` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
   headline tests (`2` passed), a warning-clean Sphinx build, Read the Docs theme verification, the
   release artifact check, and real restored-artifact 2021/2024/2020 preparation and runs.
 

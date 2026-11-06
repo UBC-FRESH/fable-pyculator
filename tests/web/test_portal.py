@@ -170,6 +170,7 @@ def test_artifact_summary_names_missing_files(tmp_path: Path) -> None:
     assert "chat_id" in script.text
     assert "run-horizon" in script.text
     assert "2070" in script.text
+    assert "quality-panel" in script.text
     assert markdown.status_code == 200
     assert "export { escapeHtml, inlineMarkdown, renderMarkdown" in markdown.text
     assert styles.status_code == 200
