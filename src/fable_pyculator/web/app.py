@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 from fable_pyculator import __version__
 from fable_pyculator.web.artifacts import materialize_generated_model
 from fable_pyculator.web.assistant import AgentError, AgentRequest, agent_info, run_agent
+from fable_pyculator.web.chats import auto_title
 from fable_pyculator.web.service import PortalConfig, PortalError, PortalState
 
 __all__ = ["create_app", "is_loopback", "run_server", "validate_bind"]
@@ -48,6 +49,14 @@ class ChatCreateRequest(BaseModel):
     """Create a persistent assistant chat."""
 
     run_id: str | None = None
+
+
+class ChatUpdateRequest(BaseModel):
+    """Update chat metadata."""
+
+    title: str | None = Field(default=None, min_length=1, max_length=120)
+    pinned: bool | None = None
+    archived: bool | None = None
 
 
 class AssistantPayload(BaseModel):
@@ -183,8 +192,11 @@ def create_app(config: PortalConfig) -> FastAPI:
         return state.bundles()
 
     @app.get("/api/chats")
-    def chats() -> list[dict[str, Any]]:
-        return state.list_chats()
+    def chats(
+        include_archived: bool = Query(default=False),
+        q: str | None = Query(default=None, max_length=200),
+    ) -> list[dict[str, Any]]:
+        return state.list_chats(include_archived=include_archived, query=q)
 
     @app.post("/api/chats")
     def create_chat(request: ChatCreateRequest) -> dict[str, Any]:
@@ -193,6 +205,22 @@ def create_app(config: PortalConfig) -> FastAPI:
     @app.get("/api/chats/{chat_id}")
     def chat_detail(chat_id: str) -> dict[str, Any]:
         return state.get_chat(chat_id)
+
+    @app.patch("/api/chats/{chat_id}")
+    def update_chat(chat_id: str, request: ChatUpdateRequest) -> dict[str, Any]:
+        return state.update_chat(
+            chat_id,
+            title=request.title,
+            pinned=request.pinned,
+            archived=request.archived,
+        )
+
+    @app.get("/api/chats/{chat_id}/export.md", include_in_schema=False)
+    def export_chat(chat_id: str) -> Response:
+        return Response(
+            content=state.export_chat(chat_id),
+            media_type="text/markdown; charset=utf-8",
+        )
 
     @app.delete("/api/chats/{chat_id}")
     def delete_chat(chat_id: str) -> dict[str, Any]:
@@ -246,6 +274,11 @@ def create_app(config: PortalConfig) -> FastAPI:
             actions=result.get("actions"),
             run_id=payload.run_id,
         )
+        if new_session:
+            updated = state.chats.set_metadata(
+                chat_id,
+                title=auto_title(payload.message, result.get("response")),
+            )
         updated = state.chats.set_session(chat_id, result.get("session"))
         return {
             **result,

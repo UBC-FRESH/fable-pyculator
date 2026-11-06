@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-__all__ = ["ChatStore", "ChatRecord"]
+__all__ = ["ChatRecord", "ChatStore", "auto_title"]
 
 _CHAT_ID_PATTERN = re.compile(r"^chat_[A-Za-z0-9]+$")
 _TITLE_LIMIT = 72
@@ -34,6 +34,8 @@ class ChatRecord:
     messages: list[dict[str, Any]] = field(default_factory=list)
     agent_session: str | None = None
     run_id: str | None = None
+    pinned: bool = False
+    archived: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         """Return the full JSON-ready chat record."""
@@ -46,6 +48,8 @@ class ChatRecord:
             "messages": list(self.messages),
             "agent_session": self.agent_session,
             "run_id": self.run_id,
+            "pinned": self.pinned,
+            "archived": self.archived,
         }
 
     def summary(self) -> dict[str, Any]:
@@ -63,7 +67,43 @@ class ChatRecord:
             "preview": preview,
             "agent_session": self.agent_session,
             "run_id": self.run_id,
+            "pinned": self.pinned,
+            "archived": self.archived,
         }
+
+    def to_markdown(self) -> str:
+        """Render the conversation as exportable Markdown."""
+
+        lines = [
+            f"# {self.title}",
+            "",
+            f"- Chat: `{self.chat_id}`",
+            f"- Created: {self.created_at}",
+            f"- Updated: {self.updated_at}",
+            f"- Agent session: `{self.agent_session or 'none'}`",
+        ]
+        if self.run_id:
+            lines.append(f"- Run context: `{self.run_id}`")
+        lines.append("")
+        for message in self.messages:
+            role = str(message.get("role", "message")).title()
+            lines.extend(
+                [
+                    f"## {role} — {message.get('created_at', '')}",
+                    "",
+                    str(message.get("content", "")),
+                    "",
+                ]
+            )
+            actions = message.get("actions") or []
+            if actions:
+                lines.append("Actions:")
+                for action in actions:
+                    if isinstance(action, dict):
+                        summary = action.get("summary") or ""
+                        lines.append(f"- `{action.get('tool', 'tool')}` {summary}".rstrip())
+                lines.append("")
+        return "\n".join(lines).rstrip() + "\n"
 
 
 class ChatStore:
@@ -89,8 +129,14 @@ class ChatStore:
             self._write(record)
         return record
 
-    def list(self, *, limit: int = 100) -> list[dict[str, Any]]:
-        """Return chat summaries, newest first."""
+    def list(
+        self,
+        *,
+        limit: int = 100,
+        include_archived: bool = False,
+        query: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Return chat summaries, pinned first and newest first within each group."""
 
         records: list[ChatRecord] = []
         with self._lock:
@@ -98,7 +144,18 @@ class ChatStore:
                 record = self._read_path(path)
                 if record is not None:
                     records.append(record)
+        if not include_archived:
+            records = [record for record in records if not record.archived]
+        if query:
+            needle = query.casefold()
+            records = [
+                record
+                for record in records
+                if needle in record.title.casefold()
+                or any(needle in _preview(message.get("content")).casefold() for message in record.messages)
+            ]
         records.sort(key=lambda record: record.updated_at, reverse=True)
+        records.sort(key=lambda record: not record.pinned)
         return [record.summary() for record in records[:limit]]
 
     def get(self, chat_id: str) -> ChatRecord:
@@ -151,6 +208,28 @@ class ChatStore:
             self._write(record)
             return record
 
+    def set_metadata(
+        self,
+        chat_id: str,
+        *,
+        title: str | None = None,
+        pinned: bool | None = None,
+        archived: bool | None = None,
+    ) -> ChatRecord:
+        """Update chat title, pin, and archive state."""
+
+        with self._lock:
+            record = self.get(chat_id)
+            if title is not None:
+                record.title = _title(title)
+            if pinned is not None:
+                record.pinned = bool(pinned)
+            if archived is not None:
+                record.archived = bool(archived)
+            record.updated_at = _now()
+            self._write(record)
+            return record
+
     def delete(self, chat_id: str) -> bool:
         """Delete one chat; return whether it existed."""
 
@@ -185,6 +264,8 @@ class ChatStore:
             messages=[message for message in messages if isinstance(message, dict)],
             agent_session=payload.get("agent_session"),
             run_id=payload.get("run_id"),
+            pinned=bool(payload.get("pinned", False)),
+            archived=bool(payload.get("archived", False)),
         )
 
     def _write(self, record: ChatRecord) -> None:
@@ -195,6 +276,22 @@ class ChatStore:
             encoding="utf-8",
         )
         temporary.replace(path)
+
+
+def auto_title(user_message: str, assistant_message: str | None = None) -> str:
+    """Choose a concise title from the first exchange.
+
+    Short or generic user prompts fall back to the first meaningful assistant line.
+    """
+
+    user = " ".join(str(user_message or "").split())
+    if len(user.split()) >= 2 and len(user) >= 12:
+        return user[:_TITLE_LIMIT]
+    for line in str(assistant_message or "").splitlines():
+        cleaned = " ".join(line.replace("#", "").replace("*", "").replace("`", "").split())
+        if cleaned and not cleaned.startswith(("-", "•")):
+            return cleaned[:_TITLE_LIMIT]
+    return user[:_TITLE_LIMIT] or "New chat"
 
 
 def _now() -> str:

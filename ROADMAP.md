@@ -2168,6 +2168,10 @@ Implementation evidence:
   multi-row-per-year tables are extended group-by-group on text identity columns when possible, and
   unsupported tables stay native with an explicit note. Every extended run records the method and
   non-native warning.
+- Finished assistant chat management: rename, search, pin, archive, delete, Markdown export, and
+  automatic titles from the first exchange; added PATCH/export chat endpoints.
+- Re-ran the release artifact check; it passed and the wheel contains chats, cheat-sheet, grounding
+  evals, and all portal static assets.
 - Added run-scoped data-quality notes to Results for the 2070 extension, 2024 land component
   fallback, missing 2024 water series, GHG-vs-cached divergence, and unextended tables; notes are
   persisted in `run.json` as `quality_warnings`.
@@ -2193,7 +2197,7 @@ Verification evidence:
   passed.
 - `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
   passed after formatting.
-- `.venv/bin/python -m pytest -q` passed with `188` tests and `15` skips.
+- `.venv/bin/python -m pytest -q` passed with `190` tests and `15` skips.
 - `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1 .venv/bin/python -m pytest -q tests/web/test_browser_e2e.py`
   passed against real Chromium and a live assistant chat across a page reload.
 - `scripts/evaluate_assistant_grounding.py` structural checks passed, and

@@ -365,24 +365,38 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .ask-model { display: block; margin-top: 0.1rem; color: var(--muted); font-size: 0.68rem; }
 .ask-head-actions { display: flex; align-items: center; gap: 0.35rem; }
 .ask-sessions {
-  max-height: 15rem; overflow: auto; padding: 0.4rem;
+  max-height: 17rem; overflow: auto; padding: 0.4rem;
   border-bottom: 1px solid var(--line); background: var(--panel-soft);
 }
+.ask-session-tools { display: flex; gap: 0.4rem; align-items: center; margin-bottom: 0.35rem; }
+.ask-session-tools input[type="search"] {
+  flex: 1; min-width: 0; padding: 0.25rem 0.35rem; border: 1px solid var(--line);
+  border-radius: 0.35rem; font: inherit; font-size: 0.74rem;
+}
+.ask-archived-toggle { display: flex; gap: 0.2rem; align-items: center; color: var(--muted); font-size: 0.68rem; white-space: nowrap; }
+.ask-session-list { display: flex; flex-direction: column; gap: 0.25rem; }
 .ask-session {
-  display: flex; gap: 0.4rem; align-items: flex-start; width: 100%;
+  display: flex; gap: 0.3rem; align-items: flex-start; width: 100%;
   padding: 0.38rem 0.45rem; border: 1px solid transparent; border-radius: 0.4rem;
   background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
 }
 .ask-session:hover { background: var(--panel); border-color: var(--line); }
 .ask-session.active { background: var(--green-soft); border-color: #b9dcc7; }
+.ask-session.archived { opacity: 0.65; }
 .ask-session-main {
   display: flex; flex-direction: column; min-width: 0; flex: 1;
   padding: 0; border: 0; background: transparent; color: inherit;
   font: inherit; text-align: left; cursor: pointer;
 }
-.ask-session-main { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .ask-session strong { overflow: hidden; font-size: 0.76rem; text-overflow: ellipsis; white-space: nowrap; }
 .ask-session small { overflow: hidden; color: var(--muted); font-size: 0.66rem; text-overflow: ellipsis; white-space: nowrap; }
+.ask-session-actions { display: flex; gap: 0.1rem; flex: none; }
+.ask-session-icon {
+  width: 1.35rem; height: 1.35rem; padding: 0; border: 1px solid transparent;
+  border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer; font: inherit; font-size: 0.72rem;
+}
+.ask-session-icon:hover { border-color: var(--line); background: var(--panel); color: var(--ink); }
+.ask-session-icon.pinned { color: var(--amber); }
 .ask-session-delete {
   flex: none; width: 1.35rem; height: 1.35rem; padding: 0; border: 1px solid transparent;
   border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer; font: inherit;

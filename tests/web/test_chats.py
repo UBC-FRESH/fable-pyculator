@@ -108,3 +108,48 @@ def test_assistant_persists_chat_and_grounds_new_sessions(tmp_path: Path, monkey
     assert "Documentation digest" in cheat_sheet.text
     assert "Source API index" in cheat_sheet.text
     assert "build_notebook_spec" in cheat_sheet.text
+
+
+def test_chat_store_metadata_pin_archive_search_and_markdown(tmp_path: Path) -> None:
+    from fable_pyculator.web.chats import auto_title
+
+    store = ChatStore(tmp_path / "chats")
+    first = store.create()
+    second = store.create()
+    store.append_message(first.chat_id, role="user", content="Explain land totals")
+    store.append_message(first.chat_id, role="assistant", content="Here is the answer")
+    store.set_metadata(first.chat_id, title="Land totals", pinned=True)
+    store.set_metadata(second.chat_id, archived=True)
+    store.append_message(second.chat_id, role="user", content="Old archived chat")
+
+    assert store.list()[0]["chat_id"] == first.chat_id
+    assert store.list()[0]["pinned"] is True
+    assert all(item["chat_id"] != second.chat_id for item in store.list())
+    assert any(item["chat_id"] == second.chat_id for item in store.list(include_archived=True))
+    assert [item["chat_id"] for item in store.list(query="land")] == [first.chat_id]
+    markdown = store.get(first.chat_id).to_markdown()
+    assert "# Land totals" in markdown
+    assert "Here is the answer" in markdown
+    assert auto_title("hi", "Here is a useful answer about FABLE") == "Here is a useful answer about FABLE"
+
+
+def test_chat_api_update_and_export(tmp_path: Path) -> None:
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", versions=("2021",))
+    with TestClient(create_app(config)) as client:
+        chat = client.post("/api/chats", json={}).json()
+        chat_id = chat["chat_id"]
+        updated = client.patch(
+            f"/api/chats/{chat_id}",
+            json={"title": "Renamed", "pinned": True, "archived": True},
+        ).json()
+        listed = client.get("/api/chats").json()
+        archived = client.get("/api/chats?include_archived=true").json()
+        exported = client.get(f"/api/chats/{chat_id}/export.md")
+
+    assert updated["title"] == "Renamed"
+    assert updated["pinned"] is True
+    assert updated["archived"] is True
+    assert listed == []
+    assert archived[0]["chat_id"] == chat_id
+    assert exported.status_code == 200
+    assert "# Renamed" in exported.text

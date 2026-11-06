@@ -158,6 +158,9 @@ def test_artifact_summary_names_missing_files(tmp_path: Path) -> None:
     assert 'id="ask-sessions"' in shell.text
     assert 'id="ask-history"' in shell.text
     assert 'id="run-horizon"' in shell.text
+    assert 'id="ask-search"' in shell.text
+    assert 'id="ask-show-archived"' in shell.text
+    assert 'id="ask-export"' in shell.text
     assert "Grounding sheet" in shell.text
     assert "+" in shell.text and "Ask" in shell.text
     assert script.status_code == 200
@@ -171,6 +174,9 @@ def test_artifact_summary_names_missing_files(tmp_path: Path) -> None:
     assert "run-horizon" in script.text
     assert "2070" in script.text
     assert "quality-panel" in script.text
+    assert "renameAskChat" in script.text
+    assert "togglePinChat" in script.text
+    assert "exportAskChat" in script.text
     assert markdown.status_code == 200
     assert "export { escapeHtml, inlineMarkdown, renderMarkdown" in markdown.text
     assert styles.status_code == 200

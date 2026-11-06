@@ -15,7 +15,7 @@ const state = {
   pollToken: 0,
   agent: { enabled: false, available: false, model: null },
   chats: [],
-  ask: { session: null, busy: false, runId: null, chatId: null, title: "New chat" },
+  ask: { session: null, busy: false, runId: null, chatId: null, title: "New chat", showArchived: false, search: "" },
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -122,7 +122,7 @@ async function bootstrap() {
       request("artifacts"),
       request("runs"),
       request("agent").catch(() => null),
-      request("chats").catch(() => []),
+      request("chats?include_archived=true").catch(() => []),
     ]);
     state.options = options;
     state.artifacts = artifacts;
@@ -1029,28 +1029,59 @@ function renderAskContext() {
 }
 
 function renderAskSessions() {
-  const container = $("#ask-sessions");
-  if (!container) return;
-  if (!state.chats.length) {
-    container.innerHTML = `<p class="ask-sessions-empty">No saved chats yet. Send a message to create one.</p>`;
+  const list = $("#ask-session-list");
+  if (!list) return;
+  const query = String($("#ask-search")?.value || "").trim().toLowerCase();
+  const chats = state.chats.filter(
+    (chat) =>
+      (state.ask.showArchived || !chat.archived) &&
+      (!query ||
+        String(chat.title || "").toLowerCase().includes(query) ||
+        String(chat.preview || "").toLowerCase().includes(query)),
+  );
+  if (!chats.length) {
+    list.innerHTML = `<p class="ask-sessions-empty">${state.chats.length ? "No chats match this filter." : "No saved chats yet. Send a message to create one."}</p>`;
     return;
   }
-  container.innerHTML = state.chats
+  list.innerHTML = chats
     .map(
       (chat) => `
-      <div class="ask-session ${chat.chat_id === state.ask.chatId ? "active" : ""}">
+      <div class="ask-session ${chat.chat_id === state.ask.chatId ? "active" : ""} ${chat.archived ? "archived" : ""}">
         <button class="ask-session-main" type="button" data-chat-id="${escapeHtml(chat.chat_id)}">
-          <strong>${escapeHtml(chat.title || "Chat")}</strong>
+          <strong>${chat.pinned ? "★ " : ""}${escapeHtml(chat.title || "Chat")}</strong>
           <small>${escapeHtml(chat.preview || "")} · ${formatDate(chat.updated_at)}</small>
         </button>
-        <button class="ask-session-delete" type="button" data-delete-chat="${escapeHtml(chat.chat_id)}" aria-label="Delete chat" title="Delete chat">×</button>
+        <div class="ask-session-actions">
+          <button class="ask-session-icon ${chat.pinned ? "pinned" : ""}" type="button" data-pin-chat="${escapeHtml(chat.chat_id)}" title="${chat.pinned ? "Unpin" : "Pin"} chat" aria-label="${chat.pinned ? "Unpin" : "Pin"} chat">★</button>
+          <button class="ask-session-icon" type="button" data-rename-chat="${escapeHtml(chat.chat_id)}" title="Rename chat" aria-label="Rename chat">✎</button>
+          <button class="ask-session-icon" type="button" data-archive-chat="${escapeHtml(chat.chat_id)}" title="${chat.archived ? "Unarchive" : "Archive"} chat" aria-label="${chat.archived ? "Unarchive" : "Archive"} chat">▣</button>
+          <button class="ask-session-icon" type="button" data-delete-chat="${escapeHtml(chat.chat_id)}" title="Delete chat" aria-label="Delete chat">×</button>
+        </div>
       </div>`,
     )
     .join("");
-  container.querySelectorAll("[data-chat-id]").forEach((button) => {
+  list.querySelectorAll("[data-chat-id]").forEach((button) => {
     button.addEventListener("click", () => loadChat(button.dataset.chatId));
   });
-  container.querySelectorAll("[data-delete-chat]").forEach((button) => {
+  list.querySelectorAll("[data-pin-chat]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      togglePinChat(button.dataset.pinChat);
+    });
+  });
+  list.querySelectorAll("[data-rename-chat]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      renameAskChat(button.dataset.renameChat);
+    });
+  });
+  list.querySelectorAll("[data-archive-chat]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleArchiveChat(button.dataset.archiveChat);
+    });
+  });
+  list.querySelectorAll("[data-delete-chat]").forEach((button) => {
     button.addEventListener("click", (event) => {
       event.stopPropagation();
       deleteAskChat(button.dataset.deleteChat);
@@ -1128,17 +1159,74 @@ async function restoreChat() {
   } catch {
     /* localStorage can be unavailable in private contexts */
   }
-  const target = state.chats.find((chat) => chat.chat_id === remembered) || state.chats[0];
+  const visible = state.chats.filter((chat) => !chat.archived);
+  const target =
+    visible.find((chat) => chat.chat_id === remembered) ||
+    visible[0] ||
+    state.chats.find((chat) => chat.chat_id === remembered);
   if (target) await loadChat(target.chat_id, { silent: true });
 }
 
 async function refreshChats() {
   try {
-    state.chats = await request("chats");
+    state.chats = await request("chats?include_archived=true");
     renderAskSessions();
   } catch {
     /* keep the current list */
   }
+}
+
+async function renameAskChat(chatId) {
+  const chat = state.chats.find((item) => item.chat_id === chatId);
+  if (!chat) return;
+  const title = window.prompt("Rename chat", chat.title || "Chat");
+  if (!title || !title.trim()) return;
+  try {
+    const updated = await request(`chats/${encodeURIComponent(chatId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ title: title.trim() }),
+    });
+    if (state.ask.chatId === chatId) state.ask.title = updated.title;
+    await refreshChats();
+  } catch (error) {
+    toast(error.message, "bad");
+  }
+}
+
+async function togglePinChat(chatId) {
+  const chat = state.chats.find((item) => item.chat_id === chatId);
+  if (!chat) return;
+  try {
+    await request(`chats/${encodeURIComponent(chatId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ pinned: !chat.pinned }),
+    });
+    await refreshChats();
+  } catch (error) {
+    toast(error.message, "bad");
+  }
+}
+
+async function toggleArchiveChat(chatId) {
+  const chat = state.chats.find((item) => item.chat_id === chatId);
+  if (!chat) return;
+  try {
+    await request(`chats/${encodeURIComponent(chatId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ archived: !chat.archived }),
+    });
+    await refreshChats();
+  } catch (error) {
+    toast(error.message, "bad");
+  }
+}
+
+function exportAskChat() {
+  if (!state.ask.chatId) {
+    $("#ask-status").textContent = "Open or create a chat before exporting.";
+    return;
+  }
+  window.open(`api/chats/${encodeURIComponent(state.ask.chatId)}/export.md`, "_blank", "noopener");
 }
 
 async function deleteAskChat(chatId) {
@@ -1229,6 +1317,8 @@ async function createAskChat() {
     preview: "",
     agent_session: null,
     run_id: chat.run_id || null,
+    pinned: false,
+    archived: false,
   };
   state.chats = [summary, ...state.chats.filter((item) => item.chat_id !== chat.chat_id)];
   renderAskSessions();
@@ -1372,6 +1462,12 @@ function bindEvents() {
   $("#ask-close").addEventListener("click", closeAsk);
   $("#ask-history").addEventListener("click", toggleAskSessions);
   $("#ask-new").addEventListener("click", newAskChat);
+  $("#ask-export").addEventListener("click", exportAskChat);
+  $("#ask-search").addEventListener("input", () => renderAskSessions());
+  $("#ask-show-archived").addEventListener("change", (event) => {
+    state.ask.showArchived = event.target.checked;
+    renderAskSessions();
+  });
   $("#ask-run").addEventListener("change", () => {
     state.ask.runId = $("#ask-run").value || null;
   });

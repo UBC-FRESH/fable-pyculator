@@ -81,8 +81,9 @@ Open `http://127.0.0.1:8766`. The portal offers:
 - **Validation**: compact validation evidence from
   `tmp/validation-evidence/fable-<version>/summary.json`.
 - **Assistant**: optional local `opencode` bridge, enabled only with `--allow-agent`. A green
-  **+ Ask** pill opens an overlay with markdown rendering, persistent chat sessions, session
-  continuation, tool-action chips, and `Enter`-to-send / `Shift+Enter`-for-newline behavior. New
+  **+ Ask** pill opens an overlay with markdown rendering, persistent chat sessions, rename/search/
+  pin/archive controls, Markdown export, auto-titles, session continuation, tool-action chips, and
+  `Enter`-to-send / `Shift+Enter`-for-newline behavior. New
   chats are grounded by a generated cheat sheet that points to the FABLE Pyculator and Modelwright
   docs, APIs, and served model instances.
 

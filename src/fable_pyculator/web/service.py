@@ -753,10 +753,43 @@ class PortalState:
 
         return self.chats.create(run_id=run_id).to_dict()
 
-    def list_chats(self) -> list[dict[str, Any]]:
-        """Return persistent chat summaries, newest first."""
+    def list_chats(
+        self,
+        *,
+        include_archived: bool = False,
+        query: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Return persistent chat summaries, pinned first and newest first."""
 
-        return self.chats.list()
+        return self.chats.list(include_archived=include_archived, query=query)
+
+    def update_chat(
+        self,
+        chat_id: str,
+        *,
+        title: str | None = None,
+        pinned: bool | None = None,
+        archived: bool | None = None,
+    ) -> dict[str, Any]:
+        """Update chat title, pin, or archive state."""
+
+        try:
+            return self.chats.set_metadata(
+                chat_id,
+                title=title,
+                pinned=pinned,
+                archived=archived,
+            ).to_dict()
+        except KeyError as error:
+            raise PortalError(f"unknown chat id {chat_id!r}", status_code=404) from error
+
+    def export_chat(self, chat_id: str) -> str:
+        """Return a Markdown export of one chat."""
+
+        try:
+            return self.chats.get(chat_id).to_markdown()
+        except KeyError as error:
+            raise PortalError(f"unknown chat id {chat_id!r}", status_code=404) from error
 
     def get_chat(self, chat_id: str) -> dict[str, Any]:
         """Return one persistent chat."""

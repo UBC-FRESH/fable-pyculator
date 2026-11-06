@@ -61,7 +61,8 @@ Tool-use events become compact action chips.
 
 Chats are persisted as JSON under `runtime/portal/chats/`. The overlay lists saved chats, remembers
 the last selected chat in browser storage, and reloads messages from the server after a page reload
-or service restart.
+or service restart. Chats support rename, search, pin, archive, delete, Markdown export, and automatic
+titles from the first exchange.
 
 ## Grounding contract
 

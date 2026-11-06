@@ -97,8 +97,14 @@ This file records completed project work in chronological order.
 - Added run-scoped **data-quality notes** to Results: 2070 extension, 2024 land component fallback,
   missing 2024 water series, derived GHG versus cached `TotalCO2e` divergence, and tables that were
   not extended. Notes are persisted in `run.json` as `quality_warnings`.
+- Finished chat management: rename, search, pin, archive, delete, Markdown export, and automatic
+  titles from the first exchange. Added `PATCH /api/chats/{chat_id}` and
+  `GET /api/chats/{chat_id}/export.md`; live smoke verified auto-title, pin/archive filtering, and
+  Markdown export.
+- Re-ran `scripts/check_release_artifacts.sh`; it passed and the wheel contains chats, cheat-sheet,
+  grounding evals, and all portal static assets.
 - Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
-  full test suite (`188` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
+  full test suite (`190` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
   headline tests (`2` passed), a warning-clean Sphinx build, Read the Docs theme verification, the
   release artifact check, and real restored-artifact 2021/2024/2020 preparation and runs.
 

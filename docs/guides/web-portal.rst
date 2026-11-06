@@ -103,7 +103,9 @@ Assistant
    markdown for both the user and the assistant (including code blocks, lists, links, and tables),
    shows tool-action chips, and supports ``Enter`` to send with ``Shift+Enter`` for multiline
    prompts. Chats are persisted under ``runtime/portal/chats/`` and listed in the overlay, so users
-   can resume a conversation after a reload or service restart. On the first turn of a new chat, the
+   can resume a conversation after a reload or service restart. Chats can be renamed, searched,
+   pinned, archived, deleted, and exported as Markdown; short/generic first prompts are replaced by
+   an automatic title derived from the first meaningful assistant line. On the first turn of a new chat, the
    assistant is required to read the generated grounding sheet at
    ``runtime/portal/assistant/cheat-sheet.md`` and the FABLE/Modelwright documentation and source
    paths it lists before answering. The sheet is compiled from every listed doc, contains a
