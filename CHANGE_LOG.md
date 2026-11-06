@@ -118,6 +118,10 @@ This file records completed project work in chronological order.
   full test suite (`193` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
   headline tests (`2` passed), a warning-clean Sphinx build, Read the Docs theme verification, the
   release artifact check, and real restored-artifact 2021/2024/2020 preparation and runs.
+- Closed Phase 28: mapped parent issue #203 and child issues #204-#213, squash-merged PR #214 as
+  `a6758db`, confirmed post-merge Test workflow `42308703202` and Docs Pages workflow `42308703198`,
+  and closed the completed child issues with closeout comments. Final CI on the PR head passed
+  quality, pytest, release-artifacts, and the Docs Pages build with the web extra installed.
 
 ## 2026-08-15
 

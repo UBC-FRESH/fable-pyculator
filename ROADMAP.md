@@ -47,11 +47,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 27 is closed: alpha-tester notebook reliability, 2021 smoke hardening, skipped-table
   diagnostics, and notebook-failure issue hygiene are tracked, PR #201 merged, and post-merge Test
   and Docs Pages workflows passed.
-- Phase 28 is implemented on `feature/p28-web-portal`: an optional multi-page FastAPI portal over
-  prepared generated models, saved runs, comparison, compact validation evidence, artifact
-  readiness, scenario bundles, and an opt-in local assistant. Parent issue #203 and child issues
-  #204-#213 are mapped; PR #214 is open and CI is green, with merge and post-merge deployment
-  checks remaining.
+- Phase 28 is closed: PR #214 was squash-merged to `main` as `a6758db`, post-merge Test and Docs
+  Pages workflows passed, and parent issue #203 plus P28.9 child issue #212 are ready for closeout.
+  The portal, issue-filing assistant workflow, and corrected 2021 authoritative-archive evidence
+  are on `main`.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2097,9 +2096,9 @@ GitHub parent issue: #203.
 
 Branch: `feature/p28-web-portal`.
 
-Status: pr-open. CI passed; merge pending.
+Status: complete.
 
-Pull request: #214.
+Pull request: #214 (merged as `a6758db`).
 
 Goal: add a local multi-page portal over the artifacts and notebook APIs FABLE Pyculator already
 uses, so analysts can prepare a matching workbook/model pair, run named scenarios, read and export
@@ -2117,7 +2116,7 @@ Tasks:
 - [x] P28.7 Add the optional local assistant bridge and CLI entry point. Child issue: #210.
 - [x] P28.8 Add tests, documentation, and roadmap/changelog evidence. Child issue: #211.
 - [x] P28.10 Add GitHub issue-filing guidance, templates, and validation to the portal assistant. Child issue: #213.
-- [ ] P28.9 Open the PR, map issues, deploy docs, and close the phase. Child issue: #212.
+- [x] P28.9 Open the PR, map issues, deploy docs, and close the phase. Child issue: #212.
 
 Scope:
 
@@ -2215,6 +2214,8 @@ Verification evidence:
   OpenCode CLI, including `github_issue_filing` in 17.3 s.
 - PR #214 CI on `46a92a2`: quality, pytest, release-artifacts, and the Docs Pages build passed; the
   deploy job correctly skipped on the pull request.
+- PR #214 was squash-merged as `a6758db`. Post-merge Test workflow `42308703202` and Docs Pages
+  workflow `42308703198` both passed.
 - `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -q tests/test_fable_workbook_headline_series.py`
   passed with `2` workbook-backed tests for 2020 and 2024.
 - Real restored-artifact 2021 preparation and scenario execution passed through the HTTP portal:
