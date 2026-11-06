@@ -1166,3 +1166,32 @@ def test_repair_fable_2024_land_total_xml_replaces_ref_and_cached_value() -> Non
     assert "#REF!" not in patched
     assert 't="e"' not in patched
     assert "<v>896559.0</v>" in patched
+
+
+def test_repair_fable_2024_generated_model_xml_like_expression() -> None:
+    script = Path("scripts/repair_fable_2024_generated_model.py")
+    spec = importlib.util.spec_from_file_location("repair_fable_2024_generated_model", script)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    lines = ["VALUES = {"]
+    for row in range(17, 28):
+        lines.append(
+            f"    'LAND!AA{row}': \"_sf_sumifs('#REF!', (_range('4_calc_land', 5, 29, 5, 39), "
+            f"_sf_direct_reference(_get('LAND!K{row}'))))\","
+        )
+    lines.append("}")
+    source = "\n".join(lines) + "\n"
+    path = Path("tmp") / "generated-model-repair-test.py"
+    path.parent.mkdir(exist_ok=True)
+    path.write_text(source, encoding="utf-8")
+    try:
+        result = module.repair_model(path, write=True, backup=False)
+        patched = path.read_text(encoding="utf-8")
+    finally:
+        path.unlink(missing_ok=True)
+
+    assert result == {"status": "repaired", "cells": 11}
+    assert "_sf_sumifs(_range('4_calc_land', 37, 29, 37, 39)" in patched
+    assert "#REF!" not in patched

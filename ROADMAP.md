@@ -2155,6 +2155,9 @@ Implementation evidence:
   workbook formula and cached totals from `calc_land_cor[TotallandFin]`; the portal also applies the
   same component repair to the stale generated model's displayed LAND TOTAL column with an explicit
   warning note.
+- Added `scripts/repair_fable_2024_generated_model.py` and repaired the tracked 2024 generated-model
+  expressions for `LAND!AA17:AA27`; old-vs-repaired execution across all 10,274 declared outputs
+  changed only those 11 cells.
 - Wired `scripts/evaluate_assistant_grounding.py` into the Test workflow; live agent and Chromium
   checks remain opt-in.
 - Added `src/fable_pyculator/cli.py` and the `fable-pyculator web` entry point.
@@ -2177,7 +2180,7 @@ Verification evidence:
   passed.
 - `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
   passed after formatting.
-- `.venv/bin/python -m pytest -q` passed with `173` tests and `15` skips.
+- `.venv/bin/python -m pytest -q` passed with `175` tests and `15` skips.
 - `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1 .venv/bin/python -m pytest -q tests/web/test_browser_e2e.py`
   passed against real Chromium and a live assistant chat across a page reload.
 - `scripts/evaluate_assistant_grounding.py` structural checks passed, and
@@ -2195,6 +2198,11 @@ Verification evidence:
   reporting numeric total land area (`896,559.0`) with the component-sum label matching the
   workbook's `calc_land_cor[TotallandFin]` total. The displayed `land_resultsland` TOTAL column also
   shows the repaired value with an explicit display-repair note instead of `#REF!`.
+- After repairing the tracked generated-model expressions, a fresh 2024 run prepared in 41.4 s and
+  ran in 108.6 s; the `land_resultsland` TOTAL column came directly from the model with no display
+  repair note, and all 11 LAND TOTAL values were `896,559.0` (float tolerance).
+- Old-vs-repaired generated-model execution comparison across all 10,274 declared outputs found
+  exactly 11 differences, all `LAND!AA17:AA27` (`#REF!` → `896,559.0`).
 - Real restored-artifact 2020 preparation and scenario execution passed: 137.0 s prepare,
   167.2 s run, 16 controls, 14 output tables, 4 headline series, and saved tables.
 - The live local assistant returned markdown in 11.9 s with an OpenCode session id, and a second turn

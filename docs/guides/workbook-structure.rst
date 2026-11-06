@@ -78,6 +78,15 @@ It replaces ``SUMIFS(#REF!, …)`` with ``SUMIFS(calc_land_cor[CalcLoggedForest]
 totals. It edits the xlsx XML directly so openpyxl does not rewrite the whole workbook, and keeps a
 ``.xlsx.bak`` backup.
 
+If you restore a decompressed generated model that predates the workbook repair, apply the matching
+11-expression repair with:
+
+.. code-block:: bash
+
+   python scripts/repair_fable_2024_generated_model.py
+
+The tracked 2024 archive has already been repaired; the script is for older local working copies.
+
 Until the tracked 2024 generated model is rebuilt from the repaired workbook, the portal also applies
 the same component repair to the displayed ``land_resultsland`` TOTAL column and shows an explicit
 warning note under that table. It does not change generated-model validation semantics.

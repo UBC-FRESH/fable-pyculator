@@ -61,14 +61,19 @@ This file records completed project work in chronological order.
   `LAND!AA17:AA27` and restores the cached totals from `calc_land_cor[TotallandFin]` by editing the
   xlsx XML directly, with a `.xlsx.bak` backup. Both the working and pristine 2024 reference copies
   contained the same broken formula.
-- Added a transparent display repair for the 2024 `land_resultsland` output table: while the existing
-  generated model still contains the pre-repair `#REF!` TOTAL cells, the portal replaces only that
-  displayed column with the same `TotallandFin` component sum and shows a warning note; the
-  generated model's semantics are unchanged.
+- Added `scripts/repair_fable_2024_generated_model.py` and repaired the tracked 2024 generated-model
+  expressions for `LAND!AA17:AA27`. A full old-vs-repaired execution comparison across all 10,274
+  declared outputs showed only those 11 cells changed (`#REF!` to `896,559.0`), with no other
+  generated value affected. The repaired tracked archive checksum is
+  `f62c74b246fa29068b54b2c8ad82ed34b35026e490f2e2d205148c18277ae469`, and a fresh portal run showed
+  the LAND table TOTAL values coming directly from the model with no display repair note.
+- Kept a transparent display repair for older/stale 2024 working models: if a `land_resultsland`
+  TOTAL column still contains `#REF!`, the portal replaces only that displayed column with the same
+  `TotallandFin` component sum and shows a warning note; generated-model semantics are unchanged.
 - Wired the deterministic assistant grounding check into the Test workflow so cheat-sheet/source
   drift fails CI, while live agent and Chromium checks remain opt-in.
 - Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
-  full test suite (`173` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
+  full test suite (`175` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
   headline tests (`2` passed), a warning-clean Sphinx build, Read the Docs theme verification, the
   release artifact check, and real restored-artifact 2021/2024/2020 preparation and runs.
 

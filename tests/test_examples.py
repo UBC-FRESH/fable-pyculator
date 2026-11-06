@@ -11,10 +11,7 @@ def test_fable_pyculator_2020_notebook_is_tracked_with_rendered_outputs() -> Non
     payload = json.loads(notebook_path.read_text(encoding="utf-8"))
     code_cells = [cell for cell in payload["cells"] if cell["cell_type"] == "code"]
     outputs = [output for cell in code_cells for output in cell.get("outputs", [])]
-    code_source = "\n".join(
-        "".join(cell["source"])
-        for cell in code_cells
-    )
+    code_source = "\n".join("".join(cell["source"]) for cell in code_cells)
 
     assert payload["nbformat"] == 4
     assert payload["cells"]
@@ -36,10 +33,7 @@ def test_fable_pyculator_2020_notebook_is_tracked_with_rendered_outputs() -> Non
     assert "display(result.output_tables" in code_source
     assert "display(result.headline_frames" in code_source
     assert "plot_headline" in code_source
-    assert any(
-        "run_notebook_loop" in "".join(cell["source"])
-        for cell in code_cells
-    )
+    assert any("run_notebook_loop" in "".join(cell["source"]) for cell in code_cells)
 
 
 def test_fable_pyculator_2021_notebook_uses_2021_artifact_paths_only() -> None:
@@ -47,10 +41,7 @@ def test_fable_pyculator_2021_notebook_uses_2021_artifact_paths_only() -> None:
 
     payload = json.loads(notebook_path.read_text(encoding="utf-8"))
     code_cells = [cell for cell in payload["cells"] if cell["cell_type"] == "code"]
-    code_source = "\n".join(
-        "".join(cell["source"])
-        for cell in code_cells
-    )
+    code_source = "\n".join("".join(cell["source"]) for cell in code_cells)
 
     assert payload["nbformat"] == 4
     assert payload["cells"]
@@ -64,11 +55,10 @@ def test_fable_pyculator_2021_notebook_uses_2021_artifact_paths_only() -> None:
     assert 'result.output_tables["trade_resultstrade"]' in code_source
     assert 'expected_context_columns = ["PRODUCT", "YEAR"]' in code_source
     assert "Missing context values in first rows" in code_source
-    assert "examples\" / \"fable_2021\" / \"generated_fable_2021_model.py.xz" in code_source
+    assert 'examples" / "fable_2021" / "generated_fable_2021_model.py.xz' in code_source
     assert "lzma.open" in code_source
     assert "tmp/generated-models/fable-2021/generated_fable_2021_model.py" in "".join(
-        "".join(cell["source"])
-        for cell in payload["cells"]
+        "".join(cell["source"]) for cell in payload["cells"]
     )
     assert "modelwright_archive" not in code_source
     assert "generated_fable_2020_model" not in code_source
@@ -103,11 +93,7 @@ def test_fable_pyculator_2021_freshforge_build_plan_notebook_is_static_template(
     payload = json.loads(notebook_path.read_text(encoding="utf-8"))
     code_cells = [cell for cell in payload["cells"] if cell["cell_type"] == "code"]
     code_source = "\n".join("".join(cell["source"]) for cell in code_cells)
-    markdown_source = "\n".join(
-        "".join(cell["source"])
-        for cell in payload["cells"]
-        if cell["cell_type"] == "markdown"
-    )
+    markdown_source = "\n".join("".join(cell["source"]) for cell in payload["cells"] if cell["cell_type"] == "markdown")
 
     assert payload["nbformat"] == 4
     assert payload["cells"]
@@ -136,11 +122,7 @@ def test_fable_pyculator_2021_freshforge_run_notebook_is_static_template() -> No
     payload = json.loads(notebook_path.read_text(encoding="utf-8"))
     code_cells = [cell for cell in payload["cells"] if cell["cell_type"] == "code"]
     code_source = "\n".join("".join(cell["source"]) for cell in code_cells)
-    markdown_source = "\n".join(
-        "".join(cell["source"])
-        for cell in payload["cells"]
-        if cell["cell_type"] == "markdown"
-    )
+    markdown_source = "\n".join("".join(cell["source"]) for cell in payload["cells"] if cell["cell_type"] == "markdown")
 
     assert payload["nbformat"] == 4
     assert payload["cells"]
@@ -169,11 +151,7 @@ def test_fable_pyculator_2021_scenario_definition_patch_notebook_is_static_templ
     payload = json.loads(notebook_path.read_text(encoding="utf-8"))
     code_cells = [cell for cell in payload["cells"] if cell["cell_type"] == "code"]
     code_source = "\n".join("".join(cell["source"]) for cell in code_cells)
-    markdown_source = "\n".join(
-        "".join(cell["source"])
-        for cell in payload["cells"]
-        if cell["cell_type"] == "markdown"
-    )
+    markdown_source = "\n".join("".join(cell["source"]) for cell in payload["cells"] if cell["cell_type"] == "markdown")
 
     assert payload["nbformat"] == 4
     assert payload["cells"]
@@ -192,3 +170,17 @@ def test_fable_pyculator_2021_scenario_definition_patch_notebook_is_static_templ
     assert "No source workbook was mutated" in markdown_source
     assert "generated_fable_2020_model" not in code_source
     assert "run_2020_notebook_loop" not in code_source
+
+
+def test_fable_pyculator_2024_generated_model_archive_has_repaired_land_total() -> None:
+    archive_path = Path("examples/fable_2024/generated_fable_2024_model.py.xz")
+    line = ""
+    with lzma.open(archive_path, "rt", encoding="utf-8") as archive:
+        for candidate in archive:
+            if "'LAND!AA17'" in candidate:
+                line = candidate
+                break
+
+    assert line
+    assert "_range('4_calc_land', 37, 29, 37, 39)" in line
+    assert "#REF!" not in line
