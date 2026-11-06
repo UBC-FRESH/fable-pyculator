@@ -12,16 +12,31 @@ This file records completed project work in chronological order.
   and an opt-in local assistant.
 - Added `fable-pyculator web` through `src/fable_pyculator/cli.py`, the `web` optional dependency
   extra, static package data, and ignored `runtime/portal/` spec/run caches.
-- Added `tests/web/test_portal.py` for spec round-tripping, artifacts and materialization,
-  preparation jobs, scenario execution, saved tables, comparison, validation lookup, the
-  assistant-disabled guard, and the loopback bind guard.
+- Added `tests/web/test_portal.py`, `tests/web/test_assistant.py`, and `tests/web/test_markdown.py` for
+  spec round-tripping, artifacts and materialization, preparation jobs, scenario execution, saved
+  tables, comparison, validation lookup, assistant enablement and session passthrough, opencode event
+  parsing, markdown rendering safety, and the loopback bind guard.
+- Added the global **+ Ask** pill and fixed overlay assistant: markdown rendering for both user and
+  assistant messages, safe links/code/tables, session continuation, tool-action chips, run context,
+  Enter-to-send, Shift+Enter newline, and `a`/Escape shortcuts.
 - Documented the portal in `docs/guides/web-portal.rst`, README, API reference, and
   `planning/phase-28-web-portal.md`.
+- Fixed a real portal preparation failure on FABLE 2024: the Canada workbook has no
+  `TotalResultsWF` water-footprint table, so `curate_default_headline_series` now skips unsupported
+  default series and returns FOOD, LAND, and GHG for 2024. `strict=True` preserves the older
+  fail-fast behavior, and `build_notebook_spec` exposes `strict_headlines`.
+- Added synthetic and workbook-gated tests for version-tolerant headline curation, and verified real
+  preparation plus scenario execution for both FABLE 2024 and FABLE 2020 through the portal:
+  2024 prepared in 47.7 s and ran in 108.5 s with 24 controls, 17 output tables, and 3 headlines;
+  2020 prepared in 137.0 s and ran in 167.2 s with 16 controls, 14 output tables, and 4 headlines.
+- Verified the assistant end to end against the live local service: first turn returned markdown in
+  11.9 s with an OpenCode session id, and a second turn continued the same session in 7.2 s.
 - Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
-  full test suite (`155` passed and `12` skipped), a warning-clean Sphinx build, Read the Docs theme
-  verification, the release artifact check, and a real restored-artifact 2021 portal smoke
-  (prepare, 85.7 s scenario run, 968-row trade table, saved-run endpoints, validation endpoint).
-  The prepared-spec cache reloaded in 0.54 s on a second app instance.
+  full test suite (`161` passed and `13` skipped), workbook-backed headline tests (`2` passed), a
+  warning-clean Sphinx build, Read the Docs theme verification, the release artifact check, and a
+  real restored-artifact 2021 portal smoke (prepare, 85.7 s scenario run, 968-row trade table,
+  saved-run endpoints, validation endpoint). The prepared-spec cache reloaded in 0.54 s on a second
+  app instance.
 
 ## 2026-08-15
 

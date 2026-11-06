@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 
 from fable_pyculator import __version__
 from fable_pyculator.web.artifacts import materialize_generated_model
-from fable_pyculator.web.assistant import AgentError, AgentRequest, run_agent
+from fable_pyculator.web.assistant import AgentError, AgentRequest, agent_info, run_agent
 from fable_pyculator.web.service import PortalConfig, PortalError, PortalState
 
 __all__ = ["create_app", "is_loopback", "run_server", "validate_bind"]
@@ -48,6 +48,7 @@ class AssistantPayload(BaseModel):
 
     message: str = Field(min_length=1, max_length=8000)
     run_id: str | None = None
+    session: str | None = Field(default=None, max_length=200)
     model: str | None = None
 
 
@@ -91,6 +92,15 @@ def create_app(config: PortalConfig) -> FastAPI:
     @app.get("/api/options")
     def options() -> dict[str, Any]:
         return state.options()
+
+    @app.get("/api/agent")
+    def agent() -> dict[str, Any]:
+        return agent_info(
+            enabled=config.allow_agent,
+            model=config.agent_model,
+            workspace=config.repo_root,
+            timeout=config.agent_timeout,
+        )
 
     @app.get("/api/artifacts")
     def artifacts() -> list[dict[str, Any]]:
@@ -175,7 +185,8 @@ def create_app(config: PortalConfig) -> FastAPI:
                 AgentRequest(
                     message=payload.message,
                     run_id=payload.run_id,
-                    model=payload.model,
+                    session=payload.session,
+                    model=payload.model or config.agent_model,
                     context=state.assistant_context(payload.run_id),
                 ),
                 workspace=config.repo_root,

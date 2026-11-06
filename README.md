@@ -80,12 +80,16 @@ Open `http://127.0.0.1:8766`. The portal offers:
 - **Compare**: align saved runs by year and inspect selection differences.
 - **Validation**: compact validation evidence from
   `tmp/validation-evidence/fable-<version>/summary.json`.
-- **Assistant**: optional local `opencode` bridge, enabled only with `--allow-agent`.
+- **Assistant**: optional local `opencode` bridge, enabled only with `--allow-agent`. A green
+  **+ Ask** pill opens an overlay with markdown rendering, session continuation, tool-action chips,
+  and `Enter`-to-send / `Shift+Enter`-for-newline behavior.
 
 Preparation needs the source workbook under the ignored
 `tmp/private-workbooks/<version>_Open_FABLECalculator.xlsx` path and either the decompressed or
 tracked compressed generated model. The portal decompresses the approved archive when needed and
-caches workbook discovery and saved runs under ignored `runtime/portal/` paths. Real 2021
+caches workbook discovery and saved runs under ignored `runtime/portal/` paths. Default headline
+curation is version-tolerant: 2020/2021 expose FOOD, LAND, GHG, and WATER; the 2024 Canada workbook
+exposes FOOD, LAND, and GHG because it has no `TotalResultsWF` water-footprint table. Real 2021
 preparation takes about two minutes on a warm local checkout and a scenario run takes about a
 minute; both run as background jobs with progress reporting.
 

@@ -51,6 +51,13 @@ report/summary surface rather than one of the core output-data sheets.
      - ``A1:X1080``
      - ``TotalResultsWF``, ``ResultsWF``
 
+The 2024 Canada workbook differs on the water sheet: its only discovered ``WATER`` table is
+``ResultsWater`` with irrigation requirement and withdrawal columns. It does not contain the
+``TotalResultsWF`` water-footprint table. Default headline curation therefore exposes FOOD, LAND,
+and GHG headline series for 2024 and skips the unsupported water-footprint series; pass
+``strict=True`` to :func:`fable_pyculator.curate_default_headline_series` when a caller needs the
+older fail-fast behavior.
+
 The adjacent report sheet is:
 
 .. list-table::

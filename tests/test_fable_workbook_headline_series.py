@@ -38,3 +38,15 @@ def test_2020_headline_series_match_initial_curation_contract() -> None:
     assert all(len(item.points) == 11 for item in series)
     assert all(len(point.cell_refs) == 6 for point in series[3].points)
     assert series[3].aggregation == "sum"
+
+
+@pytest.mark.workbook
+def test_2024_headline_series_skip_absent_water_footprint_table() -> None:
+    series = curate_default_headline_series(workbook_path("2024_Open_FABLECalculator.xlsx"))
+
+    assert [item.name for item in series] == [
+        "food_total_kcal_feas",
+        "land_total_area",
+        "ghg_total_co2e",
+    ]
+    assert all(item.points for item in series)

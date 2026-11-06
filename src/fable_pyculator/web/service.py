@@ -30,6 +30,7 @@ from fable_pyculator.web.artifacts import (
     file_info,
     materialize_generated_model,
 )
+from fable_pyculator.web.assistant import DEFAULT_AGENT_MODEL
 from fable_pyculator.web.spec_io import jsonable, spec_from_payload, spec_summary, spec_to_payload
 
 __all__ = [
@@ -130,7 +131,7 @@ class JobManager:
                 job.status = "error"
                 job.progress = 100
                 job.message = "failed"
-                job.error = str(error)
+                job.error = f"{type(error).__name__}: {error}"
                 job.finished_at = datetime.now(UTC).isoformat(timespec="seconds")
             return
         with self._lock:
@@ -176,6 +177,8 @@ class PortalConfig:
         Enable the optional local assistant.
     agent_command:
         Command prefix for the assistant CLI.
+    agent_model:
+        Optional model identifier passed to the assistant CLI.
     agent_timeout:
         Assistant timeout in seconds.
     title:
@@ -186,7 +189,8 @@ class PortalConfig:
     runtime_dir: Path | None = None
     versions: tuple[str, ...] = DEFAULT_VERSIONS
     allow_agent: bool = False
-    agent_command: tuple[str, ...] = ("opencode", "run", "--format", "json")
+    agent_command: tuple[str, ...] = ("opencode", "run", "--format", "json", "--auto")
+    agent_model: str | None = DEFAULT_AGENT_MODEL
     agent_timeout: float = 180.0
     title: str = "FABLE Pyculator"
 
@@ -226,6 +230,7 @@ class PortalState:
             "runtime_dir": str(self.runtime_dir),
             "versions": list(self.config.versions),
             "assistant_enabled": self.config.allow_agent,
+            "assistant_model": self.config.agent_model,
             "docs_url": "https://ubc-fresh.github.io/fable-pyculator/",
         }
 

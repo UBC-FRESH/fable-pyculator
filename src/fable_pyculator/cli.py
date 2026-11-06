@@ -14,6 +14,7 @@ from pathlib import Path
 
 from fable_pyculator import __version__
 from fable_pyculator.web.artifacts import DEFAULT_VERSIONS
+from fable_pyculator.web.assistant import DEFAULT_AGENT_MODEL
 
 __all__ = ["main"]
 
@@ -71,6 +72,11 @@ def _parser() -> argparse.ArgumentParser:
         help="Enable the optional local assistant (installed opencode CLI).",
     )
     web.add_argument(
+        "--agent-model",
+        default=DEFAULT_AGENT_MODEL,
+        help="Model identifier passed to the local assistant (blank to use opencode's default).",
+    )
+    web.add_argument(
         "--agent-timeout",
         default=180.0,
         type=float,
@@ -98,6 +104,7 @@ def _web(args: argparse.Namespace) -> int:
         runtime_dir=args.runtime,
         versions=tuple(args.versions) if args.versions else DEFAULT_VERSIONS,
         allow_agent=args.allow_agent,
+        agent_model=args.agent_model or None,
         agent_timeout=args.agent_timeout,
     )
     try:

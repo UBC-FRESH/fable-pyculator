@@ -83,11 +83,13 @@ def build_notebook_spec(
     workbook_path: str | Path,
     *,
     workbook_id: str,
+    strict_headlines: bool = False,
 ) -> FableCalculatorSpec:
     """Build a notebook spec from a FABLE-C workbook structure.
 
     This helper discovers wrapper metadata only. It does not generate Modelwright calculation code
-    and it does not validate that a generated model artifact matches the workbook.
+    and it does not validate that a generated model artifact matches the workbook. Unsupported
+    default headline series are skipped unless ``strict_headlines`` is true.
     """
 
     path = Path(workbook_path)
@@ -95,7 +97,7 @@ def build_notebook_spec(
         selection_controls=discover_selection_controls(path),
         scenario_definition_tables=discover_scenario_definition_tables(path),
         output_tables=discover_output_tables(path),
-        headline_series=curate_default_headline_series(path),
+        headline_series=curate_default_headline_series(path, strict=strict_headlines),
         workbook_id=workbook_id,
         provenance=str(path),
     )
@@ -165,20 +167,12 @@ def run_notebook_loop(
             )
         except KeyError:
             if output_table_names is None and output_table_column_flavour_tags is not None:
-                skipped_tables[table_name] = (
-                    f"no columns matched flavour filter {output_table_column_flavour_tags!r}"
-                )
+                skipped_tables[table_name] = f"no columns matched flavour filter {output_table_column_flavour_tags!r}"
                 continue
             raise
-    headline_tables = {
-        series_name: headline_frame(run, series_name)
-        for series_name in selected_headline_series_names
-    }
+    headline_tables = {series_name: headline_frame(run, series_name) for series_name in selected_headline_series_names}
     figures = (
-        {
-            series_name: plot_headline(run, series_name)
-            for series_name in selected_headline_series_names
-        }
+        {series_name: plot_headline(run, series_name) for series_name in selected_headline_series_names}
         if include_figures
         else {}
     )

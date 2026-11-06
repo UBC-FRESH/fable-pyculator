@@ -163,8 +163,7 @@ def discover_scenario_definition_tables(
         table = worksheet.tables[table_name]
         min_col, min_row, max_col, max_row = range_boundaries(table.ref)
         column_labels = tuple(
-            _column_label(worksheet.cell(min_row, column).value, column)
-            for column in range(min_col, max_col + 1)
+            _column_label(worksheet.cell(min_row, column).value, column) for column in range(min_col, max_col + 1)
         )
         role_tags, raw_role_tags, role_tag_refs = _scenario_definition_column_role_tags(
             worksheet,
@@ -179,14 +178,10 @@ def discover_scenario_definition_tables(
             max_col,
         )
         row_labels = tuple(
-            _row_label(worksheet.cell(row, min_col).value, row)
-            for row in range(min_row + 1, max_row + 1)
+            _row_label(worksheet.cell(row, min_col).value, row) for row in range(min_row + 1, max_row + 1)
         )
         cell_refs = tuple(
-            tuple(
-                f"{worksheet.title}!{get_column_letter(column)}{row}"
-                for column in range(min_col, max_col + 1)
-            )
+            tuple(f"{worksheet.title}!{get_column_letter(column)}{row}" for column in range(min_col, max_col + 1))
             for row in range(min_row + 1, max_row + 1)
         )
         values = tuple(
@@ -236,8 +231,7 @@ def discover_output_tables(
             table = worksheet.tables[table_name]
             min_col, min_row, max_col, max_row = range_boundaries(table.ref)
             column_labels = tuple(
-                _column_label(worksheet.cell(min_row, column).value, column)
-                for column in range(min_col, max_col + 1)
+                _column_label(worksheet.cell(min_row, column).value, column) for column in range(min_col, max_col + 1)
             )
             flavour_tags, raw_flavour_tags, flavour_tag_refs = _output_column_flavour_tags(
                 worksheet,
@@ -246,14 +240,10 @@ def discover_output_tables(
                 max_col,
             )
             row_labels = tuple(
-                _row_label(worksheet.cell(row, min_col).value, row)
-                for row in range(min_row + 1, max_row + 1)
+                _row_label(worksheet.cell(row, min_col).value, row) for row in range(min_row + 1, max_row + 1)
             )
             cell_refs = tuple(
-                tuple(
-                    f"{worksheet.title}!{get_column_letter(column)}{row}"
-                    for column in range(min_col, max_col + 1)
-                )
+                tuple(f"{worksheet.title}!{get_column_letter(column)}{row}" for column in range(min_col, max_col + 1))
                 for row in range(min_row + 1, max_row + 1)
             )
             values = tuple(
@@ -278,22 +268,29 @@ def discover_output_tables(
     return tables
 
 
-def curate_default_headline_series(workbook_path: str | Path) -> list[HeadlineSeries]:
+def curate_default_headline_series(
+    workbook_path: str | Path,
+    *,
+    strict: bool = False,
+) -> list[HeadlineSeries]:
     """Curate the first FOOD, LAND, GHG, and WATER headline output series.
 
-    The initial curation is intentionally narrow and provenance-friendly. It uses table descriptions
-    from ``Indextables`` where available, then maps stable table columns on the canonical output
-    sheets into notebook-ready time series.
+    The initial curation is intentionally narrow and provenance-friendly. It uses table
+    descriptions from ``Indextables`` where available, then maps stable table columns on the
+    canonical output sheets into notebook-ready time series.
+
+    Workbook versions differ. The 2024 Canada workbook, for example, has a ``ResultsWater``
+    irrigation table instead of the ``TotalResultsWF`` water-footprint table used by the 2020 and
+    2021 workbooks. By default, a series whose table or headers are absent is skipped so a version
+    can still expose the headline series it does support. Pass ``strict=True`` to keep the older
+    fail-fast behavior.
     """
 
     workbook = load_fable_workbook(workbook_path, data_only=False, read_only=False)
-    descriptions = (
-        _indextable_descriptions(workbook["Indextables"])
-        if "Indextables" in workbook.sheetnames
-        else {}
-    )
-    return [
-        HeadlineSeries(
+    descriptions = _indextable_descriptions(workbook["Indextables"]) if "Indextables" in workbook.sheetnames else {}
+
+    def food() -> HeadlineSeries:
+        return HeadlineSeries(
             name="food_total_kcal_feas",
             label="Feasible total kilocalorie consumption",
             group="FOOD",
@@ -308,8 +305,10 @@ def curate_default_headline_series(workbook_path: str | Path) -> list[HeadlineSe
             ),
             unit="kcal/cap/day",
             description=descriptions.get(_description_key("Total_results_diets")),
-        ),
-        HeadlineSeries(
+        )
+
+    def land() -> HeadlineSeries:
+        return HeadlineSeries(
             name="land_total_area",
             label="Total land area",
             group="LAND",
@@ -322,8 +321,10 @@ def curate_default_headline_series(workbook_path: str | Path) -> list[HeadlineSe
                 value_headers=("TOTAL",),
             ),
             description=descriptions.get(_description_key("ResultsLand")),
-        ),
-        HeadlineSeries(
+        )
+
+    def ghg() -> HeadlineSeries:
+        return HeadlineSeries(
             name="ghg_total_co2e",
             label="Total GHG emissions",
             group="GHG",
@@ -335,9 +336,12 @@ def curate_default_headline_series(workbook_path: str | Path) -> list[HeadlineSe
                 year_header="Year",
                 value_headers=("TotalCO2e",),
             ),
+            unit="MtCO2e",
             description=descriptions.get(_description_key("ResultsGHG")),
-        ),
-        HeadlineSeries(
+        )
+
+    def water() -> HeadlineSeries:
+        return HeadlineSeries(
             name="water_total_footprint",
             label="Total water footprint",
             group="WATER",
@@ -359,8 +363,16 @@ def curate_default_headline_series(workbook_path: str | Path) -> list[HeadlineSe
             ),
             description=descriptions.get(_description_key("TotalResultsWF")),
             aggregation="sum",
-        ),
-    ]
+        )
+
+    series: list[HeadlineSeries] = []
+    for builder in (food, land, ghg, water):
+        try:
+            series.append(builder())
+        except (KeyError, ValueError):
+            if strict:
+                raise
+    return series
 
 
 def _headline_points(
@@ -373,15 +385,11 @@ def _headline_points(
 ) -> tuple[HeadlinePoint, ...]:
     table = worksheet.tables[table_name]
     min_col, min_row, max_col, max_row = range_boundaries(table.ref)
-    headers = {
-        _optional_text(worksheet.cell(min_row, column).value): column
-        for column in range(min_col, max_col + 1)
-    }
+    headers = {_optional_text(worksheet.cell(min_row, column).value): column for column in range(min_col, max_col + 1)}
     year_column = _required_header(headers, year_header, table_name)
     value_columns = tuple(_required_header(headers, header, table_name) for header in value_headers)
     filter_columns = {
-        _required_header(headers, header, table_name): expected
-        for header, expected in (row_filters or {}).items()
+        _required_header(headers, header, table_name): expected for header, expected in (row_filters or {}).items()
     }
     points: list[HeadlinePoint] = []
     for row in range(min_row + 1, max_row + 1):
@@ -393,10 +401,7 @@ def _headline_points(
         points.append(
             HeadlinePoint(
                 year=year,
-                cell_refs=tuple(
-                    f"{worksheet.title}!{get_column_letter(column)}{row}"
-                    for column in value_columns
-                ),
+                cell_refs=tuple(f"{worksheet.title}!{get_column_letter(column)}{row}" for column in value_columns),
             )
         )
     return tuple(points)

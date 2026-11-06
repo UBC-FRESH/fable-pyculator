@@ -1,5 +1,7 @@
+import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28b";
+
 const API = new URL("api/", document.baseURI);
-const PAGES = ["overview", "workbench", "results", "compare", "validation", "artifacts", "assistant"];
+const PAGES = ["overview", "workbench", "results", "compare", "validation", "artifacts"];
 
 const state = {
   options: null,
@@ -11,6 +13,8 @@ const state = {
   activeRun: null,
   activeTable: null,
   pollToken: 0,
+  agent: { enabled: false, available: false, model: null },
+  ask: { session: null, busy: false, runId: null },
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -33,15 +37,6 @@ async function request(path, options = {}) {
   }
   if (response.status === 204) return null;
   return response.json();
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }
 
 function formatNumber(value, digits = 3) {
@@ -117,19 +112,20 @@ function showPage(page) {
   if (page === "compare") renderComparePicker();
   if (page === "validation") loadValidation();
   if (page === "artifacts") loadArtifacts();
-  if (page === "assistant") setupAssistant();
 }
 
 async function bootstrap() {
   try {
-    const [options, artifacts, runs] = await Promise.all([
+    const [options, artifacts, runs, agent] = await Promise.all([
       request("options"),
       request("artifacts"),
       request("runs"),
+      request("agent").catch(() => null),
     ]);
     state.options = options;
     state.artifacts = artifacts;
     state.runs = runs;
+    state.agent = agent || { enabled: Boolean(options.assistant_enabled), available: false, model: options.assistant_model };
     $("#docs-link").href = options.docs_url || "#";
     const docsBase = (options.docs_url || "").replace(/\/$/, "");
     if (docsBase) {
@@ -138,7 +134,7 @@ async function bootstrap() {
       $("#docs-validation").href = `${docsBase}/guides/validation-scope.html`;
     }
     document.title = `${options.title || "FABLE Pyculator"} · Scenario portal`;
-    $("#nav-assistant").hidden = false;
+    setupAsk();
     setStatus("ready", "good");
     renderVersionSelect();
     renderOverview();
@@ -158,6 +154,7 @@ async function refreshArtifacts() {
   state.runs = runs;
   renderOverview();
   renderVersionSelect();
+  renderAskContext();
 }
 
 function renderOverview() {
@@ -448,6 +445,7 @@ async function runScenario() {
     state.runs = await request("runs");
     state.activeRun = finished.result;
     renderOverview();
+    renderAskContext();
     showPage("results");
     renderRunDetail(finished.result);
   } catch (error) {
@@ -483,6 +481,7 @@ async function loadRuns() {
     state.runs = await request("runs");
     renderRunList();
     renderComparePicker();
+    renderAskContext();
     if (state.activeRun?.run_id) {
       const record = await request(`runs/${state.activeRun.run_id}`);
       renderRunDetail(record);
@@ -592,6 +591,7 @@ function renderRunDetail(record) {
         <p class="hint">${formatDate(record.created_at)} · ${escapeHtml(String(record.duration_seconds ?? "—"))} s runtime · ${escapeHtml(record.input_count ?? 0)} input cells</p>
       </div>
       <div class="button-row">
+        <button class="button ghost small" type="button" data-ask-run="${escapeHtml(record.run_id)}">+ Ask about this run</button>
         <button class="button ghost small" type="button" data-compare-one="${escapeHtml(record.run_id)}">Compare this run</button>
       </div>
     </div>
@@ -613,6 +613,9 @@ function renderRunDetail(record) {
       ${skippedNote}
       <div id="table-panel" class="table-panel"><p class="hint">Choose a table.</p></div>
     </section>`;
+  detail.querySelector("[data-ask-run]")?.addEventListener("click", () => {
+    openAsk(record.run_id);
+  });
   detail.querySelector("[data-compare-one]")?.addEventListener("click", () => {
     state.compareSeed = record.run_id;
     showPage("compare");
@@ -959,38 +962,146 @@ async function loadArtifacts() {
   }
 }
 
-function setupAssistant() {
-  const enabled = Boolean(state.options?.assistant_enabled);
-  $("#assistant-state").textContent = enabled ? "enabled" : "disabled";
-  $("#assistant-state").className = `pill ${enabled ? "good" : "muted"}`;
-  $("#assistant-disabled").hidden = enabled;
-  $("#assistant-enabled").hidden = !enabled;
-  if (!enabled) return;
-  const select = $("#assistant-run");
-  select.innerHTML =
-    `<option value="">No run context</option>` +
-    state.runs.map((run) => `<option value="${escapeHtml(run.run_id)}">${escapeHtml(run.name)} · FABLE ${escapeHtml(run.version)}</option>`).join("");
+function setupAsk() {
+  const enabled = Boolean(state.agent?.enabled);
+  const button = $("#assistant-open");
+  button.hidden = !enabled;
+  if (!enabled) {
+    $("#ask-panel").hidden = true;
+    return;
+  }
+  const model = state.agent.model ? String(state.agent.model).split("/").pop() : "default model";
+  $("#ask-model").textContent = state.agent.available ? model : "opencode unavailable";
+  if (!state.agent.available) {
+    $("#ask-input").disabled = true;
+    $("#ask-send").disabled = true;
+    $("#ask-status").textContent = "opencode is not on the service PATH";
+  }
+  renderAskContext();
 }
 
-async function sendAssistant(message) {
-  const log = $("#assistant-log");
-  if (!message.trim()) return;
-  log.insertAdjacentHTML("beforeend", `<div class="chat-message user"><strong>You</strong><p>${escapeHtml(message)}</p></div>`);
-  $("#assistant-input").value = "";
-  $("#assistant-progress").textContent = "Waiting for the local assistant…";
-  $("#assistant-send").disabled = true;
+function renderAskContext() {
+  const select = $("#ask-run");
+  if (!select) return;
+  const current = state.ask.runId || select.value;
+  select.innerHTML =
+    `<option value="">No run context</option>` +
+    state.runs
+      .map(
+        (run) =>
+          `<option value="${escapeHtml(run.run_id)}">${escapeHtml(run.name)} · FABLE ${escapeHtml(run.version)}</option>`,
+      )
+      .join("");
+  if (current && state.runs.some((run) => run.run_id === current)) {
+    select.value = current;
+  }
+}
+
+function openAsk(runId = null) {
+  if (!state.agent?.enabled) return;
+  const panel = $("#ask-panel");
+  panel.hidden = false;
+  $("#assistant-open").setAttribute("aria-expanded", "true");
+  renderAskContext();
+  if (runId) {
+    state.ask.runId = runId;
+    $("#ask-run").value = runId;
+  } else if (state.activeRun?.run_id) {
+    state.ask.runId = state.activeRun.run_id;
+    $("#ask-run").value = state.activeRun.run_id;
+  }
+  $("#ask-input").focus();
+}
+
+function closeAsk() {
+  $("#ask-panel").hidden = true;
+  $("#assistant-open").setAttribute("aria-expanded", "false");
+  $("#assistant-open").focus();
+}
+
+function newAskChat() {
+  if (state.ask.busy) return;
+  state.ask.session = null;
+  state.ask.busy = false;
+  const log = $("#ask-log");
+  log.replaceChildren();
+  const hint = document.createElement("p");
+  hint.className = "hint";
+  hint.textContent =
+    "New conversation. Ask about a saved run, a headline series, validation evidence, or where an artifact lives. Press Enter to send, Shift+Enter for a newline.";
+  log.append(hint);
+  $("#ask-status").textContent = "";
+  $("#ask-input").disabled = !state.agent.available;
+  $("#ask-send").disabled = !state.agent.available;
+  $("#ask-input").focus();
+}
+
+function appendAskMessage(role, content, { markdown = false } = {}) {
+  const log = $("#ask-log");
+  log.querySelector(".hint")?.remove();
+  const node = document.createElement("div");
+  node.className = `ask-msg ${role}`;
+  if (markdown) {
+    node.innerHTML = renderMarkdown(content);
+  } else {
+    node.textContent = content;
+  }
+  log.append(node);
+  log.scrollTop = log.scrollHeight;
+  return node;
+}
+
+async function sendAsk(message) {
+  if (!state.agent?.enabled || state.ask.busy) return;
+  if (!state.agent.available) {
+    $("#ask-status").textContent = "The assistant process is not available.";
+    return;
+  }
+  const prompt = String(message ?? "").trim();
+  if (!prompt) return;
+  appendAskMessage("user", prompt, { markdown: true });
+  $("#ask-input").value = "";
+  const thinking = appendAskMessage("agent", "thinking…");
+  thinking.classList.add("thinking");
+  state.ask.busy = true;
+  $("#ask-send").disabled = true;
+  $("#ask-new").disabled = true;
+  $("#ask-status").textContent = "Running the local assistant…";
   try {
     const payload = await request("assistant", {
       method: "POST",
-      body: JSON.stringify({ message, run_id: $("#assistant-run").value || null }),
+      body: JSON.stringify({
+        message: prompt,
+        session: state.ask.session,
+        run_id: $("#ask-run").value || null,
+      }),
     });
-    log.insertAdjacentHTML("beforeend", `<div class="chat-message assistant"><strong>Assistant</strong><p>${escapeHtml(payload.response || "No response.")}</p></div>`);
+    state.ask.session = payload.session || state.ask.session;
+    thinking.remove();
+    const reply = appendAskMessage("agent", payload.response || "(no reply)", { markdown: true });
+    if (Array.isArray(payload.actions) && payload.actions.length) {
+      const row = document.createElement("div");
+      row.className = "ask-actions";
+      for (const action of payload.actions) {
+        const chip = document.createElement("span");
+        chip.className = "ask-action";
+        chip.textContent = `${action.tool}${action.summary ? `: ${action.summary}` : ""}`;
+        chip.title = chip.textContent;
+        row.append(chip);
+      }
+      reply.append(row);
+    }
+    $("#ask-status").textContent = "";
   } catch (error) {
-    log.insertAdjacentHTML("beforeend", `<div class="chat-message error"><strong>Assistant error</strong><p>${escapeHtml(error.message)}</p></div>`);
+    thinking.remove();
+    appendAskMessage("error", `Assistant unavailable: ${error.message}`);
+    $("#ask-status").textContent = "";
   } finally {
-    $("#assistant-progress").textContent = "";
-    $("#assistant-send").disabled = false;
-    log.scrollTop = log.scrollHeight;
+    state.ask.busy = false;
+    $("#ask-send").disabled = false;
+    $("#ask-new").disabled = false;
+    $("#ask-input").focus();
+    $("#ask-log").scrollTop = $("#ask-log").scrollHeight;
   }
 }
 
@@ -1029,14 +1140,40 @@ function bindEvents() {
   $("#help-dialog").addEventListener("click", (event) => {
     if (event.target === $("#help-dialog")) $("#help-dialog").close();
   });
-  $("#assistant-form").addEventListener("submit", (event) => {
-    event.preventDefault();
-    sendAssistant($("#assistant-input").value);
+  $("#assistant-open").addEventListener("click", () => {
+    if ($("#ask-panel").hidden) openAsk();
+    else closeAsk();
   });
-  $$("[data-assistant-prompt]").forEach((button) => {
-    button.addEventListener("click", () => sendAssistant(button.dataset.assistantPrompt));
+  $("#ask-close").addEventListener("click", closeAsk);
+  $("#ask-new").addEventListener("click", newAskChat);
+  $("#ask-run").addEventListener("change", () => {
+    state.ask.runId = $("#ask-run").value || null;
+  });
+  $("#ask-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    sendAsk($("#ask-input").value);
+  });
+  $("#ask-input").addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+      event.preventDefault();
+      $("#ask-form").requestSubmit();
+    }
+  });
+  $$("[data-ask-prompt]").forEach((button) => {
+    button.addEventListener("click", () => sendAsk(button.dataset.askPrompt));
+  });
+  document.addEventListener("click", (event) => {
+    const panel = $("#ask-panel");
+    if (panel.hidden) return;
+    if (!panel.contains(event.target) && !$("#assistant-open").contains(event.target)) {
+      closeAsk();
+    }
   });
   document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !$("#ask-panel").hidden) {
+      closeAsk();
+      return;
+    }
     if (event.target.matches("input, textarea, select")) return;
     if (event.key === "/") {
       event.preventDefault();
@@ -1044,8 +1181,9 @@ function bindEvents() {
       target?.focus();
     }
     if (event.key === "r") showPage("results");
+    if (event.key === "a") openAsk();
     const index = Number(event.key);
-    if (index >= 1 && index <= 7) showPage(PAGES[index - 1]);
+    if (index >= 1 && index <= PAGES.length) showPage(PAGES[index - 1]);
   });
 }
 

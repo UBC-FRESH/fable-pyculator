@@ -2137,6 +2137,9 @@ Implementation evidence:
   background jobs, scenario execution, saved-run comparison, validation lookup, FastAPI app factory,
   and the optional assistant bridge. Saved runs carry a provenance block with the portal version,
   workbook and generated-model paths/sizes, preparation timestamp, and workbook id.
+- Added the global **+ Ask** pill and fixed overlay assistant with markdown rendering for user and
+  assistant messages, safe links/code/tables, session continuation, tool-action chips, run context,
+  Enter-to-send, Shift+Enter newline, and keyboard shortcuts.
 - Added `src/fable_pyculator/cli.py` and the `fable-pyculator web` entry point.
 - Added a multi-page static SPA under `src/fable_pyculator/web/static/` with Overview, Workbench,
   Results, Compare, Validation, Artifacts, and Assistant pages.
@@ -2146,6 +2149,9 @@ Implementation evidence:
   assistant-disabled guard, and the bind guard.
 - Added `docs/guides/web-portal.rst`, API reference entries, README guidance, and
   `planning/phase-28-web-portal.md`.
+- Added version-tolerant default headline curation: unsupported tables are skipped so the 2024
+  Canada workbook prepares with FOOD, LAND, and GHG series despite lacking `TotalResultsWF`;
+  `strict=True` preserves fail-fast behavior and `build_notebook_spec` exposes `strict_headlines`.
 - Added `runtime/` to `.gitignore`.
 
 Verification evidence:
@@ -2154,11 +2160,19 @@ Verification evidence:
   passed.
 - `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
   passed after formatting.
-- `.venv/bin/python -m pytest -q` passed with `155` tests and `12` skips.
+- `.venv/bin/python -m pytest -q` passed with `161` tests and `13` skips.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -q tests/test_fable_workbook_headline_series.py`
+  passed with `2` workbook-backed tests for 2020 and 2024.
 - Real restored-artifact 2021 preparation and scenario execution passed through the HTTP portal:
   16 controls, 14 output tables, 4 headline series, a background prepare job, an 85.7 s scenario run,
   a saved 968-row `trade_resultstrade` table, saved-run detail, and compact validation lookup.
   A second app instance reloaded the prepared spec from cache in 0.54 s.
+- Real restored-artifact 2024 preparation and scenario execution passed: 47.7 s prepare, 108.5 s run,
+  24 controls, 17 output tables, 3 headline series, and saved tables.
+- Real restored-artifact 2020 preparation and scenario execution passed: 137.0 s prepare,
+  167.2 s run, 16 controls, 14 output tables, 4 headline series, and saved tables.
+- The live local assistant returned markdown in 11.9 s with an OpenCode session id, and a second turn
+  continued the same session in 7.2 s.
 - `.venv/bin/fable-pyculator web --root . --port 8767` served `/api/health`, `/`, and
   `/static/app.js` successfully after an editable install with the `web` extra.
 - `.venv/bin/sphinx-build -b html docs _build/html -W -q` passed.

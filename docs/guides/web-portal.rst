@@ -40,6 +40,11 @@ A version is preparable when both of these exist:
    tmp/private-workbooks/<version>_Open_FABLECalculator.xlsx
    tmp/generated-models/fable-<version>/generated_fable_<version>_model.py
 
+The default headline curation is version-tolerant. The 2020 and 2021 workbooks expose FOOD, LAND,
+GHG, and WATER headline series; the 2024 Canada workbook has no ``TotalResultsWF`` water-footprint
+table, so its portal preparation succeeds with FOOD, LAND, and GHG headline series. Missing tables
+are skipped rather than reported as a failed preparation.
+
 The workflow artifact may instead be present as the approved compressed archive:
 
 .. code-block:: text
@@ -83,9 +88,12 @@ Artifacts
    scenario-bundle examples.
 
 Assistant
-   Disabled unless the service is started with ``--allow-agent``. The bridge invokes the installed
-   ``opencode`` CLI in the repository root and passes compact portal context. The service never reads
-   provider keys.
+   Enabled only when the service is started with ``--allow-agent``. A green **+ Ask** pill in the
+   header opens a fixed overlay. The overlay keeps a local OpenCode session across turns, renders
+   markdown for both the user and the assistant (including code blocks, lists, links, and tables),
+   shows tool-action chips, and supports ``Enter`` to send with ``Shift+Enter`` for multiline
+   prompts. The bridge invokes the installed ``opencode`` CLI in the repository root and passes
+   compact portal context. The service never reads provider keys.
 
 Service surface
 ---------------
@@ -102,6 +110,8 @@ The service is intentionally small and readable:
      - Service version, configured versions, prepared state, assistant state.
    * - ``GET /api/options``
      - Portal title, runtime directory, versions, docs URL.
+   * - ``GET /api/agent``
+     - Assistant enablement, executable availability, model, working directory, and timeout.
    * - ``GET /api/artifacts``
      - Readiness summaries for every configured version.
    * - ``GET /api/artifacts/{version}``

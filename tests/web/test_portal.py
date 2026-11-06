@@ -17,6 +17,7 @@ from fable_pyculator.spec import (
     SelectionOption,
 )
 from fable_pyculator.web import service
+from fable_pyculator.web import app as portal_app
 from fable_pyculator.web.app import create_app, is_loopback, validate_bind
 from fable_pyculator.web.artifacts import artifact_paths, materialize_generated_model
 from fable_pyculator.web.service import PortalConfig
@@ -143,6 +144,7 @@ def test_artifact_summary_names_missing_files(tmp_path: Path) -> None:
         payload = client.get("/api/artifacts/2021").json()
         shell = client.get("/")
         script = client.get("/static/app.js")
+        markdown = client.get("/static/markdown.js")
         styles = client.get("/static/styles.css")
 
     assert payload["can_prepare"] is True
@@ -151,8 +153,15 @@ def test_artifact_summary_names_missing_files(tmp_path: Path) -> None:
     assert "compressed_model" in payload["missing"]
     assert shell.status_code == 200
     assert "FABLE Pyculator" in shell.text
+    assert 'id="ask-panel"' in shell.text
+    assert "+" in shell.text and "Ask" in shell.text
     assert script.status_code == 200
     assert "waitForJob" in script.text
+    assert "renderMarkdown" in script.text
+    assert "shiftKey" in script.text
+    assert "Enter" in script.text
+    assert markdown.status_code == 200
+    assert "export { escapeHtml, inlineMarkdown, renderMarkdown" in markdown.text
     assert styles.status_code == 200
     assert "--green" in styles.text
 
@@ -273,6 +282,39 @@ def test_run_auto_prepares_when_needed(tmp_path: Path, monkeypatch: pytest.Monke
 
     assert finished["status"] == "ok"
     assert finished["result"]["version"] == "2021"
+
+
+def test_agent_info_and_assistant_session_passthrough(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config = _config(tmp_path)
+    config.allow_agent = True
+    captured: dict[str, object] = {}
+
+    def fake_run_agent(request, **kwargs):
+        captured["request"] = request
+        captured["kwargs"] = kwargs
+        return {
+            "response": "| A | B |\n|---|---|\n| 1 | 2 |",
+            "session": request.session or "ses_123",
+            "actions": [{"tool": "read", "summary": "Read file"}],
+            "returncode": 0,
+            "command": "opencode",
+        }
+
+    monkeypatch.setattr(portal_app, "run_agent", fake_run_agent)
+    with TestClient(create_app(config)) as client:
+        info = client.get("/api/agent").json()
+        payload = client.post(
+            "/api/assistant",
+            json={"message": "hello", "session": "ses_123", "run_id": None},
+        ).json()
+
+    assert info["enabled"] is True
+    assert info["model"]
+    assert "available" in info
+    assert payload["session"] == "ses_123"
+    assert payload["actions"][0]["tool"] == "read"
+    assert captured["request"].session == "ses_123"
+    assert captured["request"].model == config.agent_model
 
 
 def test_bind_guard_allows_only_loopback_by_default() -> None:

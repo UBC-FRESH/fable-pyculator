@@ -48,6 +48,15 @@ Preparation and scenario execution return a job id immediately. `GET /api/jobs/{
 `queued`, `running`, `ok`, or `error` with progress and message. One compute lock serializes heavy
 work so two tabs cannot build or run the same huge model concurrently.
 
+## Assistant overlay
+
+The assistant is a global green **+ Ask** pill with a fixed bottom-right overlay, reusing the
+Fresh Urban Forest Lab / FHOPS interaction pattern. It is opt-in through `--allow-agent`, calls the
+installed `opencode` CLI with `--format json --auto`, keeps an OpenCode session id across turns, and
+renders markdown for both user and assistant messages. Untrusted text is escaped and only safe
+link schemes are linked. The composer submits on Enter and inserts a newline on Shift+Enter.
+Tool-use events become compact action chips.
+
 ## Out of scope
 
 - authentication or multi-user accounts;

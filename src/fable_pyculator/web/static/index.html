@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
     <title>FABLE Pyculator</title>
-    <link rel="stylesheet" href="static/styles.css?v=p28">
+    <link rel="stylesheet" href="static/styles.css?v=p28b">
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -27,11 +27,13 @@
         <button class="nav-tab" type="button" data-page="compare">Compare</button>
         <button class="nav-tab" type="button" data-page="validation">Validation</button>
         <button class="nav-tab" type="button" data-page="artifacts">Artifacts</button>
-        <button class="nav-tab" type="button" data-page="assistant" id="nav-assistant">Assistant</button>
       </nav>
 
       <div class="header-meta">
         <span id="status-pill" class="pill muted" role="status">connecting</span>
+        <button id="assistant-open" class="ask-pill" type="button" aria-haspopup="dialog" aria-controls="ask-panel" aria-expanded="false" hidden>
+          <span class="ask-plus" aria-hidden="true">+</span> Ask
+        </button>
         <a class="docs-link" id="docs-link" href="https://ubc-fresh.github.io/fable-pyculator/" target="_blank" rel="noreferrer">Docs ↗</a>
         <button id="help-button" class="icon-button" type="button" aria-label="Help">?</button>
       </div>
@@ -251,42 +253,40 @@
         </section>
       </section>
 
-      <section id="page-assistant" class="page" aria-labelledby="assistant-title" hidden>
-        <div class="page-head">
-          <div>
-            <p class="eyebrow">Optional local assistant</p>
-            <h1 id="assistant-title">Ask about the current run or artifacts.</h1>
-          </div>
-          <span id="assistant-state" class="pill muted">checking</span>
-        </div>
-        <div id="assistant-disabled" class="empty-state" hidden>
-          <h2>The assistant is disabled</h2>
-          <p>Restart the portal with <code>--allow-agent</code> to enable the local <code>opencode</code> CLI bridge. The service never reads provider keys.</p>
-        </div>
-        <div id="assistant-enabled" class="assistant-shell" hidden>
-          <div class="panel">
-            <label class="field">
-              <span>Run context <small>optional</small></span>
-              <select id="assistant-run"><option value="">No run context</option></select>
-            </label>
-            <div id="assistant-log" class="assistant-log" aria-live="polite">
-              <p class="hint">Ask about a scenario, a headline series, validation evidence, or where an artifact lives.</p>
-            </div>
-            <div class="assistant-quick">
-              <button type="button" data-assistant-prompt="What does this portal read, and what does it never recompute?">What does the portal do?</button>
-              <button type="button" data-assistant-prompt="Explain the headline series in the selected run.">Explain this run</button>
-              <button type="button" data-assistant-prompt="Which artifact is missing for a clean checkout?">Check artifacts</button>
-            </div>
-            <form id="assistant-form" class="assistant-form">
-              <label class="sr-only" for="assistant-input">Message</label>
-              <textarea id="assistant-input" rows="3" placeholder="Ask about this portal or a saved run…"></textarea>
-              <button id="assistant-send" class="button primary" type="submit">Send</button>
-            </form>
-            <p id="assistant-progress" class="hint" aria-live="polite"></p>
-          </div>
-        </div>
-      </section>
     </main>
+
+    <aside id="ask-panel" class="ask-panel" role="dialog" aria-labelledby="ask-title" hidden>
+      <div class="ask-head">
+        <div>
+          <strong id="ask-title">FABLE assistant</strong>
+          <span id="ask-model" class="ask-model">checking…</span>
+        </div>
+        <div class="ask-head-actions">
+          <button id="ask-new" class="button ghost small" type="button">New</button>
+          <button id="ask-close" class="icon-button" type="button" aria-label="Close assistant">×</button>
+        </div>
+      </div>
+      <div class="ask-context">
+        <label class="field">
+          <span>Run context <small>optional</small></span>
+          <select id="ask-run"><option value="">No run context</option></select>
+        </label>
+      </div>
+      <div id="ask-log" class="ask-log" aria-live="polite">
+        <p class="hint">Ask about a saved run, a headline series, validation evidence, or where an artifact lives. Press Enter to send, Shift+Enter for a newline.</p>
+      </div>
+      <div class="ask-quick">
+        <button type="button" data-ask-prompt="What does this portal read, and what does it never recompute?">What does the portal do?</button>
+        <button type="button" data-ask-prompt="Explain the headline series in the selected run.">Explain this run</button>
+        <button type="button" data-ask-prompt="Which artifact is missing for a clean checkout?">Check artifacts</button>
+      </div>
+      <form id="ask-form" class="ask-form">
+        <label class="sr-only" for="ask-input">Message</label>
+        <textarea id="ask-input" rows="3" placeholder="Ask FABLE Pyculator… (Enter sends, Shift+Enter adds a line)" spellcheck="false"></textarea>
+        <button id="ask-send" class="button primary" type="submit">Send</button>
+      </form>
+      <p id="ask-status" class="ask-status" aria-live="polite"></p>
+    </aside>
 
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
@@ -296,11 +296,14 @@
         <button id="help-close" class="icon-button" type="button" aria-label="Close help">×</button>
       </div>
       <dl class="shortcut-list">
-        <div><dt><kbd>1</kbd>–<kbd>7</kbd></dt><dd>Switch portal page</dd></div>
+        <div><dt><kbd>1</kbd>–<kbd>6</kbd></dt><dd>Switch portal page</dd></div>
         <div><dt><kbd>/</kbd></dt><dd>Focus the current search or scenario name</dd></div>
+        <div><dt><kbd>a</kbd></dt><dd>Open the FABLE assistant</dd></div>
         <div><dt><kbd>r</kbd></dt><dd>Open results</dd></div>
+        <div><dt><kbd>Esc</kbd></dt><dd>Close the assistant or help</dd></div>
       </dl>
       <p class="hint">
+        In the assistant, <kbd>Enter</kbd> sends and <kbd>Shift</kbd>+<kbd>Enter</kbd> inserts a newline.
         The portal is a presentation layer over workbook discovery and generated-model execution.
         Large models are prepared in a background job and cached under the ignored
         <code>runtime/portal/</code> directory.
@@ -310,6 +313,6 @@
     <noscript>
       <p class="noscript">This portal needs JavaScript to prepare models and render outputs.</p>
     </noscript>
-    <script type="module" src="static/app.js?v=p28"></script>
+    <script type="module" src="static/app.js?v=p28b"></script>
   </body>
 </html>

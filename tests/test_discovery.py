@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from openpyxl import Workbook
 from openpyxl.worksheet.table import Table
 
@@ -201,3 +202,41 @@ def test_curate_default_headline_series_maps_core_output_tables(tmp_path: Path) 
         "WATER!G2",
         "WATER!H2",
     )
+
+
+def test_curate_default_headline_series_skips_unsupported_version_tables(tmp_path: Path) -> None:
+    workbook = Workbook()
+    workbook.active.title = "Indextables"
+
+    food = workbook.create_sheet("FOOD")
+    food.append(["PROD_GROUP", "YEAR", "kcal_feas"])
+    food.append(["TOTAL", 2030, 2500])
+    food.add_table(Table(displayName="Total_results_diets", ref="A1:C2"))
+
+    land = workbook.create_sheet("LAND")
+    land.append(["Year", "TOTAL"])
+    land.append([2030, 100])
+    land.add_table(Table(displayName="ResultsLand", ref="A1:B2"))
+
+    ghg = workbook.create_sheet("GHG")
+    ghg.append(["Year", "TotalCO2e"])
+    ghg.append([2030, 42])
+    ghg.add_table(Table(displayName="ResultsGHG", ref="A1:B2"))
+
+    water = workbook.create_sheet("WATER")
+    water.append(["Year", "CalcIrrRequirements"])
+    water.append([2030, 1])
+    water.add_table(Table(displayName="ResultsWater", ref="A1:B2"))
+
+    path = tmp_path / "fable-2024-like.xlsx"
+    workbook.save(path)
+
+    series = curate_default_headline_series(path)
+
+    assert [item.name for item in series] == [
+        "food_total_kcal_feas",
+        "land_total_area",
+        "ghg_total_co2e",
+    ]
+    with pytest.raises(KeyError, match="TotalResultsWF"):
+        curate_default_headline_series(path, strict=True)
