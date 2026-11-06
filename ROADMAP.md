@@ -50,8 +50,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 28 is implemented on `feature/p28-web-portal`: an optional multi-page FastAPI portal over
   prepared generated models, saved runs, comparison, compact validation evidence, artifact
   readiness, scenario bundles, and an opt-in local assistant. Parent issue #203 and child issues
-  #204-#213 are mapped; PR #214 is open, and CI plus post-merge deployment checks remain closeout
-  work.
+  #204-#213 are mapped; PR #214 is open and CI is green, with merge and post-merge deployment
+  checks remaining.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2097,7 +2097,7 @@ GitHub parent issue: #203.
 
 Branch: `feature/p28-web-portal`.
 
-Status: pr-open.
+Status: pr-open. CI passed; merge pending.
 
 Pull request: #214.
 
@@ -2211,14 +2211,18 @@ Verification evidence:
 - `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1 .venv/bin/python -m pytest -q tests/web/test_browser_e2e.py`
   passed against real Chromium and a live assistant chat across a page reload.
 - `scripts/evaluate_assistant_grounding.py` structural checks passed, and
-  `scripts/evaluate_assistant_grounding.py --live` passed all four source-citation cases against the
-  real OpenCode CLI.
+  `scripts/evaluate_assistant_grounding.py --live` passed the five grounding cases against the real
+  OpenCode CLI, including `github_issue_filing` in 17.3 s.
+- PR #214 CI on `46a92a2`: quality, pytest, release-artifacts, and the Docs Pages build passed; the
+  deploy job correctly skipped on the pull request.
 - `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -q tests/test_fable_workbook_headline_series.py`
   passed with `2` workbook-backed tests for 2020 and 2024.
 - Real restored-artifact 2021 preparation and scenario execution passed through the HTTP portal:
   16 controls, 14 output tables, 4 headline series, a background prepare job, an 85.7 s scenario run,
   a saved 968-row `trade_resultstrade` table, saved-run detail, and compact validation lookup.
   A second app instance reloaded the prepared spec from cache in 0.54 s.
+- Re-materialized the authoritative 2021 archive and reran the live portal smoke: `430.13 → 107.63
+  MtCO2e`, with no GHG data-quality warning.
 - Real restored-artifact 2024 preparation and scenario execution passed: 47.7 s prepare, 108.5 s run,
   24 controls, 17 output tables, 3 headline series, and saved tables.
 - After the land-total fallback, a real 2024 run prepared in 1.0 s from cache and ran in 105.7 s,
