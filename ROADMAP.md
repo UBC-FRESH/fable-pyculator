@@ -2199,7 +2199,7 @@ Verification evidence:
   passed.
 - `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
   passed after formatting.
-- `.venv/bin/python -m pytest -q` passed with `192` tests and `15` skips.
+- `.venv/bin/python -m pytest -q` passed with `193` tests and `15` skips.
 - `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1 .venv/bin/python -m pytest -q tests/web/test_browser_e2e.py`
   passed against real Chromium and a live assistant chat across a page reload.
 - `scripts/evaluate_assistant_grounding.py` structural checks passed, and
@@ -2224,9 +2224,10 @@ Verification evidence:
   exactly 11 differences, all `LAND!AA17:AA27` (`#REF!` → `896,559.0`).
 - Live 2024 GHG smoke after the derivation: `59.99 → 95.61 MtCO2e` with the workbook default
   `gwp_scen = SAR`; cached workbook GHG values use `AR6`, so they are not directly comparable.
-- Live 2021 GHG smoke after the derivation: `430.13 → 186.52 MtCO2e`; 2050 remains a generated-model
-  `LandSeq` discrepancy (`-223.30` model vs `-302.20` cached), now surfaced by the numeric derived
-  series rather than hidden behind an empty chart.
+- Live 2021 GHG smoke after the derivation: `430.13 → 186.52 MtCO2e`. Root-caused the 2050
+  `LandSeq` discrepancy to generated-model translation of `calc_landemis[ToRegeneration]` using
+  `RegenForPasture`/`RegenForCropland` (H/P) instead of `TargExpPasture`/`TargExpCropland` (K/U);
+  the data-quality warning now names the exact translation mismatch.
 - Live 2024 horizon-2070 run: headline series extended to 2070 (`food 1,611.3`, `GHG 110.14`,
   `land 896,559.0`); `land_resultsland` rendered 15 rows; grouped `food_results_diets` extended
   from 187 to 255 rows; grouped `trade_resultstrade` extended from 990 to 1,350 rows.

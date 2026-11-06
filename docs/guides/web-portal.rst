@@ -211,7 +211,7 @@ the selected run, such as:
 - 2070 trend-extension warning;
 - 2024 land-total component fallback;
 - missing 2024 water-footprint series;
-- derived GHG versus cached `TotalCO2e` divergence;
+- derived GHG versus cached `TotalCO2e` divergence, including the specific 2021 LandSeq translation mismatch;
 - output tables that could not be extended.
 
 Warnings are persisted in `run.json` as `quality_warnings` and are available from

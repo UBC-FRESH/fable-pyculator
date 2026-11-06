@@ -108,3 +108,23 @@ def test_ghg_mismatch_can_use_cached_spec_table_without_rendering_it() -> None:
     assert mismatch is not None
     assert mismatch[0] == [2050]
     assert mismatch[2] == 2050
+
+
+def test_2021_landseq_mismatch_gets_specific_translation_warning() -> None:
+    headline = pd.DataFrame({"year": [2050], "value": [186.5172]})
+    table = pd.DataFrame({"Year": [2050], "TotalCO2e": [107.6262]})
+
+    warnings = _quality_warnings(
+        version="2021",
+        spec=_spec(),
+        horizon=2050,
+        headline_frames={"ghg_total_co2e": headline},
+        table_frames={"ghg_resultsghg": table},
+        table_summaries=[],
+    )
+
+    codes = {warning["code"] for warning in warnings}
+    assert "landseq_translation_mismatch" in codes
+    message = next(w["message"] for w in warnings if w["code"] == "landseq_translation_mismatch")
+    assert "RegenForPasture" in message
+    assert "TargExpPasture" in message

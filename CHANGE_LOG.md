@@ -77,9 +77,10 @@ This file records completed project work in chronological order.
   intentionally reports generated-model outputs, not cached workbook values, and says so in its
   description.
 - Live 2024 GHG smoke: `59.99 → 95.61 MtCO2e` with default `gwp_scen = SAR`; cached workbook values
-  use `AR6`, so they are not directly comparable. Live 2021 GHG smoke: `430.13 → 186.52 MtCO2e`;
-  2050 still shows a generated-model `LandSeq` discrepancy (`-223.30` model vs `-302.20` cached),
-  now exposed by the numeric derived series rather than hidden by an empty chart.
+  use `AR6`, so they are not directly comparable. Live 2021 GHG smoke: `430.13 → 186.52 MtCO2e`.
+  Root-caused the 2050 `LandSeq` discrepancy: the generated model translates
+  `calc_landemis[ToRegeneration]` using `RegenForPasture`/`RegenForCropland` (H/P) instead of
+  `TargExpPasture`/`TargExpCropland` (K/U); the data-quality warning now names this mismatch.
 - Live 2024 horizon-2070 smoke: headline series extended to 2070 (`food 1,611.3`, `GHG 110.14`,
   `land 896,559.0`); `land_resultsland` had 15 rows; grouped `food_results_diets` extended from
   187 to 255 rows; grouped `trade_resultstrade` extended from 990 to 1,350 rows.
@@ -108,7 +109,7 @@ This file records completed project work in chronological order.
   `docs/guides/web-deployment.rst`. Live test confirmed unauthenticated health checks remain public
   while the SPA/API require auth under a proxy prefix.
 - Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
-  full test suite (`192` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
+  full test suite (`193` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
   headline tests (`2` passed), a warning-clean Sphinx build, Read the Docs theme verification, the
   release artifact check, and real restored-artifact 2021/2024/2020 preparation and runs.
 
