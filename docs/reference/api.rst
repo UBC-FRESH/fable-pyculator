@@ -59,6 +59,27 @@ Scenario Bundles
 .. automodule:: fable_pyculator.scenarios
    :members:
 
+Optional Web Portal Helpers
+---------------------------
+
+.. automodule:: fable_pyculator.web.artifacts
+   :members:
+
+.. automodule:: fable_pyculator.web.spec_io
+   :members:
+
+.. automodule:: fable_pyculator.web.chats
+   :members:
+
+.. automodule:: fable_pyculator.web.cheatsheet
+   :members:
+
+.. automodule:: fable_pyculator.web.grounding_evals
+   :members:
+
+.. automodule:: fable_pyculator.web.service
+   :members:
+
 Scenario-Bundle FreshForge Workflows
 ------------------------------------
 

@@ -1,0 +1,24 @@
+# FABLE Pyculator portal — example systemd unit.
+#
+# Copy to /etc/systemd/system/fable-pyculator-portal.service, edit User/Group and paths, then:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now fable-pyculator-portal
+#
+[Unit]
+Description=FABLE Pyculator portal
+After=network.target
+
+[Service]
+Type=simple
+User=fable-portal
+Group=fable-portal
+WorkingDirectory=/opt/fable-pyculator
+EnvironmentFile=/etc/fable-pyculator/portal.env
+ExecStart=/opt/fable-pyculator/scripts/run_portal.sh
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

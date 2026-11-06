@@ -17,6 +17,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from fable_pyculator.spec import (
     FABLE_OUTPUT_SURFACE_SHEETS,
+    HeadlineAggregation,
     HeadlinePoint,
     HeadlineSeries,
     OutputTable,
@@ -39,6 +40,24 @@ SCENARIO_DEFINITION_COLUMN_ROLE_TAG_PATTERN = re.compile(
     re.IGNORECASE,
 )
 SCENARIO_DEFINITION_LOCATION_PATTERN = re.compile(r"^S\.\d+(?:\.[A-Z])?\.?$", re.IGNORECASE)
+LAND_TOTAL_FALLBACK_HEADERS = (
+    "Cropland",
+    "Pasture",
+    "Urban",
+    "ForPlantations",
+    "OtherForest",
+    "OtherLand",
+)
+GHG_TOTAL_OUTPUT_COMPONENTS = (
+    "CropCO2",
+    "LiveN2O",
+    "CropN2O",
+    "LiveCH4",
+    "CropCH4",
+    "DeforCO2",
+    "OtherLandCO2",
+    "BiofuelSavings",
+)
 
 
 def discover_scenario_parameters(
@@ -163,8 +182,7 @@ def discover_scenario_definition_tables(
         table = worksheet.tables[table_name]
         min_col, min_row, max_col, max_row = range_boundaries(table.ref)
         column_labels = tuple(
-            _column_label(worksheet.cell(min_row, column).value, column)
-            for column in range(min_col, max_col + 1)
+            _column_label(worksheet.cell(min_row, column).value, column) for column in range(min_col, max_col + 1)
         )
         role_tags, raw_role_tags, role_tag_refs = _scenario_definition_column_role_tags(
             worksheet,
@@ -179,14 +197,10 @@ def discover_scenario_definition_tables(
             max_col,
         )
         row_labels = tuple(
-            _row_label(worksheet.cell(row, min_col).value, row)
-            for row in range(min_row + 1, max_row + 1)
+            _row_label(worksheet.cell(row, min_col).value, row) for row in range(min_row + 1, max_row + 1)
         )
         cell_refs = tuple(
-            tuple(
-                f"{worksheet.title}!{get_column_letter(column)}{row}"
-                for column in range(min_col, max_col + 1)
-            )
+            tuple(f"{worksheet.title}!{get_column_letter(column)}{row}" for column in range(min_col, max_col + 1))
             for row in range(min_row + 1, max_row + 1)
         )
         values = tuple(
@@ -236,8 +250,7 @@ def discover_output_tables(
             table = worksheet.tables[table_name]
             min_col, min_row, max_col, max_row = range_boundaries(table.ref)
             column_labels = tuple(
-                _column_label(worksheet.cell(min_row, column).value, column)
-                for column in range(min_col, max_col + 1)
+                _column_label(worksheet.cell(min_row, column).value, column) for column in range(min_col, max_col + 1)
             )
             flavour_tags, raw_flavour_tags, flavour_tag_refs = _output_column_flavour_tags(
                 worksheet,
@@ -246,14 +259,10 @@ def discover_output_tables(
                 max_col,
             )
             row_labels = tuple(
-                _row_label(worksheet.cell(row, min_col).value, row)
-                for row in range(min_row + 1, max_row + 1)
+                _row_label(worksheet.cell(row, min_col).value, row) for row in range(min_row + 1, max_row + 1)
             )
             cell_refs = tuple(
-                tuple(
-                    f"{worksheet.title}!{get_column_letter(column)}{row}"
-                    for column in range(min_col, max_col + 1)
-                )
+                tuple(f"{worksheet.title}!{get_column_letter(column)}{row}" for column in range(min_col, max_col + 1))
                 for row in range(min_row + 1, max_row + 1)
             )
             values = tuple(
@@ -278,22 +287,29 @@ def discover_output_tables(
     return tables
 
 
-def curate_default_headline_series(workbook_path: str | Path) -> list[HeadlineSeries]:
+def curate_default_headline_series(
+    workbook_path: str | Path,
+    *,
+    strict: bool = False,
+) -> list[HeadlineSeries]:
     """Curate the first FOOD, LAND, GHG, and WATER headline output series.
 
-    The initial curation is intentionally narrow and provenance-friendly. It uses table descriptions
-    from ``Indextables`` where available, then maps stable table columns on the canonical output
-    sheets into notebook-ready time series.
+    The initial curation is intentionally narrow and provenance-friendly. It uses table
+    descriptions from ``Indextables`` where available, then maps stable table columns on the
+    canonical output sheets into notebook-ready time series.
+
+    Workbook versions differ. The 2024 Canada workbook, for example, has a ``ResultsWater``
+    irrigation table instead of the ``TotalResultsWF`` water-footprint table used by the 2020 and
+    2021 workbooks. By default, a series whose table or headers are absent is skipped so a version
+    can still expose the headline series it does support. Pass ``strict=True`` to keep the older
+    fail-fast behavior.
     """
 
     workbook = load_fable_workbook(workbook_path, data_only=False, read_only=False)
-    descriptions = (
-        _indextable_descriptions(workbook["Indextables"])
-        if "Indextables" in workbook.sheetnames
-        else {}
-    )
-    return [
-        HeadlineSeries(
+    descriptions = _indextable_descriptions(workbook["Indextables"]) if "Indextables" in workbook.sheetnames else {}
+
+    def food() -> HeadlineSeries:
+        return HeadlineSeries(
             name="food_total_kcal_feas",
             label="Feasible total kilocalorie consumption",
             group="FOOD",
@@ -308,36 +324,59 @@ def curate_default_headline_series(workbook_path: str | Path) -> list[HeadlineSe
             ),
             unit="kcal/cap/day",
             description=descriptions.get(_description_key("Total_results_diets")),
-        ),
-        HeadlineSeries(
+        )
+
+    def land() -> HeadlineSeries:
+        points, aggregation, label, fallback_note = _land_headline_points(
+            workbook["LAND"],
+            "ResultsLand",
+            year_header="Year",
+            total_header="TOTAL",
+        )
+        base_description = descriptions.get(_description_key("ResultsLand"))
+        description = (
+            f"{base_description} {fallback_note}"
+            if base_description and fallback_note
+            else fallback_note or base_description
+        )
+        return HeadlineSeries(
             name="land_total_area",
-            label="Total land area",
+            label=label,
             group="LAND",
             sheet="LAND",
             table_name="ResultsLand",
-            points=_headline_points(
-                workbook["LAND"],
-                "ResultsLand",
-                year_header="Year",
-                value_headers=("TOTAL",),
-            ),
-            description=descriptions.get(_description_key("ResultsLand")),
-        ),
-        HeadlineSeries(
+            points=points,
+            description=description,
+            aggregation=aggregation,
+        )
+
+    def ghg() -> HeadlineSeries:
+        points, aggregation, label, fallback_note = _ghg_headline_points(
+            workbook["GHG"],
+            "ResultsGHG",
+            year_header="Year",
+            total_header="TotalCO2e",
+        )
+        base_description = descriptions.get(_description_key("ResultsGHG"))
+        description = (
+            f"{base_description} {fallback_note}"
+            if base_description and fallback_note
+            else fallback_note or base_description
+        )
+        return HeadlineSeries(
             name="ghg_total_co2e",
-            label="Total GHG emissions",
+            label=label,
             group="GHG",
             sheet="GHG",
             table_name="ResultsGHG",
-            points=_headline_points(
-                workbook["GHG"],
-                "ResultsGHG",
-                year_header="Year",
-                value_headers=("TotalCO2e",),
-            ),
-            description=descriptions.get(_description_key("ResultsGHG")),
-        ),
-        HeadlineSeries(
+            points=points,
+            unit="MtCO2e",
+            description=description,
+            aggregation=aggregation,
+        )
+
+    def water() -> HeadlineSeries:
+        return HeadlineSeries(
             name="water_total_footprint",
             label="Total water footprint",
             group="WATER",
@@ -359,8 +398,16 @@ def curate_default_headline_series(workbook_path: str | Path) -> list[HeadlineSe
             ),
             description=descriptions.get(_description_key("TotalResultsWF")),
             aggregation="sum",
-        ),
-    ]
+        )
+
+    series: list[HeadlineSeries] = []
+    for builder in (food, land, ghg, water):
+        try:
+            series.append(builder())
+        except (KeyError, ValueError):
+            if strict:
+                raise
+    return series
 
 
 def _headline_points(
@@ -373,15 +420,11 @@ def _headline_points(
 ) -> tuple[HeadlinePoint, ...]:
     table = worksheet.tables[table_name]
     min_col, min_row, max_col, max_row = range_boundaries(table.ref)
-    headers = {
-        _optional_text(worksheet.cell(min_row, column).value): column
-        for column in range(min_col, max_col + 1)
-    }
+    headers = {_optional_text(worksheet.cell(min_row, column).value): column for column in range(min_col, max_col + 1)}
     year_column = _required_header(headers, year_header, table_name)
     value_columns = tuple(_required_header(headers, header, table_name) for header in value_headers)
     filter_columns = {
-        _required_header(headers, header, table_name): expected
-        for header, expected in (row_filters or {}).items()
+        _required_header(headers, header, table_name): expected for header, expected in (row_filters or {}).items()
     }
     points: list[HeadlinePoint] = []
     for row in range(min_row + 1, max_row + 1):
@@ -393,10 +436,7 @@ def _headline_points(
         points.append(
             HeadlinePoint(
                 year=year,
-                cell_refs=tuple(
-                    f"{worksheet.title}!{get_column_letter(column)}{row}"
-                    for column in value_columns
-                ),
+                cell_refs=tuple(f"{worksheet.title}!{get_column_letter(column)}{row}" for column in value_columns),
             )
         )
     return tuple(points)
@@ -406,6 +446,126 @@ def _required_header(headers: dict[str | None, int], header: str, table_name: st
     if header not in headers:
         raise KeyError(f"table {table_name!r} does not contain header {header!r}")
     return headers[header]
+
+
+def _land_headline_points(
+    worksheet: Worksheet,
+    table_name: str,
+    *,
+    year_header: str,
+    total_header: str,
+) -> tuple[tuple[HeadlinePoint, ...], HeadlineAggregation, str, str | None]:
+    """Return land-total points, aggregating components when the workbook TOTAL is broken.
+
+    The 2024 Canada workbook contains ``#REF!`` directly in the ``ResultsLand[TOTAL]`` formulas.
+    In that case the total cannot be reproduced faithfully, so the headline uses the workbook's
+    component land-cover columns and explicitly records that the broken correction term was omitted.
+    """
+
+    table = worksheet.tables[table_name]
+    min_col, min_row, max_col, max_row = range_boundaries(table.ref)
+    headers = {_optional_text(worksheet.cell(min_row, column).value): column for column in range(min_col, max_col + 1)}
+    year_column = _required_header(headers, year_header, table_name)
+    total_column = _required_header(headers, total_header, table_name)
+    broken_total = any(
+        isinstance(worksheet.cell(row, total_column).value, str)
+        and "#REF!" in str(worksheet.cell(row, total_column).value)
+        for row in range(min_row + 1, max_row + 1)
+    )
+    fallback_schema = all(header in headers for header in LAND_TOTAL_FALLBACK_HEADERS) and "LoggedForest" in headers
+    if not fallback_schema and not broken_total:
+        return (
+            _headline_points(
+                worksheet,
+                table_name,
+                year_header=year_header,
+                value_headers=(total_header,),
+            ),
+            "value",
+            "Total land area",
+            None,
+        )
+
+    component_columns = tuple(_required_header(headers, header, table_name) for header in LAND_TOTAL_FALLBACK_HEADERS)
+    points: list[HeadlinePoint] = []
+    for row in range(min_row + 1, max_row + 1):
+        year = worksheet.cell(row, year_column).value
+        if year is None:
+            continue
+        points.append(
+            HeadlinePoint(
+                year=year,
+                cell_refs=tuple(f"{worksheet.title}!{get_column_letter(column)}{row}" for column in component_columns),
+            )
+        )
+    if broken_total:
+        note = (
+            f"The workbook's {table_name}[{total_header}] formulas contain #REF!; this fallback "
+            f"matches calc_land_cor[TotallandFin] by summing "
+            f"{', '.join(LAND_TOTAL_FALLBACK_HEADERS)} (LoggedForest is not added separately)."
+        )
+    else:
+        note = (
+            "This version's total matches calc_land_cor[TotallandFin] by summing "
+            f"{', '.join(LAND_TOTAL_FALLBACK_HEADERS)} (LoggedForest is not added separately)."
+        )
+    return tuple(points), "sum", "Total land area (component sum)", note
+
+
+def _ghg_headline_points(
+    worksheet: Worksheet,
+    table_name: str,
+    *,
+    year_header: str,
+    total_header: str,
+) -> tuple[tuple[HeadlinePoint, ...], HeadlineAggregation, str, str | None]:
+    """Build total GHG from declared OUTPUT-8 components when possible.
+
+    ``TotalCO2e`` is a CALC cell and is not present in generated-model output refs for every FABLE
+    version. The workbook's formula is a sum of the OUTPUT-8 contributions, so use those cells when
+    they are all available. The 2024 schema separately reports ``LandSeqAffor``; it is not an
+    OUTPUT-8 cell in the generated model and is therefore called out in the description.
+    """
+
+    table = worksheet.tables[table_name]
+    min_col, min_row, max_col, max_row = range_boundaries(table.ref)
+    headers = {_optional_text(worksheet.cell(min_row, column).value): column for column in range(min_col, max_col + 1)}
+    year_column = _required_header(headers, year_header, table_name)
+    land_sequence_header = "LandSeq" if "LandSeq" in headers else "LandSeqReg" if "LandSeqReg" in headers else None
+    component_headers = GHG_TOTAL_OUTPUT_COMPONENTS + ((land_sequence_header,) if land_sequence_header else ())
+    if not all(header in headers for header in component_headers):
+        return (
+            _headline_points(
+                worksheet,
+                table_name,
+                year_header=year_header,
+                value_headers=(total_header,),
+            ),
+            "value",
+            "Total GHG emissions",
+            None,
+        )
+
+    component_columns = tuple(_required_header(headers, header, table_name) for header in component_headers)
+    points: list[HeadlinePoint] = []
+    for row in range(min_row + 1, max_row + 1):
+        year = worksheet.cell(row, year_column).value
+        if year is None:
+            continue
+        points.append(
+            HeadlinePoint(
+                year=year,
+                cell_refs=tuple(f"{worksheet.title}!{get_column_letter(column)}{row}" for column in component_columns),
+            )
+        )
+    note = (
+        "Derived from generated-model OUTPUT-8 components using the workbook's "
+        "ResultsGHG[TotalCO2e] formula. Values are model outputs and may differ from workbook-cached "
+        "totals where individual components differ."
+    )
+    if land_sequence_header == "LandSeqReg" and "LandSeqAffor" in headers:
+        note += " LandSeqAffor is excluded because it is not a declared OUTPUT-8 cell in this artifact."
+    return tuple(points), "sum", "Total GHG emissions (output components)", note
 
 
 def _indextable_descriptions(worksheet: Worksheet) -> dict[str, str]:

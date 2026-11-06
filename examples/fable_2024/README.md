@@ -37,14 +37,27 @@ Validation summary:
 - cached-value comparison (300-output random sample against the workbook's cached values):
   94% exact matches; the remaining mismatches were 0.05-0.3% relative, consistent with Excel
   recalculation tolerance;
-- previously untranslatable cells (e.g. `8_calc_emissions!V70`, `LAND!AA17`) translate in this
-  model.
+- previously untranslatable cells (e.g. `8_calc_emissions!V70`) translate in this model.
+
+Post-publication repair (2026-11-06):
+
+- The source 2024 workbook shipped with `SUMIFS(#REF!, calc_land_cor[Year], …)` inside
+  `ResultsLand[TOTAL]` (`LAND!AA17:AA27`). The pristine reference workbook has the same defect.
+- The missing term was recovered as `calc_land_cor[CalcLoggedForest]`; subtracting it reproduces the
+  workbook's own valid `calc_land_cor[TotallandFin]` total (`896,559.0`).
+- `scripts/repair_fable_2024_land_total.py` repairs the local workbook formula/cached values, and
+  `scripts/repair_fable_2024_generated_model.py` repairs the 11 corresponding generated expressions.
+- Repaired local workbook checksum:
+  `519f68d70d6338ca7030ab470e00686f76e62fe008d3adaf0210613d19d365fc` (original:
+  `808dde4db5283cf7cd77a720379f636f164e5f50c5d1d52e449869f6dee9b798`).
+- Old-vs-repaired generated-model execution comparison across all 10,274 declared outputs showed
+  only the 11 `LAND!AA17:AA27` cells changed; no other output changed.
 
 The generated model source is about 114 MiB uncompressed and about 1.7 MiB as the tracked `.xz`
-archive. The compressed archive checksum is:
+archive. The repaired compressed archive checksum is:
 
 ```text
-0bb21e0a2e0ce05a5a2f4b0cd3274b766e5509b514f6a7a1eb5cdc82daa8981e
+f62c74b246fa29068b54b2c8ad82ed34b35026e490f2e2d205148c18277ae469
 ```
 
 ## Artifact Boundary

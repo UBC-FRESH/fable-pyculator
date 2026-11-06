@@ -59,7 +59,105 @@ python -m venv .venv
 .venv/bin/python -m pip install -e '.[dev,notebook,docs]'
 ```
 
-## Download FABLE Calculators
+## Optional Web Portal
+
+The package includes an optional local portal over the same artifacts the notebook workflow uses.
+It is a FastAPI service plus a dependency-free vanilla JavaScript SPA; there is no Node build and no
+second modelling engine. Install the optional dependencies and start it from the repository root:
+
+```bash
+.venv/bin/python -m pip install -e '.[web]'
+.venv/bin/fable-pyculator web --root . --port 8766
+```
+
+Open `http://127.0.0.1:8766`. The portal offers:
+
+- **Overview** and **Artifacts**: real file readiness, compressed/generated model state, and tracked
+  scenario bundles.
+- **Workbench**: prepare a workbook version, choose one option per FABLE selection control, and run
+  the matching generated model in a background job.
+- **Results**: headline KPI cards, time-series charts, every rendered output table, and CSV export.
+- **Compare**: align saved runs by year and inspect selection differences.
+- **Validation**: compact validation evidence from
+  `tmp/validation-evidence/fable-<version>/summary.json`.
+- **Assistant**: optional local `opencode` bridge, enabled only with `--allow-agent`. A green
+  **+ Ask** pill opens an overlay with markdown rendering, persistent chat sessions, rename/search/
+  pin/archive controls, Markdown export, auto-titles, session continuation, tool-action chips, and
+  `Enter`-to-send / `Shift+Enter`-for-newline behavior. New
+  chats are grounded by a generated cheat sheet that points to the FABLE Pyculator and Modelwright
+  docs, APIs, and served model instances.
+
+Preparation needs the source workbook under the ignored
+`tmp/private-workbooks/<version>_Open_FABLECalculator.xlsx` path and either the decompressed or
+tracked compressed generated model. The portal decompresses the approved archive when needed and
+caches workbook discovery and saved runs under ignored `runtime/portal/` paths. Default headline
+curation is version-tolerant: 2020/2021 expose FOOD, LAND, GHG, and WATER; the 2024 Canada workbook
+exposes FOOD, LAND, and GHG because it has no `TotalResultsWF` water-footprint table. The 2024
+`LAND[TOTAL]` formula contains `#REF!`, so the land headline uses a clearly labelled component sum
+that reproduces the workbook's valid `calc_land_cor[TotallandFin]` value and records the broken
+source formula in its description. The GHG headline is derived from the declared `OUTPUT-8`
+components (`CropCO2`, `LiveN2O`, `CropN2O`, `LiveCH4`, `CropCH4`, `DeforCO2`, `OtherLandCO2`,
+land-sequence, and `BiofuelSavings`) because `TotalCO2e` is a `CALC` cell rather than a generated
+output. Values are generated-model outputs, so they can differ from workbook-cached totals where an
+individual component model differs. The 2024 series notes that `LandSeqAffor` is excluded because it
+is not a declared `OUTPUT-8` cell in that artifact. To repair a local copy of the 2024 workbook itself, run:
+
+```bash
+.venv/bin/python scripts/repair_fable_2024_land_total.py
+```
+
+Real 2021
+preparation takes about two minutes on a warm local checkout and a scenario run takes about a
+minute; both run as background jobs with progress reporting.
+
+The portal is a presentation layer. It does not recompute a FABLE result in the browser, edit source
+workbooks, or provide authentication. A non-loopback bind requires `--allow-remote`.
+
+The Workbench can optionally extend a run to **2070** using a linear trend over 2035–2050. This is
+a clearly labelled presentation-layer projection, not native FABLE output. Native results end at
+2050. Multi-row-per-year tables are extended group-by-group when a text identity column is available; tables without a usable trend stay native with an explicit note.
+
+Results pages show run-scoped **data-quality notes** for caveats such as a 2070 extension, the 2024
+land component fallback, missing 2024 water data, GHG-vs-cached divergence, and tables that were not
+extended.
+
+Assistant grounding and browser checks:
+
+```bash
+# Fast structural grounding checks (safe for CI)
+.venv/bin/python scripts/evaluate_assistant_grounding.py
+
+# Opt-in live assistant questions with source/path assertions
+.venv/bin/python scripts/evaluate_assistant_grounding.py --live
+
+# Opt-in Chromium smoke for the overlay, Enter/Shift+Enter, markdown, and chat reload persistence
+.venv/bin/python -m pip install -e '.[browser]'
+.venv/bin/python -m playwright install chromium
+.venv/bin/python scripts/browser_smoke.py --root . --server-python .venv/bin/python --live-agent
+```
+
+Deployment:
+
+```bash
+# Local
+scripts/run_portal.sh
+
+# Authenticated remote bind
+FABLE_PORTAL_HOST=0.0.0.0 \
+FABLE_PORTAL_ALLOW_REMOTE=1 \
+FABLE_PORTAL_AUTH_USER=operator \
+FABLE_PORTAL_AUTH_PASSWORD='a-long-random-password' \
+scripts/run_portal.sh
+
+# Jupyter/codeserver proxy prefix
+FABLE_PORTAL_ROOT_PATH=/user/me/proxy/8768 \
+FABLE_PORTAL_ALLOW_REMOTE=1 \
+scripts/run_portal.sh
+```
+
+Example systemd and nginx files are under `deploy/`; see `docs/guides/web-deployment.rst`.
+
+
 
 The current Modelwright benchmark metadata points to this public FABLE Calculator Dropbox folder:
 

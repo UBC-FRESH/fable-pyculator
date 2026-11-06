@@ -2,6 +2,123 @@
 
 This file records completed project work in chronological order.
 
+## 2026-11-06
+
+- Activated Phase 28 on `feature/p28-web-portal` and implemented the optional multi-page FABLE
+  Pyculator portal: FastAPI service, dependency-free vanilla ES-module SPA, artifact readiness,
+  compressed-model materialization, cached workbook-spec preparation, background scenario runs,
+  headline KPI cards and charts, output-table rendering and CSV export, saved-run comparison,
+  compact validation-evidence browsing, scenario-bundle browsing, provenance-bearing saved runs,
+  and an opt-in local assistant.
+- Added `fable-pyculator web` through `src/fable_pyculator/cli.py`, the `web` optional dependency
+  extra, static package data, and ignored `runtime/portal/` spec/run caches.
+- Added `tests/web/test_portal.py`, `tests/web/test_assistant.py`, and `tests/web/test_markdown.py` for
+  spec round-tripping, artifacts and materialization, preparation jobs, scenario execution, saved
+  tables, comparison, validation lookup, assistant enablement and session passthrough, opencode event
+  parsing, markdown rendering safety, and the loopback bind guard.
+- Added the global **+ Ask** pill and fixed overlay assistant: markdown rendering for both user and
+  assistant messages, safe links/code/tables, session continuation, tool-action chips, run context,
+  Enter-to-send, Shift+Enter newline, and `a`/Escape shortcuts.
+- Added persistent assistant chats under `runtime/portal/chats/`: the overlay lists saved chats,
+  remembers the last selected chat in browser storage, restores messages after reload, and continues
+  the same OpenCode session across service restarts.
+- Added a generated grounding sheet at `runtime/portal/assistant/cheat-sheet.md`: served model
+  instances, artifact readiness/paths, prepared spec counts, headline series, saved runs, API
+  surface, known version differences, a digest compiled from every listed FABLE/Modelwright doc, and
+  an AST-generated source API index. New chats must read it and open full cited files for exact
+  details. It is served at `GET /api/assistant/cheatsheet.md`.
+- Documented the portal in `docs/guides/web-portal.rst`, README, API reference, and
+  `planning/phase-28-web-portal.md`.
+- Fixed a real portal preparation failure on FABLE 2024: the Canada workbook has no
+  `TotalResultsWF` water-footprint table, so `curate_default_headline_series` now skips unsupported
+  default series and returns FOOD, LAND, and GHG for 2024. `strict=True` preserves the older
+  fail-fast behavior, and `build_notebook_spec` exposes `strict_headlines`.
+- Added synthetic and workbook-gated tests for version-tolerant headline curation, and verified real
+  preparation plus scenario execution for both FABLE 2024 and FABLE 2020 through the portal:
+  2024 prepared in 47.7 s and ran in 108.5 s with 24 controls, 17 output tables, and 3 headlines;
+  2020 prepared in 137.0 s and ran in 167.2 s with 16 controls, 14 output tables, and 4 headlines.
+- Verified the assistant end to end against the live local service: the first grounded turn read
+  `notebook.py` and answered the exact `build_notebook_spec` signature in 25.5 s; after a service
+  restart the saved chat listed, reloaded, and continued the same OpenCode session in 10.4 s.
+- Added a grounding evaluation suite: deterministic structural checks plus opt-in live assistant
+  questions that require citations to expected source paths and expected terms. The live suite
+  covers `notebook_signature`, `modelwright_facade`, `fable_2024_water`, `portal_read_only`, and
+  `github_issue_filing`; the new issue-filing case passed in 28.0 s against the real OpenCode CLI.
+- Added the UBC-FRESH phase/task issue templates, a GitHub issue workflow guide, and
+  `scripts/check_issue_body.py`. The portal assistant now classifies issue requests by type and
+  scale, asks for missing reproduction/scope/acceptance details, drafts the canonical body, validates
+  it, confirms with the user, posts with `gh issue create --body-file`, links child tasks to the
+  parent, and reads the issue back; the grounding checks include a dedicated issue-filing case.
+- Added a Playwright browser smoke (`scripts/browser_smoke.py` and a gated pytest wrapper) covering
+  the + Ask overlay, Enter/Shift+Enter behavior, markdown rendering, and live assistant chat
+  persistence across a full page reload; it passed locally.
+- Added the `browser` optional extra, the grounding-eval guide, and README verification commands.
+- Fixed the visible FABLE 2024 `land_total_area = #REF!` KPI. The 2024 workbook itself contains
+  `SUMIFS(#REF!, …)` in `ResultsLand[TOTAL]`, and Excel caches that column as `#REF!`. The intended
+  correction term is recoverable from the workbook's valid `calc_land_cor[TotallandFin]`:
+  `CalcLoggedForest` is the missing subtraction. Curation now detects the broken total and uses a
+  clearly labelled *Total land area (component sum)* fallback over `Cropland`, `Pasture`, `Urban`,
+  `ForPlantations`, `OtherForest`, and `OtherLand`, reproducing `TotallandFin` exactly and recording
+  the broken source formula in the series description. The portal spec-cache version was bumped so
+  stale specs rebuild automatically. A real 2024 run now reports `896,559.0` instead of `#REF!`.
+- Added `scripts/repair_fable_2024_land_total.py` and repaired the local 2024 workbook itself:
+  the script replaces `SUMIFS(#REF!, …)` with `SUMIFS(calc_land_cor[CalcLoggedForest], …)` in
+  `LAND!AA17:AA27` and restores the cached totals from `calc_land_cor[TotallandFin]` by editing the
+  xlsx XML directly, with a `.xlsx.bak` backup. Both the working and pristine 2024 reference copies
+  contained the same broken formula.
+- Added `scripts/repair_fable_2024_generated_model.py` and repaired the tracked 2024 generated-model
+  expressions for `LAND!AA17:AA27`. A full old-vs-repaired execution comparison across all 10,274
+  declared outputs showed only those 11 cells changed (`#REF!` to `896,559.0`), with no other
+  generated value affected. The repaired tracked archive checksum is
+  `f62c74b246fa29068b54b2c8ad82ed34b35026e490f2e2d205148c18277ae469`, and a fresh portal run showed
+  the LAND table TOTAL values coming directly from the model with no display repair note.
+- Curated the GHG headline from declared `OUTPUT-8` components instead of the `TotalCO2e` `CALC`
+  cell, so 2020/2021/2024 results pages now have a numeric GHG series. The 2024 series explicitly
+  notes that `LandSeqAffor` is excluded because it is not a declared `OUTPUT-8` cell in that
+  artifact.
+- Validated the derived GHG series against cached workbook `TotalCO2e`: 2020 matched to ~1e-12 at
+  every year; 2024 late-year differences remain because individual generated-model components and
+  GWP assumptions differ from the cached workbook. The headline intentionally reports
+  generated-model outputs, not cached workbook values, and says so in its description.
+- Investigated a live 2021 `LandSeq`/GHG discrepancy at 2050. The apparent generated-model defect was
+  a stale 85 MB local working model that omitted six `SCENARIOS definition` row-50 formulas
+  (`EQ50`-`EV50`). The tracked 122 MB 2021 archive already contains those formulas and, when
+  re-materialized, matches the cached 2050 outputs (`GHG!AI28 -302.1950203334845`,
+  `LAND!V27 25000.0`, `LAND!X27 81407.07618113697`). The local working model was replaced from the
+  archive; no tracked-artifact repair was needed. The live 2021 smoke is now
+  `430.13 → 107.63 MtCO2e` with no GHG data-quality warning.
+- Live 2024 horizon-2070 smoke: headline series extended to 2070 (`food 1,611.3`, `GHG 110.14`,
+  `land 896,559.0`); `land_resultsland` had 15 rows; grouped `food_results_diets` extended from
+  187 to 255 rows; grouped `trade_resultstrade` extended from 990 to 1,350 rows.
+- Kept a transparent display repair for older/stale 2024 working models: if a `land_resultsland`
+  TOTAL column still contains `#REF!`, the portal replaces only that displayed column with the same
+  `TotallandFin` component sum and shows a warning note; generated-model semantics are unchanged.
+- Wired the deterministic assistant grounding check into the Test workflow so cheat-sheet/source
+  drift fails CI, while live agent and Chromium checks remain opt-in.
+- Added an optional **2070 trend extension** to the Workbench. Native FABLE results remain
+  2000-2050; when selected, headline series and one-row-per-year tables are extended to 2055-2070
+  with a linear trend fitted over 2035-2050. Multi-row-per-year tables are extended group-by-group
+  on text identity columns when possible; tables without a usable trend stay native with an explicit
+  note. Every extended run records the method and a warning that 2055-2070 are not native FABLE
+  results.
+- Added run-scoped **data-quality notes** to Results: 2070 extension, 2024 land component fallback,
+  missing 2024 water series, derived GHG versus cached `TotalCO2e` divergence, and tables that were
+  not extended. Notes are persisted in `run.json` as `quality_warnings`.
+- Finished chat management: rename, search, pin, archive, delete, Markdown export, and automatic
+  titles from the first exchange. Added `PATCH /api/chats/{chat_id}` and
+  `GET /api/chats/{chat_id}/export.md`; live smoke verified auto-title, pin/archive filtering, and
+  Markdown export.
+- Re-ran `scripts/check_release_artifacts.sh`; it passed and the wheel contains chats, cheat-sheet,
+  grounding evals, and all portal static assets.
+- Added deployment support: optional built-in HTTP Basic auth, `scripts/run_portal.sh`, proxy
+  `FABLE_PORTAL_ROOT_PATH`, example systemd unit, environment template, nginx config, and
+  `docs/guides/web-deployment.rst`. Live test confirmed unauthenticated health checks remain public
+  while the SPA/API require auth under a proxy prefix.
+- Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
+  full test suite (`193` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
+  headline tests (`2` passed), a warning-clean Sphinx build, Read the Docs theme verification, the
+  release artifact check, and real restored-artifact 2021/2024/2020 preparation and runs.
+
 ## 2026-08-15
 
 - Added the tracked `examples/fable_2024/` generated-model artifact (compressed

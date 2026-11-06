@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from openpyxl import Workbook
 from openpyxl.worksheet.table import Table
 
@@ -201,3 +202,142 @@ def test_curate_default_headline_series_maps_core_output_tables(tmp_path: Path) 
         "WATER!G2",
         "WATER!H2",
     )
+
+
+def test_curate_default_headline_series_skips_unsupported_version_tables(tmp_path: Path) -> None:
+    workbook = Workbook()
+    workbook.active.title = "Indextables"
+
+    food = workbook.create_sheet("FOOD")
+    food.append(["PROD_GROUP", "YEAR", "kcal_feas"])
+    food.append(["TOTAL", 2030, 2500])
+    food.add_table(Table(displayName="Total_results_diets", ref="A1:C2"))
+
+    land = workbook.create_sheet("LAND")
+    land.append(["Year", "TOTAL"])
+    land.append([2030, 100])
+    land.add_table(Table(displayName="ResultsLand", ref="A1:B2"))
+
+    ghg = workbook.create_sheet("GHG")
+    ghg.append(["Year", "TotalCO2e"])
+    ghg.append([2030, 42])
+    ghg.add_table(Table(displayName="ResultsGHG", ref="A1:B2"))
+
+    water = workbook.create_sheet("WATER")
+    water.append(["Year", "CalcIrrRequirements"])
+    water.append([2030, 1])
+    water.add_table(Table(displayName="ResultsWater", ref="A1:B2"))
+
+    path = tmp_path / "fable-2024-like.xlsx"
+    workbook.save(path)
+
+    series = curate_default_headline_series(path)
+
+    assert [item.name for item in series] == [
+        "food_total_kcal_feas",
+        "land_total_area",
+        "ghg_total_co2e",
+    ]
+    with pytest.raises(KeyError, match="TotalResultsWF"):
+        curate_default_headline_series(path, strict=True)
+
+
+def test_curate_default_headline_series_falls_back_when_land_total_is_ref(tmp_path: Path) -> None:
+    workbook = Workbook()
+    workbook.active.title = "Indextables"
+
+    food = workbook.create_sheet("FOOD")
+    food.append(["PROD_GROUP", "YEAR", "kcal_feas"])
+    food.append(["TOTAL", 2030, 2500])
+    food.add_table(Table(displayName="Total_results_diets", ref="A1:C2"))
+
+    land = workbook.create_sheet("LAND")
+    land.append(
+        [
+            "Year",
+            "Cropland",
+            "Pasture",
+            "Urban",
+            "ForPlantations",
+            "LoggedForest",
+            "OtherForest",
+            "OtherLand",
+            "TOTAL",
+        ]
+    )
+    land.append([2030, 1, 2, 3, 4, 5, 6, 7, "=B2+C2+D2+E2+F2+G2+H2+#REF!"])
+    land.add_table(Table(displayName="ResultsLand", ref="A1:I2"))
+
+    ghg = workbook.create_sheet("GHG")
+    ghg.append(["Year", "TotalCO2e"])
+    ghg.append([2030, 42])
+    ghg.add_table(Table(displayName="ResultsGHG", ref="A1:B2"))
+
+    path = tmp_path / "fable-2024-like-land-ref.xlsx"
+    workbook.save(path)
+
+    series = curate_default_headline_series(path)
+    land_series = next(item for item in series if item.name == "land_total_area")
+
+    assert land_series.aggregation == "sum"
+    assert land_series.label == "Total land area (component sum)"
+    assert len(land_series.points[0].cell_refs) == 6
+    assert land_series.points[0].cell_refs == (
+        "LAND!B2",
+        "LAND!C2",
+        "LAND!D2",
+        "LAND!E2",
+        "LAND!G2",
+        "LAND!H2",
+    )
+    assert land_series.description is not None
+    assert "#REF!" in land_series.description
+
+
+def test_curate_default_headline_series_builds_ghg_total_from_output_components(
+    tmp_path: Path,
+) -> None:
+    workbook = Workbook()
+    workbook.active.title = "Indextables"
+
+    ghg = workbook.create_sheet("GHG")
+    ghg.append(
+        [
+            "Year",
+            "CropCO2",
+            "LiveN2O",
+            "CropN2O",
+            "LiveCH4",
+            "CropCH4",
+            "DeforCO2",
+            "OtherLandCO2",
+            "LandSeq",
+            "BiofuelSavings",
+            "TotalCO2e",
+        ]
+    )
+    ghg.append([2030, 1, 2, 3, 4, 5, 6, 7, 8, 9, 45])
+    ghg.add_table(Table(displayName="ResultsGHG", ref="A1:K2"))
+
+    path = tmp_path / "fable-ghg-components.xlsx"
+    workbook.save(path)
+
+    series = curate_default_headline_series(path)
+    ghg_series = next(item for item in series if item.name == "ghg_total_co2e")
+
+    assert ghg_series.aggregation == "sum"
+    assert ghg_series.label == "Total GHG emissions (output components)"
+    assert len(ghg_series.points[0].cell_refs) == 9
+    assert ghg_series.points[0].cell_refs == (
+        "GHG!B2",
+        "GHG!C2",
+        "GHG!D2",
+        "GHG!E2",
+        "GHG!F2",
+        "GHG!G2",
+        "GHG!H2",
+        "GHG!J2",
+        "GHG!I2",
+    )
+    assert ghg_series.description is not None
+    assert "ResultsGHG[TotalCO2e]" in ghg_series.description

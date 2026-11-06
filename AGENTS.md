@@ -105,7 +105,9 @@ Active rules now:
   roadmap.
 - Before non-trivial work, update or confirm the roadmap entry that governs it.
 - Use GitHub issues with `gh` in tandem with the roadmap once the public remote and GitHub CLI access
-  exist:
+  exist. Follow `docs/guides/github-issue-workflow.rst` and the tracked templates under
+  `.github/ISSUE_TEMPLATE/`; write bodies to files, validate them with
+  `python scripts/check_issue_body.py`, and post with `--body-file`:
   - roadmap phases map to GitHub parent issues;
   - roadmap tasks map to child issues linked from the parent issue body;
   - substantial subtasks may map to third-level implementation issues linked from the task issue

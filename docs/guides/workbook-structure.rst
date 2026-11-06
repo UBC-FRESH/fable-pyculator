@@ -51,6 +51,55 @@ report/summary surface rather than one of the core output-data sheets.
      - ``A1:X1080``
      - ``TotalResultsWF``, ``ResultsWF``
 
+The 2024 Canada workbook differs on the water sheet: its only discovered ``WATER`` table is
+``ResultsWater`` with irrigation requirement and withdrawal columns. It does not contain the
+``TotalResultsWF`` water-footprint table. Default headline curation therefore exposes FOOD, LAND,
+and GHG headline series for 2024 and skips the unsupported water-footprint series; pass
+``strict=True`` to :func:`fable_pyculator.curate_default_headline_series` when a caller needs the
+older fail-fast behavior.
+
+The 2024 ``LAND`` sheet also has a broken ``ResultsLand[TOTAL]`` formula containing ``#REF!``.
+Excel caches that column as ``#REF!``, so the model faithfully reproduces an unusable total. The
+workbook still contains a valid ``calc_land_cor[TotallandFin]`` total, and the intended correction
+term was ``calc_land_cor[CalcLoggedForest]``. Default curation detects the broken total and uses a
+clearly labelled *Total land area (component sum)* series that sums ``Cropland``, ``Pasture``,
+``Urban``, ``ForPlantations``, ``OtherForest``, and ``OtherLand``; ``LoggedForest`` is not added
+separately because it is already represented inside the other-forest total. This reproduces the
+workbook's ``TotallandFin`` value exactly. The series description records the broken source formula.
+
+A reproducible local repair is available:
+
+.. code-block:: bash
+
+   python scripts/repair_fable_2024_land_total.py
+
+It replaces ``SUMIFS(#REF!, …)`` with ``SUMIFS(calc_land_cor[CalcLoggedForest], …)`` in
+``LAND!AA17:AA27`` and updates the cached values to the workbook's ``calc_land_cor[TotallandFin]``
+totals. It edits the xlsx XML directly so openpyxl does not rewrite the whole workbook, and keeps a
+``.xlsx.bak`` backup.
+
+If you restore a decompressed generated model that predates the workbook repair, apply the matching
+11-expression repair with:
+
+.. code-block:: bash
+
+   python scripts/repair_fable_2024_generated_model.py
+
+The tracked 2024 archive has already been repaired; the script is for older local working copies.
+
+GHG totals are derived from the declared `OUTPUT-8` component columns rather than the `TotalCO2e`
+`CALC` cell: `CropCO2`, `LiveN2O`, `CropN2O`, `LiveCH4`, `CropCH4`, `DeforCO2`, `OtherLandCO2`, the
+land-sequence column (`LandSeq` or `LandSeqReg`), and `BiofuelSavings`. This follows the workbook's
+`ResultsGHG[TotalCO2e]` formula, but the values are generated-model outputs and can differ where an
+individual component model differs. The 2024 artifact excludes `LandSeqAffor` because it is not a
+declared `OUTPUT-8` cell; the series description says so explicitly. A known example is the 2021
+`LandSeq` value at 2050 (`-223.30` generated vs `-302.20` cached), which makes the derived 2050 GHG
+total differ from the cached workbook total. The portal reports the generated-model value.
+
+Until the tracked 2024 generated model is rebuilt from the repaired workbook, the portal also applies
+the same component repair to the displayed ``land_resultsland`` TOTAL column and shows an explicit
+warning note under that table. It does not change generated-model validation semantics.
+
 The adjacent report sheet is:
 
 .. list-table::

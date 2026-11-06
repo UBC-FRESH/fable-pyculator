@@ -47,6 +47,11 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 27 is closed: alpha-tester notebook reliability, 2021 smoke hardening, skipped-table
   diagnostics, and notebook-failure issue hygiene are tracked, PR #201 merged, and post-merge Test
   and Docs Pages workflows passed.
+- Phase 28 is implemented on `feature/p28-web-portal`: an optional multi-page FastAPI portal over
+  prepared generated models, saved runs, comparison, compact validation evidence, artifact
+  readiness, scenario bundles, and an opt-in local assistant. Parent issue #203 and child issues
+  #204-#213 are mapped; PR #214 is open and CI is green, with merge and post-merge deployment
+  checks remaining.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2085,3 +2090,175 @@ Closeout evidence:
 - PR #201 merged to `main` with merge commit `37cf162`.
 - Post-merge Test workflow #28631757605 passed.
 - Post-merge Docs Pages workflow #28631757588 passed.
+
+## Phase 28: Optional Multi-Page Web Portal
+
+GitHub parent issue: #203.
+
+Branch: `feature/p28-web-portal`.
+
+Status: pr-open. CI passed; merge pending.
+
+Pull request: #214.
+
+Goal: add a local multi-page portal over the artifacts and notebook APIs FABLE Pyculator already
+uses, so analysts can prepare a matching workbook/model pair, run named scenarios, read and export
+generated outputs, compare saved runs, inspect compact validation evidence, browse artifact
+readiness, and optionally ask a local assistant.
+
+Tasks:
+
+- [x] P28.1 Define the portal service and artifact contract. Child issue: #204.
+- [x] P28.2 Add artifact discovery, compressed-model materialization, and spec caching. Child issue: #205.
+- [x] P28.3 Add preparation and scenario-run background jobs. Child issue: #206.
+- [x] P28.4 Add saved-run persistence, table retrieval, and run comparison. Child issue: #207.
+- [x] P28.5 Add the dependency-free multi-page SPA. Child issue: #208.
+- [x] P28.6 Add compact validation-evidence and scenario-bundle browsing. Child issue: #209.
+- [x] P28.7 Add the optional local assistant bridge and CLI entry point. Child issue: #210.
+- [x] P28.8 Add tests, documentation, and roadmap/changelog evidence. Child issue: #211.
+- [x] P28.10 Add GitHub issue-filing guidance, templates, and validation to the portal assistant. Child issue: #213.
+- [ ] P28.9 Open the PR, map issues, deploy docs, and close the phase. Child issue: #212.
+
+Scope:
+
+- Optional `fable-pyculator[web]` extra with FastAPI and uvicorn.
+- FastAPI service plus a vanilla ES-module SPA with no Node build.
+- Loopback-only default and an explicit `--allow-remote` guard.
+- Preparation, execution, saved runs, comparison, validation, artifacts, and assistant pages.
+- Real generated-model values only; no browser-side FABLE calculation.
+- Ignored `runtime/portal/` cache for prepared specs and saved runs.
+
+Out of scope:
+
+- Authentication, accounts, multi-tenant storage, or remote execution scheduling.
+- Source workbook mutation from the browser.
+- New generated-model equivalence claims.
+- Loading multi-gigabyte raw validation stage artifacts for display.
+
+Implementation evidence:
+
+- Added `src/fable_pyculator/web/` with artifact discovery/materialization, spec JSON caching,
+  background jobs, scenario execution, saved-run comparison, validation lookup, FastAPI app factory,
+  and the optional assistant bridge. Saved runs carry a provenance block with the portal version,
+  workbook and generated-model paths/sizes, preparation timestamp, and workbook id.
+- Added the global **+ Ask** pill and fixed overlay assistant with markdown rendering for user and
+  assistant messages, safe links/code/tables, session continuation, tool-action chips, run context,
+  Enter-to-send, Shift+Enter newline, and keyboard shortcuts.
+- Added persistent assistant chats under `runtime/portal/chats/`, with a saved-chat list in the
+  overlay, last-chat restoration, and OpenCode session continuation across service restarts.
+- Added a generated grounding sheet at `runtime/portal/assistant/cheat-sheet.md` with served model
+  instances, artifact paths, prepared spec counts, saved runs, API surface, known version
+  differences, a digest compiled from all listed FABLE/Modelwright docs, and an AST source API
+  index. New chats must read it and open full cited files for exact details. It is served at
+  `GET /api/assistant/cheatsheet.md`.
+- Added deterministic assistant grounding evaluations plus opt-in live source-citation cases, and a
+  Playwright Chromium smoke for overlay, Enter/Shift+Enter, markdown, and reload-persistence checks.
+- Fixed the FABLE 2024 broken `ResultsLand[TOTAL]` headline by falling back to a labelled component
+  sum when the workbook TOTAL formula contains `#REF!`, and bumped the spec-cache version so stale
+  specs rebuild automatically. Added `scripts/repair_fable_2024_land_total.py` and repaired the local
+  workbook formula and cached totals from `calc_land_cor[TotallandFin]`; the portal also applies the
+  same component repair to the stale generated model's displayed LAND TOTAL column with an explicit
+  warning note.
+- Curated the GHG headline from declared `OUTPUT-8` components instead of the `TotalCO2e` `CALC`
+  cell, so 2020/2021/2024 results pages now have a numeric GHG series. The 2024 series explicitly
+  notes that `LandSeqAffor` is excluded because it is not a declared `OUTPUT-8` cell in that
+  artifact. Derived values are generated-model outputs; cached-total validation matched 2020 to
+  ~1e-12 and exposed late-year component-model differences for 2021/2024.
+- Added `scripts/repair_fable_2024_generated_model.py` and repaired the tracked 2024 generated-model
+  expressions for `LAND!AA17:AA27`; old-vs-repaired execution across all 10,274 declared outputs
+  changed only those 11 cells.
+- Added an optional 2070 trend extension in the Workbench: native FABLE results stay 2000-2050;
+  headline series and one-row-per-year tables are extrapolated from the 2035-2050 linear trend;
+  multi-row-per-year tables are extended group-by-group on text identity columns when possible, and
+  unsupported tables stay native with an explicit note. Every extended run records the method and
+  non-native warning.
+- Finished assistant chat management: rename, search, pin, archive, delete, Markdown export, and
+  automatic titles from the first exchange; added PATCH/export chat endpoints.
+- Re-ran the release artifact check; it passed and the wheel contains chats, cheat-sheet, grounding
+  evals, and all portal static assets.
+- Added deployment support: optional HTTP Basic auth, a `scripts/run_portal.sh` environment
+  wrapper, systemd/nginx examples, proxy root-path support, and the web-deployment guide.
+- Added the UBC-FRESH phase/task issue templates and `docs/guides/github-issue-workflow.rst`; the
+  portal assistant now asks for issue type, scope, scale, impact, and verification details, drafts
+  the canonical body, runs `scripts/check_issue_body.py`, confirms with the user, posts with
+  `gh issue create --body-file`, links child tasks to the parent, and reads the issue back.
+- Added run-scoped data-quality notes to Results for the 2070 extension, 2024 land component
+  fallback, missing 2024 water series, GHG-vs-cached divergence, and unextended tables; notes are
+  persisted in `run.json` as `quality_warnings`.
+- Wired `scripts/evaluate_assistant_grounding.py` into the Test workflow; live agent and Chromium
+  checks remain opt-in.
+- Added `src/fable_pyculator/cli.py` and the `fable-pyculator web` entry point.
+- Added a multi-page static SPA under `src/fable_pyculator/web/static/` with Overview, Workbench,
+  Results, Compare, Validation, Artifacts, and Assistant pages.
+- Added the `web` optional dependency extra and package-data declaration for static assets.
+- Added `tests/web/test_portal.py` covering spec round-tripping, artifact naming and materialization,
+  preparation, scenario execution, table retrieval, comparison, validation lookup, the
+  assistant-disabled guard, and the bind guard.
+- Added `docs/guides/web-portal.rst`, API reference entries, README guidance, and
+  `planning/phase-28-web-portal.md`.
+- Added version-tolerant default headline curation: unsupported tables are skipped so the 2024
+  Canada workbook prepares with FOOD, LAND, and GHG series despite lacking `TotalResultsWF`;
+  `strict=True` preserves fail-fast behavior and `build_notebook_spec` exposes `strict_headlines`.
+- Added `runtime/` to `.gitignore`.
+
+Verification evidence:
+
+- `.venv/bin/python -m ruff check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
+  passed.
+- `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
+  passed after formatting.
+- `.venv/bin/python -m pytest -q` passed with `198` tests and `15` skips.
+- `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1 .venv/bin/python -m pytest -q tests/web/test_browser_e2e.py`
+  passed against real Chromium and a live assistant chat across a page reload.
+- `scripts/evaluate_assistant_grounding.py` structural checks passed, and
+  `scripts/evaluate_assistant_grounding.py --live` passed the five grounding cases against the real
+  OpenCode CLI, including `github_issue_filing` in 17.3 s.
+- PR #214 CI on `46a92a2`: quality, pytest, release-artifacts, and the Docs Pages build passed; the
+  deploy job correctly skipped on the pull request.
+- `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -q tests/test_fable_workbook_headline_series.py`
+  passed with `2` workbook-backed tests for 2020 and 2024.
+- Real restored-artifact 2021 preparation and scenario execution passed through the HTTP portal:
+  16 controls, 14 output tables, 4 headline series, a background prepare job, an 85.7 s scenario run,
+  a saved 968-row `trade_resultstrade` table, saved-run detail, and compact validation lookup.
+  A second app instance reloaded the prepared spec from cache in 0.54 s.
+- Re-materialized the authoritative 2021 archive and reran the live portal smoke: `430.13 → 107.63
+  MtCO2e`, with no GHG data-quality warning.
+- Real restored-artifact 2024 preparation and scenario execution passed: 47.7 s prepare, 108.5 s run,
+  24 controls, 17 output tables, 3 headline series, and saved tables.
+- After the land-total fallback, a real 2024 run prepared in 1.0 s from cache and ran in 105.7 s,
+  reporting numeric total land area (`896,559.0`) with the component-sum label matching the
+  workbook's `calc_land_cor[TotallandFin]` total. The displayed `land_resultsland` TOTAL column also
+  shows the repaired value with an explicit display-repair note instead of `#REF!`.
+- After repairing the tracked generated-model expressions, a fresh 2024 run prepared in 41.4 s and
+  ran in 108.6 s; the `land_resultsland` TOTAL column came directly from the model with no display
+  repair note, and all 11 LAND TOTAL values were `896,559.0` (float tolerance).
+- Old-vs-repaired generated-model execution comparison across all 10,274 declared outputs found
+  exactly 11 differences, all `LAND!AA17:AA27` (`#REF!` → `896,559.0`).
+- Live 2024 GHG smoke after the derivation: `59.99 → 95.61 MtCO2e` with the workbook default
+  `gwp_scen = SAR`; cached workbook GHG values use `AR6`, so they are not directly comparable.
+- Investigated a live 2021 `LandSeq`/GHG discrepancy at 2050. The apparent generated-model defect
+  was a stale 85 MB local working model that omitted six `SCENARIOS definition` row-50 formulas
+  (`EQ50`-`EV50`). The tracked 122 MB archive already contains those formulas and, when
+  re-materialized, matches the cached 2050 outputs (`GHG!AI28 -302.1950203334845`,
+  `LAND!V27 25000.0`, `LAND!X27 81407.07618113697`); no tracked-artifact repair was needed. The
+  live 2021 smoke is now `430.13 → 107.63 MtCO2e` with no GHG data-quality warning.
+- Live 2024 horizon-2070 run: headline series extended to 2070 (`food 1,611.3`, `GHG 110.14`,
+  `land 896,559.0`); `land_resultsland` rendered 15 rows; grouped `food_results_diets` extended
+  from 187 to 255 rows; grouped `trade_resultstrade` extended from 990 to 1,350 rows.
+- Real restored-artifact 2020 preparation and scenario execution passed: 137.0 s prepare,
+  167.2 s run, 16 controls, 14 output tables, 4 headline series, and saved tables.
+- The live local assistant returned markdown in 11.9 s with an OpenCode session id, and a second turn
+  continued the same session in 7.2 s.
+- The grounded new-chat assistant read `notebook.py` and answered the exact
+  `build_notebook_spec` signature in 25.5 s; after a service restart the saved chat listed,
+  reloaded, and continued the same OpenCode session in 10.4 s.
+- `.venv/bin/fable-pyculator web --root . --port 8767` served `/api/health`, `/`, and
+  `/static/app.js` successfully after an editable install with the `web` extra.
+- `.venv/bin/sphinx-build -b html docs _build/html -W -q` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `scripts/check_release_artifacts.sh` passed, and the built wheel contains the portal package and
+  `web/static/*` assets.
+
+Closeout evidence:
+
+- Pending PR, issue mapping, and post-merge Test and Docs Pages workflows.
