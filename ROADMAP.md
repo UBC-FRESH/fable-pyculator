@@ -50,7 +50,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 28 is implemented on `feature/p28-web-portal`: an optional multi-page FastAPI portal over
   prepared generated models, saved runs, comparison, compact validation evidence, artifact
   readiness, scenario bundles, and an opt-in local assistant. Parent issue #203 and child issues
-  #204-#213 are mapped; PR, CI, and post-merge deployment checks remain closeout work.
+  #204-#213 are mapped; PR #214 is open, and CI plus post-merge deployment checks remain closeout
+  work.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2096,7 +2097,9 @@ GitHub parent issue: #203.
 
 Branch: `feature/p28-web-portal`.
 
-Status: implementation complete; PR and closeout pending.
+Status: pr-open.
+
+Pull request: #214.
 
 Goal: add a local multi-page portal over the artifacts and notebook APIs FABLE Pyculator already
 uses, so analysts can prepare a matching workbook/model pair, run named scenarios, read and export
