@@ -53,8 +53,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   are on `main`.
 - Phase 29 is implemented on `feature/p29-2024-regeneration`: a fresh Modelwright `0.1.0a9`
   regeneration from the repaired 2024 workbook reproduces the tracked archive exactly, so no
-  artifact replacement is needed. Parent issue #215 and child issues #216-#220 are mapped; PR and
-  closeout remain.
+  artifact replacement is needed. Parent issue #215 and child issues #216-#220 are mapped; PR #221
+  is open and CI/closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2277,7 +2277,9 @@ GitHub parent issue: #215.
 
 Branch: `feature/p29-2024-regeneration`.
 
-Status: active.
+Status: pr-open.
+
+Pull request: #221.
 
 Goal: regenerate the 2024 FABLE Calculator (Canada) Python model from the repaired workbook with
 the current Modelwright checkout, eliminate the post-generation LAND TOTAL repair if possible, and
