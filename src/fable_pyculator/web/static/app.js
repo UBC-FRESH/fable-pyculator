@@ -1,4 +1,4 @@
-import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28i";
+import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28j";
 
 const API = new URL("api/", document.baseURI);
 const PAGES = ["overview", "workbench", "results", "compare", "validation", "artifacts"];
