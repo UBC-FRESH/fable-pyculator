@@ -39,7 +39,7 @@ Validation summary:
   recalculation tolerance;
 - previously untranslatable cells (e.g. `8_calc_emissions!V70`) translate in this model.
 
-Post-publication repair (2026-11-06):
+Post-publication repair and regeneration verification (2026-11-06):
 
 - The source 2024 workbook shipped with `SUMIFS(#REF!, calc_land_cor[Year], …)` inside
   `ResultsLand[TOTAL]` (`LAND!AA17:AA27`). The pristine reference workbook has the same defect.
@@ -53,11 +53,37 @@ Post-publication repair (2026-11-06):
 - Old-vs-repaired generated-model execution comparison across all 10,274 declared outputs showed
   only the 11 `LAND!AA17:AA27` cells changed; no other output changed.
 
+Fresh regeneration check:
+
+- command: `python scripts/regenerate_fable_2024_model.py`;
+- Modelwright version: `0.1.0a9` or newer;
+- repaired workbook checksum:
+  `519f68d70d6338ca7030ab470e00686f76e62fe008d3adaf0210613d19d365fc`;
+- extracted cells: 536,593;
+- dependency edges: 5,100,500;
+- translated formulas: 410,299 of 410,299;
+- declared outputs: 10,274;
+- output-closure failures: 0;
+- generation result: `generated=True` with 0 diagnostics;
+- uncompressed model checksum:
+  `cc8ac21ab55293f648aa9f6b3b8782b1f2dbe1b7789fda43bb1d100c1d8221ee`.
+
+The regenerated model is byte-identical to the decompressed tracked archive. `LAND!AA17:AA27` are
+native generated formulas, and `8_calc_emissions!V70` translates with the current runtime. The
+earlier surgical repair is therefore equivalent to a fresh regeneration from the repaired workbook.
+Earlier failed repro logs used Modelwright `0.1.0a8`; `0.1.0a9` is the minimum supported version.
+
 The generated model source is about 114 MiB uncompressed and about 1.7 MiB as the tracked `.xz`
 archive. The repaired compressed archive checksum is:
 
 ```text
 f62c74b246fa29068b54b2c8ad82ed34b35026e490f2e2d205148c18277ae469
+```
+
+The decompressed model checksum is:
+
+```text
+cc8ac21ab55293f648aa9f6b3b8782b1f2dbe1b7789fda43bb1d100c1d8221ee
 ```
 
 ## Artifact Boundary

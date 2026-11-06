@@ -2,7 +2,8 @@ Generated Model Artifacts
 =========================
 
 FABLE Pyculator is a wrapper and notebook interface for Modelwright-generated Python models. It
-does not currently generate those models from a FABLE workbook.
+ships a reproducibility check for the repaired 2024 workbook, but it does not expose a general
+workbook-to-model generation API.
 
 That boundary matters when comparing workbook versions. The 2021 workbook should be paired with a
 2021 generated Python model. Running a 2021 workbook-derived wrapper against the 2020 generated
@@ -25,18 +26,40 @@ Keep generated models under ignored ``tmp/`` paths:
    * - 2021
      - ``tmp/private-workbooks/2021_Open_FABLECalculator.xlsx``
      - ``tmp/generated-models/fable-2021/generated_fable_2021_model.py``
+   * - 2024
+     - ``tmp/private-workbooks/2024_Open_FABLECalculator.xlsx`` (repaired)
+     - ``tmp/generated-models/fable-2024/generated_fable_2024_model.py``
 
 The 2020 example notebook may materialize the compressed 2020 generated model from a sibling
-Modelwright checkout. The 2021 example notebook materializes the validated compressed 2021 generated
-model tracked in this repository:
+Modelwright checkout. The 2021 and 2024 example notebooks materialize validated compressed generated
+models tracked in this repository:
 
 .. code-block:: text
 
    examples/fable_2021/generated_fable_2021_model.py.xz
+   examples/fable_2024/generated_fable_2024_model.py.xz
 
-That archive is the only tracked generated-model exception in this repository. Source workbooks,
+Those archives are the tracked generated-model exceptions in this repository. Source workbooks,
 decompressed generated models, raw generation JSON files, and validation reports still belong under
 ignored ``tmp/`` paths.
+
+2024 Regeneration Check
+-----------------------
+
+The repaired 2024 workbook can be converted from scratch with Modelwright ``0.1.0a9`` or newer:
+
+.. code-block:: bash
+
+   .venv/bin/python scripts/regenerate_fable_2024_model.py
+
+The check writes the regenerated model under ignored
+``tmp/fable2024-regeneration/``, verifies every declared output closes, and compares the result
+byte-for-byte with ``examples/fable_2024/generated_fable_2024_model.py.xz``. The current result is
+410,299 translated formulas, 10,274 declared outputs, zero output-closure failures, and an exact
+archive match. The tracked model's ``LAND!AA17:AA27`` cells are native generated formulas.
+
+The earlier blocked repro used Modelwright ``0.1.0a8``. The project now requires
+``modelwright>=0.1.0a9`` so the complete 2024 formula set translates.
 
 To prepare or explicitly run a local 2021 rebuild from the public source workbook, see
 :doc:`2021-freshforge-rebuild-command`.
@@ -85,9 +108,11 @@ Modelwright's low-level generation command expects explicit JSON artifacts:
 - ``expressions.json`` contains translated formula expressions for generated symbols.
 - ``constants.json`` contains literal input values or cached constants needed by the generated model.
 
-Those files are Modelwright generation inputs. FABLE Pyculator does not currently expose an API that
-creates them from a FABLE workbook, and it should not silently invent them. The 2021 generated model
-published here was created by Modelwright during Phase 8 and then compressed for notebook users.
+Those files are Modelwright generation inputs. FABLE Pyculator does not expose a general API that
+creates them from a FABLE workbook, and it should not silently invent them. The 2024 regeneration
+script exercises Modelwright's high-level extraction, translation, inference, and generation APIs
+directly; the 2021 generated model published here was created by Modelwright during Phase 8 and then
+compressed for notebook users.
 
 Current Validation Boundary
 ---------------------------

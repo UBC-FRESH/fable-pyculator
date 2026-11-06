@@ -92,10 +92,11 @@ Preparation needs the source workbook under the ignored
 tracked compressed generated model. The portal decompresses the approved archive when needed and
 caches workbook discovery and saved runs under ignored `runtime/portal/` paths. Default headline
 curation is version-tolerant: 2020/2021 expose FOOD, LAND, GHG, and WATER; the 2024 Canada workbook
-exposes FOOD, LAND, and GHG because it has no `TotalResultsWF` water-footprint table. The 2024
-`LAND[TOTAL]` formula contains `#REF!`, so the land headline uses a clearly labelled component sum
-that reproduces the workbook's valid `calc_land_cor[TotallandFin]` value and records the broken
-source formula in its description. The GHG headline is derived from the declared `OUTPUT-8`
+exposes FOOD, LAND, and GHG because it has no `TotalResultsWF` water-footprint table. The published
+2024 `LAND[TOTAL]` formula contains `#REF!`; the portal can display a clearly labelled component sum
+that reproduces the workbook's valid `calc_land_cor[TotallandFin]` value. The tracked 2024 artifact has
+been repaired and a fresh Modelwright `0.1.0a9` regeneration from the repaired workbook reproduces it
+byte-for-byte. The GHG headline is derived from the declared `OUTPUT-8`
 components (`CropCO2`, `LiveN2O`, `CropN2O`, `LiveCH4`, `CropCH4`, `DeforCO2`, `OtherLandCO2`,
 land-sequence, and `BiofuelSavings`) because `TotalCO2e` is a `CALC` cell rather than a generated
 output. Values are generated-model outputs, so they can differ from workbook-cached totals where an
@@ -106,9 +107,17 @@ is not a declared `OUTPUT-8` cell in that artifact. To repair a local copy of th
 .venv/bin/python scripts/repair_fable_2024_land_total.py
 ```
 
-Real 2021
-preparation takes about two minutes on a warm local checkout and a scenario run takes about a
-minute; both run as background jobs with progress reporting.
+To reproduce the tracked 2024 generated model from the repaired workbook, install Modelwright
+`0.1.0a9` or newer and run:
+
+```bash
+.venv/bin/python scripts/regenerate_fable_2024_model.py
+```
+
+The check translates all 410,299 formulas, closes all 10,274 declared outputs, generates the model
+with zero diagnostics, and compares it byte-for-byte with the tracked archive. Real 2021 preparation
+takes about two minutes on a warm local checkout and a scenario run takes about a minute; both run
+as background jobs with progress reporting.
 
 The portal is a presentation layer. It does not recompute a FABLE result in the browser, edit source
 workbooks, or provide authentication. A non-loopback bind requires `--allow-remote`.

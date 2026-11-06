@@ -122,6 +122,13 @@ This file records completed project work in chronological order.
   `a6758db`, confirmed post-merge Test workflow `42308703202` and Docs Pages workflow `42308703198`,
   and closed the completed child issues with closeout comments. Final CI on the PR head passed
   quality, pytest, release-artifacts, and the Docs Pages build with the web extra installed.
+- Activated Phase 29 (parent #215, children #216-#220) to regenerate the 2024 model from the repaired
+  workbook. Added `scripts/regenerate_fable_2024_model.py` and bumped the dependency floor to
+  `modelwright[notebook]>=0.1.0a9`. A fresh conversion translated 410,299 of 410,299 formulas,
+  closed all 10,274 declared outputs with 0 failures and 0 generation diagnostics, and produced
+  SHA-256 `cc8ac21ab55293f648aa9f6b3b8782b1f2dbe1b7789fda43bb1d100c1d8221ee`, exactly matching
+  the decompressed tracked archive. No artifact replacement was needed; `LAND!AA17:AA27` are native
+  generated formulas. The earlier blocked repro used the stale `0.1.0a8` environment.
 
 ## 2026-08-15
 
