@@ -91,7 +91,9 @@ Preparation needs the source workbook under the ignored
 tracked compressed generated model. The portal decompresses the approved archive when needed and
 caches workbook discovery and saved runs under ignored `runtime/portal/` paths. Default headline
 curation is version-tolerant: 2020/2021 expose FOOD, LAND, GHG, and WATER; the 2024 Canada workbook
-exposes FOOD, LAND, and GHG because it has no `TotalResultsWF` water-footprint table. Real 2021
+exposes FOOD, LAND, and GHG because it has no `TotalResultsWF` water-footprint table. The 2024
+`LAND[TOTAL]` formula contains `#REF!`, so the land headline uses a clearly labelled sum of the
+valid land-cover components and records the broken workbook total in its description. Real 2021
 preparation takes about two minutes on a warm local checkout and a scenario run takes about a
 minute; both run as background jobs with progress reporting.
 

@@ -58,6 +58,12 @@ and GHG headline series for 2024 and skips the unsupported water-footprint serie
 ``strict=True`` to :func:`fable_pyculator.curate_default_headline_series` when a caller needs the
 older fail-fast behavior.
 
+The 2024 ``LAND`` sheet also has a broken ``ResultsLand[TOTAL]`` formula containing ``#REF!``.
+Excel caches that column as ``#REF!``, so the model faithfully reproduces an unusable total. Default
+curation detects this and uses a clearly labelled *Total land area (component sum)* series that sums
+``Cropland``, ``Pasture``, ``Urban``, ``ForPlantations``, ``LoggedForest``, ``OtherForest``, and
+``OtherLand``. Its description records that the workbook's broken correction term was omitted.
+
 The adjacent report sheet is:
 
 .. list-table::

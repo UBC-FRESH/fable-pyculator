@@ -179,11 +179,7 @@ def structural_failures(
     required_paths = [Path(path) for path in cheat_sheet.required_reading]
     for case in cases:
         for relative in case.expected_paths:
-            matches = [
-                path
-                for path in required_paths
-                if path.as_posix() == relative or path.as_posix().endswith("/" + relative)
-            ]
+            matches = [path for path in required_paths if _path_matches(path, relative)]
             if not matches:
                 failures.append(f"{case.case_id}: expected path is not in required reading: {relative}")
             if not any(path.is_file() for path in matches):
@@ -265,3 +261,12 @@ def _evaluate_live_case(
         response=response,
         actions=actions,
     )
+
+
+def _path_matches(path: Path, relative: str) -> bool:
+    """Match repo-relative paths and installed-package paths with the same package/name."""
+
+    if path.as_posix() == relative or path.as_posix().endswith("/" + relative):
+        return True
+    expected = Path(relative)
+    return path.name == expected.name and path.parent.name == expected.parent.name

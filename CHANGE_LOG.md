@@ -48,8 +48,17 @@ This file records completed project work in chronological order.
   the + Ask overlay, Enter/Shift+Enter behavior, markdown rendering, and live assistant chat
   persistence across a full page reload; it passed locally.
 - Added the `browser` optional extra, the grounding-eval guide, and README verification commands.
+- Fixed the visible FABLE 2024 `land_total_area = #REF!` KPI. The 2024 workbook itself contains
+  `SUMIFS(#REF!, …)` in `ResultsLand[TOTAL]`, and Excel caches that column as `#REF!`. Curation now
+  detects the broken total and uses a clearly labelled *Total land area (component sum)* fallback
+  over `Cropland`, `Pasture`, `Urban`, `ForPlantations`, `LoggedForest`, `OtherForest`, and
+  `OtherLand`, recording the omitted broken correction term in the series description. The portal
+  spec-cache version was bumped so stale specs rebuild automatically. A real 2024 run now reports
+  `897,510.9` for 2000 and `897,217.8` for 2050 instead of `#REF!`.
+- Wired the deterministic assistant grounding check into the Test workflow so cheat-sheet/source
+  drift fails CI, while live agent and Chromium checks remain opt-in.
 - Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
-  full test suite (`168` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
+  full test suite (`170` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
   headline tests (`2` passed), a warning-clean Sphinx build, Read the Docs theme verification, the
   release artifact check, and real restored-artifact 2021/2024/2020 preparation and runs.
 

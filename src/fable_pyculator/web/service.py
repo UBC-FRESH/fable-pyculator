@@ -46,6 +46,7 @@ __all__ = [
 
 JobStatus = Literal["queued", "running", "ok", "error"]
 Report = Callable[[int, str], None]
+SPEC_CACHE_VERSION = "2026-11-06-land-component-fallback"
 
 
 class PortalError(RuntimeError):
@@ -758,6 +759,8 @@ class PortalState:
             return None
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
+            if payload.get("cache_version") != SPEC_CACHE_VERSION:
+                return None
             if payload.get("fingerprint") != fingerprint:
                 return None
             spec = spec_from_payload(payload["spec"])
@@ -777,6 +780,7 @@ class PortalState:
         path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "version": version,
+            "cache_version": SPEC_CACHE_VERSION,
             "fingerprint": fingerprint,
             "summary": summary,
             "spec": spec_to_payload(spec),

@@ -2149,6 +2149,11 @@ Implementation evidence:
   `GET /api/assistant/cheatsheet.md`.
 - Added deterministic assistant grounding evaluations plus opt-in live source-citation cases, and a
   Playwright Chromium smoke for overlay, Enter/Shift+Enter, markdown, and reload-persistence checks.
+- Fixed the FABLE 2024 broken `ResultsLand[TOTAL]` headline by falling back to a labelled component
+  sum when the workbook TOTAL formula contains `#REF!`, and bumped the spec-cache version so stale
+  specs rebuild automatically.
+- Wired `scripts/evaluate_assistant_grounding.py` into the Test workflow; live agent and Chromium
+  checks remain opt-in.
 - Added `src/fable_pyculator/cli.py` and the `fable-pyculator web` entry point.
 - Added a multi-page static SPA under `src/fable_pyculator/web/static/` with Overview, Workbench,
   Results, Compare, Validation, Artifacts, and Assistant pages.
@@ -2183,6 +2188,9 @@ Verification evidence:
   A second app instance reloaded the prepared spec from cache in 0.54 s.
 - Real restored-artifact 2024 preparation and scenario execution passed: 47.7 s prepare, 108.5 s run,
   24 controls, 17 output tables, 3 headline series, and saved tables.
+- After the land-total fallback, a real 2024 run prepared in 48.0 s and ran in 115.1 s, reporting
+  numeric total land area (`897,510.9` for 2000 and `897,217.8` for 2050) with the component-sum
+  label and broken-workbook-total explanation preserved.
 - Real restored-artifact 2020 preparation and scenario execution passed: 137.0 s prepare,
   167.2 s run, 16 controls, 14 output tables, 4 headline series, and saved tables.
 - The live local assistant returned markdown in 11.9 s with an OpenCode session id, and a second turn

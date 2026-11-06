@@ -70,6 +70,13 @@ _MODELWRIGHT_CODE = (
     "src/modelwright/validation.py",
     "src/modelwright/contracts.py",
 )
+_MODELWRIGHT_PACKAGE_MODULES = (
+    "wrappers.py",
+    "notebooks.py",
+    "generation.py",
+    "validation.py",
+    "__init__.py",
+)
 
 
 @dataclass(frozen=True)
@@ -99,6 +106,17 @@ def modelwright_root(repo_root: Path) -> Path | None:
         if (candidate / "src" / "modelwright").is_dir() or (candidate / "docs" / "index.rst").is_file():
             return candidate.resolve()
     return None
+
+
+def _installed_modelwright_code() -> list[Path]:
+    """Return installed Modelwright modules when a documentation checkout is unavailable."""
+
+    try:
+        import modelwright
+    except ModuleNotFoundError:
+        return []
+    package = Path(modelwright.__file__).resolve().parent
+    return [package / name for name in _MODELWRIGHT_PACKAGE_MODULES if (package / name).is_file()]
 
 
 def ensure_cheat_sheet(
@@ -146,7 +164,7 @@ def build_cheat_sheet(
     fable_docs = _existing_paths(repo_root, _FABLE_DOCS)
     fable_code = _existing_paths(repo_root, _FABLE_CODE)
     modelwright_docs = _existing_paths(modelwright, _MODELWRIGHT_DOCS) if modelwright else []
-    modelwright_code = _existing_paths(modelwright, _MODELWRIGHT_CODE) if modelwright else []
+    modelwright_code = _existing_paths(modelwright, _MODELWRIGHT_CODE) if modelwright else _installed_modelwright_code()
     required = [str(path) for path in fable_docs + fable_code + modelwright_docs + modelwright_code]
     lines: list[str] = [
         "# FABLE Pyculator assistant grounding sheet",
@@ -161,7 +179,15 @@ def build_cheat_sheet(
         f"- Portal version: `{__version__}`",
         f"- Generated at: `{generated_at}`",
         f"- Repository root: `{repo_root}`",
-        f"- Modelwright checkout: `{modelwright}`" if modelwright else "- Modelwright checkout: not found locally",
+        (
+            f"- Modelwright checkout: `{modelwright}`"
+            if modelwright
+            else (
+                f"- Modelwright package: `{modelwright_code[0].parent}`"
+                if modelwright_code
+                else "- Modelwright docs/source: not found locally"
+            )
+        ),
         "- Source workbooks, generated models, and runtime caches are ignored local artifacts.",
         "- The portal is a reader. It does not convert workbooks, generate model code, mutate source files,",
         "  or recompute FABLE results in the browser.",
@@ -189,6 +215,9 @@ def build_cheat_sheet(
             "- FABLE 2020 and 2021 expose FOOD, LAND, GHG, and WATER default headline series.",
             "- FABLE 2024 (Canada) has no `TotalResultsWF` water-footprint table; default headline curation",
             "  returns FOOD, LAND, and GHG and skips the unsupported WATER series.",
+            "- The FABLE 2024 `ResultsLand[TOTAL]` formula contains `#REF!`; the curated land series is",
+            "  explicitly labelled as a sum of the valid land-cover components and records the omitted",
+            "  broken workbook correction term in its description.",
             "- 2024 was generated with the Modelwright 0.1.0a9 runtime-hardening line; 2021 is the",
             "  validated public 2021 FABLE-C generated model. Verify claims against the tracked example",
             "  READMEs and local artifacts rather than assuming they are interchangeable.",

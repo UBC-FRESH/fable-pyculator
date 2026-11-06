@@ -240,3 +240,56 @@ def test_curate_default_headline_series_skips_unsupported_version_tables(tmp_pat
     ]
     with pytest.raises(KeyError, match="TotalResultsWF"):
         curate_default_headline_series(path, strict=True)
+
+
+def test_curate_default_headline_series_falls_back_when_land_total_is_ref(tmp_path: Path) -> None:
+    workbook = Workbook()
+    workbook.active.title = "Indextables"
+
+    food = workbook.create_sheet("FOOD")
+    food.append(["PROD_GROUP", "YEAR", "kcal_feas"])
+    food.append(["TOTAL", 2030, 2500])
+    food.add_table(Table(displayName="Total_results_diets", ref="A1:C2"))
+
+    land = workbook.create_sheet("LAND")
+    land.append(
+        [
+            "Year",
+            "Cropland",
+            "Pasture",
+            "Urban",
+            "ForPlantations",
+            "LoggedForest",
+            "OtherForest",
+            "OtherLand",
+            "TOTAL",
+        ]
+    )
+    land.append([2030, 1, 2, 3, 4, 5, 6, 7, "=B2+C2+D2+E2+F2+G2+H2+#REF!"])
+    land.add_table(Table(displayName="ResultsLand", ref="A1:I2"))
+
+    ghg = workbook.create_sheet("GHG")
+    ghg.append(["Year", "TotalCO2e"])
+    ghg.append([2030, 42])
+    ghg.add_table(Table(displayName="ResultsGHG", ref="A1:B2"))
+
+    path = tmp_path / "fable-2024-like-land-ref.xlsx"
+    workbook.save(path)
+
+    series = curate_default_headline_series(path)
+    land_series = next(item for item in series if item.name == "land_total_area")
+
+    assert land_series.aggregation == "sum"
+    assert land_series.label == "Total land area (component sum)"
+    assert len(land_series.points[0].cell_refs) == 7
+    assert land_series.points[0].cell_refs == (
+        "LAND!B2",
+        "LAND!C2",
+        "LAND!D2",
+        "LAND!E2",
+        "LAND!F2",
+        "LAND!G2",
+        "LAND!H2",
+    )
+    assert land_series.description is not None
+    assert "#REF!" in land_series.description

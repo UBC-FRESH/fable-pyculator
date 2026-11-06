@@ -264,7 +264,9 @@ non-formula ``DIRECT`` cells, but it is not a full editable widget system and it
 workbooks. Output table discovery maps Excel table cells into DataFrame surfaces; headline outputs
 are currently curated for FOOD, LAND, GHG, and WATER. The default curation is version-tolerant: a
 headline series whose table or headers are absent is skipped, so the 2024 Canada workbook exposes
-FOOD, LAND, and GHG while the 2020/2021 workbooks expose all four. Pass ``strict=True`` to
+FOOD, LAND, and GHG while the 2020/2021 workbooks expose all four. When the 2024
+``ResultsLand[TOTAL]`` column contains ``#REF!``, the land series falls back to a labelled component
+sum and records the broken workbook total in its description. Pass ``strict=True`` to
 ``curate_default_headline_series`` for fail-fast behavior. The first curation is still
 benchmark-oriented. Generated-model equivalence remains a validation-phase claim rather than a
 wrapper API claim, and is currently limited to the recorded public 2020/2021 FABLE-C benchmark

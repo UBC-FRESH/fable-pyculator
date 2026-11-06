@@ -17,6 +17,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from fable_pyculator.spec import (
     FABLE_OUTPUT_SURFACE_SHEETS,
+    HeadlineAggregation,
     HeadlinePoint,
     HeadlineSeries,
     OutputTable,
@@ -39,6 +40,15 @@ SCENARIO_DEFINITION_COLUMN_ROLE_TAG_PATTERN = re.compile(
     re.IGNORECASE,
 )
 SCENARIO_DEFINITION_LOCATION_PATTERN = re.compile(r"^S\.\d+(?:\.[A-Z])?\.?$", re.IGNORECASE)
+LAND_TOTAL_COMPONENT_HEADERS = (
+    "Cropland",
+    "Pasture",
+    "Urban",
+    "ForPlantations",
+    "LoggedForest",
+    "OtherForest",
+    "OtherLand",
+)
 
 
 def discover_scenario_parameters(
@@ -308,19 +318,27 @@ def curate_default_headline_series(
         )
 
     def land() -> HeadlineSeries:
+        points, aggregation, label, fallback_note = _land_headline_points(
+            workbook["LAND"],
+            "ResultsLand",
+            year_header="Year",
+            total_header="TOTAL",
+        )
+        base_description = descriptions.get(_description_key("ResultsLand"))
+        description = (
+            f"{base_description} {fallback_note}"
+            if base_description and fallback_note
+            else fallback_note or base_description
+        )
         return HeadlineSeries(
             name="land_total_area",
-            label="Total land area",
+            label=label,
             group="LAND",
             sheet="LAND",
             table_name="ResultsLand",
-            points=_headline_points(
-                workbook["LAND"],
-                "ResultsLand",
-                year_header="Year",
-                value_headers=("TOTAL",),
-            ),
-            description=descriptions.get(_description_key("ResultsLand")),
+            points=points,
+            description=description,
+            aggregation=aggregation,
         )
 
     def ghg() -> HeadlineSeries:
@@ -411,6 +429,62 @@ def _required_header(headers: dict[str | None, int], header: str, table_name: st
     if header not in headers:
         raise KeyError(f"table {table_name!r} does not contain header {header!r}")
     return headers[header]
+
+
+def _land_headline_points(
+    worksheet: Worksheet,
+    table_name: str,
+    *,
+    year_header: str,
+    total_header: str,
+) -> tuple[tuple[HeadlinePoint, ...], HeadlineAggregation, str, str | None]:
+    """Return land-total points, aggregating components when the workbook TOTAL is broken.
+
+    The 2024 Canada workbook contains ``#REF!`` directly in the ``ResultsLand[TOTAL]`` formulas.
+    In that case the total cannot be reproduced faithfully, so the headline uses the workbook's
+    component land-cover columns and explicitly records that the broken correction term was omitted.
+    """
+
+    table = worksheet.tables[table_name]
+    min_col, min_row, max_col, max_row = range_boundaries(table.ref)
+    headers = {_optional_text(worksheet.cell(min_row, column).value): column for column in range(min_col, max_col + 1)}
+    year_column = _required_header(headers, year_header, table_name)
+    total_column = _required_header(headers, total_header, table_name)
+    broken_total = any(
+        isinstance(worksheet.cell(row, total_column).value, str)
+        and "#REF!" in str(worksheet.cell(row, total_column).value)
+        for row in range(min_row + 1, max_row + 1)
+    )
+    if not broken_total:
+        return (
+            _headline_points(
+                worksheet,
+                table_name,
+                year_header=year_header,
+                value_headers=(total_header,),
+            ),
+            "value",
+            "Total land area",
+            None,
+        )
+
+    component_columns = tuple(_required_header(headers, header, table_name) for header in LAND_TOTAL_COMPONENT_HEADERS)
+    points: list[HeadlinePoint] = []
+    for row in range(min_row + 1, max_row + 1):
+        year = worksheet.cell(row, year_column).value
+        if year is None:
+            continue
+        points.append(
+            HeadlinePoint(
+                year=year,
+                cell_refs=tuple(f"{worksheet.title}!{get_column_letter(column)}{row}" for column in component_columns),
+            )
+        )
+    note = (
+        f"The workbook's {table_name}[{total_header}] formulas contain #REF!; this fallback sums "
+        f"{', '.join(LAND_TOTAL_COMPONENT_HEADERS)} and omits the workbook's broken correction term."
+    )
+    return tuple(points), "sum", "Total land area (component sum)", note
 
 
 def _indextable_descriptions(worksheet: Worksheet) -> dict[str, str]:

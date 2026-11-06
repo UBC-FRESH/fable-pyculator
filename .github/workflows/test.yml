@@ -43,6 +43,9 @@ jobs:
       - name: Run tests
         run: python -m pytest
 
+      - name: Run assistant grounding checks
+        run: python scripts/evaluate_assistant_grounding.py
+
       - name: Build docs
         run: sphinx-build -b html docs _build/html -W
 

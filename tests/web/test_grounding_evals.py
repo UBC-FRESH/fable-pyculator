@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from fable_pyculator.web import grounding_evals
+from fable_pyculator.web import cheatsheet
 from fable_pyculator.web.grounding_evals import GroundingCase, run_grounding_evals
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -23,6 +24,19 @@ def test_structural_grounding_checks_pass_against_real_docs_and_source() -> None
     assert "build_notebook_spec" in markdown
     assert "class ModelFacade" in markdown
     assert "TotalResultsWF" in markdown
+
+
+def test_structural_grounding_checks_use_installed_modelwright_when_checkout_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(cheatsheet, "modelwright_root", lambda root: None)
+
+    summary = run_grounding_evals(REPO_ROOT)
+
+    assert summary.structural == []
+    markdown = Path(summary.cheat_sheet_path).read_text(encoding="utf-8")
+    assert "class ModelFacade" in markdown
+    assert "wrappers.py" in markdown
 
 
 def test_live_case_checks_paths_terms_and_forbidden_claims(

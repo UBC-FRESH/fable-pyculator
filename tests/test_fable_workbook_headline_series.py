@@ -49,4 +49,10 @@ def test_2024_headline_series_skip_absent_water_footprint_table() -> None:
         "land_total_area",
         "ghg_total_co2e",
     ]
+    land = next(item for item in series if item.name == "land_total_area")
+    assert land.aggregation == "sum"
+    assert "component sum" in land.label
+    assert len(land.points[0].cell_refs) == 7
+    assert land.description is not None
+    assert "#REF!" in land.description
     assert all(item.points for item in series)
