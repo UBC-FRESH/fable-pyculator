@@ -74,6 +74,9 @@ Optional Web Portal Helpers
 .. automodule:: fable_pyculator.web.cheatsheet
    :members:
 
+.. automodule:: fable_pyculator.web.grounding_evals
+   :members:
+
 .. automodule:: fable_pyculator.web.service
    :members:
 

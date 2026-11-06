@@ -2147,6 +2147,8 @@ Implementation evidence:
   differences, a digest compiled from all listed FABLE/Modelwright docs, and an AST source API
   index. New chats must read it and open full cited files for exact details. It is served at
   `GET /api/assistant/cheatsheet.md`.
+- Added deterministic assistant grounding evaluations plus opt-in live source-citation cases, and a
+  Playwright Chromium smoke for overlay, Enter/Shift+Enter, markdown, and reload-persistence checks.
 - Added `src/fable_pyculator/cli.py` and the `fable-pyculator web` entry point.
 - Added a multi-page static SPA under `src/fable_pyculator/web/static/` with Overview, Workbench,
   Results, Compare, Validation, Artifacts, and Assistant pages.
@@ -2167,7 +2169,12 @@ Verification evidence:
   passed.
 - `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
   passed after formatting.
-- `.venv/bin/python -m pytest -q` passed with `165` tests and `13` skips.
+- `.venv/bin/python -m pytest -q` passed with `168` tests and `15` skips.
+- `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1 .venv/bin/python -m pytest -q tests/web/test_browser_e2e.py`
+  passed against real Chromium and a live assistant chat across a page reload.
+- `scripts/evaluate_assistant_grounding.py` structural checks passed, and
+  `scripts/evaluate_assistant_grounding.py --live` passed all four source-citation cases against the
+  real OpenCode CLI.
 - `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -q tests/test_fable_workbook_headline_series.py`
   passed with `2` workbook-backed tests for 2020 and 2024.
 - Real restored-artifact 2021 preparation and scenario execution passed through the HTTP portal:

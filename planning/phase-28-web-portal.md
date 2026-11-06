@@ -81,4 +81,14 @@ at `GET /api/assistant/cheatsheet.md`.
 - remote scheduling or multi-tenant storage;
 - editing source workbooks from the browser;
 - new generated-model equivalence claims;
-- loading raw inference/expression/evaluation artifacts for validation display.
+- loading raw inference/expression/evaluation artifacts for validation display;
+- requiring a live model provider or Chromium for the default CI test gate.
+
+## Verification layers
+
+- `tests/web/` covers artifact/spec/service/chat/assistant/markdown contracts without a browser.
+- `scripts/evaluate_assistant_grounding.py` runs deterministic structural grounding checks by
+  default and real assistant questions only with `--live`.
+- `scripts/browser_smoke.py` drives Chromium for the actual overlay, Enter/Shift+Enter, markdown,
+  and reload-persistence behavior; the pytest wrapper is gated by
+  `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1`.

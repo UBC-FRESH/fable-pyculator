@@ -98,6 +98,21 @@ minute; both run as background jobs with progress reporting.
 The portal is a presentation layer. It does not recompute a FABLE result in the browser, edit source
 workbooks, or provide authentication. A non-loopback bind requires `--allow-remote`.
 
+Assistant grounding and browser checks:
+
+```bash
+# Fast structural grounding checks (safe for CI)
+.venv/bin/python scripts/evaluate_assistant_grounding.py
+
+# Opt-in live assistant questions with source/path assertions
+.venv/bin/python scripts/evaluate_assistant_grounding.py --live
+
+# Opt-in Chromium smoke for the overlay, Enter/Shift+Enter, markdown, and chat reload persistence
+.venv/bin/python -m pip install -e '.[browser]'
+.venv/bin/python -m playwright install chromium
+.venv/bin/python scripts/browser_smoke.py --root . --server-python .venv/bin/python --live-agent
+```
+
 
 
 The current Modelwright benchmark metadata points to this public FABLE Calculator Dropbox folder:

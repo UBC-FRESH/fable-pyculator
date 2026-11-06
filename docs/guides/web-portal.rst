@@ -187,10 +187,14 @@ Verification
 ------------
 
 The portal tests cover artifact naming and materialization, spec JSON round-tripping, preparation
-jobs, scenario runs, saved table retrieval, comparison, validation lookup, the assistant-disabled
-guard, and the bind guard:
+jobs, scenario runs, saved table retrieval, comparison, validation lookup, persistent chats,
+assistant enablement and session passthrough, markdown safety, grounding checks, and the bind guard:
 
 .. code-block:: bash
 
-   python -m pytest -q tests/web/test_portal.py
+   python -m pytest -q tests/web/test_portal.py tests/web/test_chats.py tests/web/test_assistant.py
+   python -m pytest -q tests/web/test_markdown.py tests/web/test_grounding_evals.py
+   python scripts/evaluate_assistant_grounding.py
    python -m ruff check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web
+
+See :doc:`assistant-grounding-evals` for the opt-in live assistant and Chromium smoke checks.

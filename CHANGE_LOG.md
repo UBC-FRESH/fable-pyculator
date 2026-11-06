@@ -40,12 +40,18 @@ This file records completed project work in chronological order.
 - Verified the assistant end to end against the live local service: the first grounded turn read
   `notebook.py` and answered the exact `build_notebook_spec` signature in 25.5 s; after a service
   restart the saved chat listed, reloaded, and continued the same OpenCode session in 10.4 s.
+- Added a grounding evaluation suite: deterministic structural checks plus opt-in live assistant
+  questions that require citations to expected source paths and expected terms. The live suite passed
+  all four cases (`notebook_signature`, `modelwright_facade`, `fable_2024_water`,
+  `portal_read_only`) against the real OpenCode CLI.
+- Added a Playwright browser smoke (`scripts/browser_smoke.py` and a gated pytest wrapper) covering
+  the + Ask overlay, Enter/Shift+Enter behavior, markdown rendering, and live assistant chat
+  persistence across a full page reload; it passed locally.
+- Added the `browser` optional extra, the grounding-eval guide, and README verification commands.
 - Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
-  full test suite (`165` passed and `13` skipped), workbook-backed headline tests (`2` passed), a
-  warning-clean Sphinx build, Read the Docs theme verification, the release artifact check, and a
-  real restored-artifact 2021 portal smoke (prepare, 85.7 s scenario run, 968-row trade table,
-  saved-run endpoints, validation endpoint). The prepared-spec cache reloaded in 0.54 s on a second
-  app instance.
+  full test suite (`168` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
+  headline tests (`2` passed), a warning-clean Sphinx build, Read the Docs theme verification, the
+  release artifact check, and real restored-artifact 2021/2024/2020 preparation and runs.
 
 ## 2026-08-15
 
