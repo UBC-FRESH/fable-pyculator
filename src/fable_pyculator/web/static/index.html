@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>FABLE Pyculator</title>
+    <link rel="stylesheet" href="static/styles.css?v=p28">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div id="app-loading" class="app-loading">Loading FABLE Pyculator…</div>
+
+    <header class="app-header">
+      <a class="brand" href="#overview" aria-label="FABLE Pyculator home">
+        <span class="brand-mark" aria-hidden="true">F</span>
+        <span class="brand-text">
+          <strong>FABLE Pyculator</strong>
+          <span>Scenario portal</span>
+        </span>
+      </a>
+
+      <nav id="main-nav" class="main-nav" aria-label="Portal pages">
+        <button class="nav-tab active" type="button" data-page="overview">Overview</button>
+        <button class="nav-tab" type="button" data-page="workbench">Workbench</button>
+        <button class="nav-tab" type="button" data-page="results">Results</button>
+        <button class="nav-tab" type="button" data-page="compare">Compare</button>
+        <button class="nav-tab" type="button" data-page="validation">Validation</button>
+        <button class="nav-tab" type="button" data-page="artifacts">Artifacts</button>
+        <button class="nav-tab" type="button" data-page="assistant" id="nav-assistant">Assistant</button>
+      </nav>
+
+      <div class="header-meta">
+        <span id="status-pill" class="pill muted" role="status">connecting</span>
+        <a class="docs-link" id="docs-link" href="https://ubc-fresh.github.io/fable-pyculator/" target="_blank" rel="noreferrer">Docs ↗</a>
+        <button id="help-button" class="icon-button" type="button" aria-label="Help">?</button>
+      </div>
+    </header>
+
+    <main id="main" class="app-main">
+      <section id="page-overview" class="page active" aria-labelledby="overview-title">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">UBC FRESH · FABLE Calculator</p>
+            <h1 id="overview-title">Scenarios, outputs, and evidence in one local portal.</h1>
+            <p class="lede">
+              Prepare a matching workbook and generated model, run named selection controls,
+              read headline indicators and output tables, and compare saved results. Every value
+              comes from the generated model; this portal never recomputes a FABLE result.
+            </p>
+            <div class="button-row">
+              <button class="button primary" type="button" data-go="workbench">Open workbench</button>
+              <button class="button ghost" type="button" data-go="validation">Review validation</button>
+              <button class="button ghost" type="button" data-go="artifacts">Browse artifacts</button>
+            </div>
+          </div>
+          <div class="hero-aside" aria-label="Portal contract">
+            <div class="hero-note">
+              <strong>Presentation, not a second model</strong>
+              <p>The service reads the generated model and the artifacts the notebook workflow already produces.</p>
+            </div>
+            <div class="hero-note">
+              <strong>Local by default</strong>
+              <p>A non-loopback bind requires <code>--allow-remote</code>. There are no accounts.</p>
+            </div>
+          </div>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <h2>Workbook versions</h2>
+              <p class="hint">Readiness is derived from real files under <code>tmp/</code> and <code>examples/</code>.</p>
+            </div>
+            <button id="overview-refresh" class="button ghost small" type="button">Refresh</button>
+          </div>
+          <div id="overview-cards" class="card-grid" aria-live="polite"></div>
+        </section>
+
+        <section class="section two-column">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Portal flow</h2>
+              <span class="muted">repeatable</span>
+            </div>
+            <ol class="flow-list">
+              <li><b>Prepare</b><span>Materialize the approved compressed model and discover workbook controls.</span></li>
+              <li><b>Run</b><span>Choose one option per selection control and run the generated model.</span></li>
+              <li><b>Read</b><span>Open headline KPIs, time-series charts, and every rendered output table.</span></li>
+              <li><b>Compare</b><span>Align saved runs by year and inspect selection differences.</span></li>
+              <li><b>Audit</b><span>Check compact validation evidence and artifact provenance.</span></li>
+            </ol>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Recent runs</h2>
+              <button class="link-button" type="button" data-go="results">View all</button>
+            </div>
+            <div id="overview-runs" class="compact-list" aria-live="polite"></div>
+          </div>
+        </section>
+      </section>
+
+      <section id="page-workbench" class="page" aria-labelledby="workbench-title" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Scenario workbench</p>
+            <h1 id="workbench-title">Build a scenario from workbook controls.</h1>
+          </div>
+          <span id="workbench-status" class="pill muted">not prepared</span>
+        </div>
+
+        <div class="workbench-grid">
+          <aside class="side-panel" aria-label="Scenario run settings">
+            <label class="field">
+              <span>Workbook version</span>
+              <select id="workbench-version"></select>
+            </label>
+            <dl id="workbench-artifact" class="kv small-kv"></dl>
+            <div class="button-row">
+              <button id="prepare-model" class="button primary small" type="button">Prepare model</button>
+            </div>
+            <p class="hint">Preparation decompresses the approved model and caches workbook discovery. Large workbooks can take a few minutes.</p>
+
+            <hr class="rule">
+
+            <label class="field">
+              <span>Scenario name</span>
+              <input id="scenario-name" type="text" value="Scenario 1" maxlength="120">
+            </label>
+            <label class="field">
+              <span>Output tables</span>
+              <select id="table-mode">
+                <option value="all">All discovered tables</option>
+                <option value="headline">Headline series only</option>
+                <option value="selected">Selected tables</option>
+              </select>
+            </label>
+            <div id="table-select-wrap" class="field" hidden>
+              <span>Tables to render</span>
+              <div class="multi-actions">
+                <button id="tables-all" class="link-button" type="button">All</button>
+                <button id="tables-none" class="link-button" type="button">None</button>
+              </div>
+              <select id="table-select" multiple size="8" aria-label="Output tables"></select>
+            </div>
+            <label class="field">
+              <span>Column flavour filter <small>optional</small></span>
+              <input id="flavour-tags" type="text" placeholder="e.g. OUTPUT-* or DATA">
+            </label>
+            <label class="check-field">
+              <input id="include-context" type="checkbox" checked>
+              <span>Include <code>DIRECT</code>/<code>AUX</code> context columns</span>
+            </label>
+            <div class="button-row">
+              <button id="run-scenario" class="button primary" type="button" disabled>Run scenario</button>
+              <button id="reset-controls" class="button ghost small" type="button" disabled>Reset</button>
+            </div>
+            <div id="run-progress" class="job-card" hidden aria-live="polite"></div>
+          </aside>
+
+          <section class="workbench-main" aria-live="polite">
+            <div id="workbench-empty" class="empty-state">
+              <div class="empty-mark" aria-hidden="true">F</div>
+              <h2>Prepare a model to begin</h2>
+              <p>Choose a version, then prepare it. The portal reports the exact missing file if a workbook or generated model is absent.</p>
+            </div>
+            <div id="workbench-controls" hidden>
+              <div class="panel">
+                <div class="panel-head">
+                  <div>
+                    <h2>Scenario selection</h2>
+                    <p id="spec-provenance" class="hint"></p>
+                  </div>
+                  <span id="control-count" class="pill muted"></span>
+                </div>
+                <div id="control-grid" class="control-grid"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="page-results" class="page" aria-labelledby="results-title" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Saved runs</p>
+            <h1 id="results-title">Read and export generated outputs.</h1>
+          </div>
+          <button id="results-refresh" class="button ghost small" type="button">Refresh</button>
+        </div>
+        <div class="results-grid">
+          <aside class="side-panel run-list-panel" aria-label="Saved runs">
+            <div id="runs-list" class="run-list" aria-live="polite"></div>
+          </aside>
+          <section id="run-detail" class="run-detail" aria-live="polite">
+            <div class="empty-state">
+              <h2>Select a run</h2>
+              <p>Saved runs appear here after a scenario completes.</p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="page-compare" class="page" aria-labelledby="compare-title" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Comparison</p>
+            <h1 id="compare-title">Align selected runs by year.</h1>
+          </div>
+          <button id="compare-button" class="button primary" type="button">Compare selected runs</button>
+        </div>
+        <div class="panel">
+          <div id="compare-picker" class="compare-picker" aria-live="polite"></div>
+        </div>
+        <div id="compare-output" class="section" aria-live="polite"></div>
+      </section>
+
+      <section id="page-validation" class="page" aria-labelledby="validation-title" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Validation evidence</p>
+            <h1 id="validation-title">Read compact evidence, not raw stage artifacts.</h1>
+            <p class="hint">The portal reads <code>tmp/validation-evidence/fable-&lt;version&gt;/summary.json</code> when present.</p>
+          </div>
+        </div>
+        <div id="validation-output" class="section" aria-live="polite"></div>
+      </section>
+
+      <section id="page-artifacts" class="page" aria-labelledby="artifacts-title" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Artifacts</p>
+            <h1 id="artifacts-title">Know which files exist before you run.</h1>
+          </div>
+          <button id="artifacts-refresh" class="button ghost small" type="button">Refresh</button>
+        </div>
+        <div id="artifacts-output" class="section" aria-live="polite"></div>
+        <div id="bundles-output" class="section" aria-live="polite"></div>
+        <section class="section">
+          <div class="panel">
+            <div class="panel-head">
+              <div><h2>Documentation</h2><p class="hint">The portal complements the notebook guides; it does not replace them.</p></div>
+            </div>
+            <div class="button-row">
+              <a class="button ghost small" id="docs-portal" href="https://ubc-fresh.github.io/fable-pyculator/guides/web-portal.html" target="_blank" rel="noreferrer">Portal guide ↗</a>
+              <a class="button ghost small" id="docs-artifacts" href="https://ubc-fresh.github.io/fable-pyculator/guides/generated-model-artifacts.html" target="_blank" rel="noreferrer">Generated-model artifacts ↗</a>
+              <a class="button ghost small" id="docs-validation" href="https://ubc-fresh.github.io/fable-pyculator/guides/validation-scope.html" target="_blank" rel="noreferrer">Validation scope ↗</a>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section id="page-assistant" class="page" aria-labelledby="assistant-title" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Optional local assistant</p>
+            <h1 id="assistant-title">Ask about the current run or artifacts.</h1>
+          </div>
+          <span id="assistant-state" class="pill muted">checking</span>
+        </div>
+        <div id="assistant-disabled" class="empty-state" hidden>
+          <h2>The assistant is disabled</h2>
+          <p>Restart the portal with <code>--allow-agent</code> to enable the local <code>opencode</code> CLI bridge. The service never reads provider keys.</p>
+        </div>
+        <div id="assistant-enabled" class="assistant-shell" hidden>
+          <div class="panel">
+            <label class="field">
+              <span>Run context <small>optional</small></span>
+              <select id="assistant-run"><option value="">No run context</option></select>
+            </label>
+            <div id="assistant-log" class="assistant-log" aria-live="polite">
+              <p class="hint">Ask about a scenario, a headline series, validation evidence, or where an artifact lives.</p>
+            </div>
+            <div class="assistant-quick">
+              <button type="button" data-assistant-prompt="What does this portal read, and what does it never recompute?">What does the portal do?</button>
+              <button type="button" data-assistant-prompt="Explain the headline series in the selected run.">Explain this run</button>
+              <button type="button" data-assistant-prompt="Which artifact is missing for a clean checkout?">Check artifacts</button>
+            </div>
+            <form id="assistant-form" class="assistant-form">
+              <label class="sr-only" for="assistant-input">Message</label>
+              <textarea id="assistant-input" rows="3" placeholder="Ask about this portal or a saved run…"></textarea>
+              <button id="assistant-send" class="button primary" type="submit">Send</button>
+            </form>
+            <p id="assistant-progress" class="hint" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <dialog id="help-dialog" class="help-dialog" aria-labelledby="help-title">
+      <div class="help-head">
+        <h2 id="help-title">Portal help</h2>
+        <button id="help-close" class="icon-button" type="button" aria-label="Close help">×</button>
+      </div>
+      <dl class="shortcut-list">
+        <div><dt><kbd>1</kbd>–<kbd>7</kbd></dt><dd>Switch portal page</dd></div>
+        <div><dt><kbd>/</kbd></dt><dd>Focus the current search or scenario name</dd></div>
+        <div><dt><kbd>r</kbd></dt><dd>Open results</dd></div>
+      </dl>
+      <p class="hint">
+        The portal is a presentation layer over workbook discovery and generated-model execution.
+        Large models are prepared in a background job and cached under the ignored
+        <code>runtime/portal/</code> directory.
+      </p>
+    </dialog>
+
+    <noscript>
+      <p class="noscript">This portal needs JavaScript to prepare models and render outputs.</p>
+    </noscript>
+    <script type="module" src="static/app.js?v=p28"></script>
+  </body>
+</html>

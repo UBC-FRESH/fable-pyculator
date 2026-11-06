@@ -47,6 +47,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 27 is closed: alpha-tester notebook reliability, 2021 smoke hardening, skipped-table
   diagnostics, and notebook-failure issue hygiene are tracked, PR #201 merged, and post-merge Test
   and Docs Pages workflows passed.
+- Phase 28 is implemented on `feature/p28-web-portal`: an optional multi-page FastAPI portal over
+  prepared generated models, saved runs, comparison, compact validation evidence, artifact
+  readiness, scenario bundles, and an opt-in local assistant. PR, issue mapping, and post-merge
+  deployment checks remain closeout work.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2085,3 +2089,83 @@ Closeout evidence:
 - PR #201 merged to `main` with merge commit `37cf162`.
 - Post-merge Test workflow #28631757605 passed.
 - Post-merge Docs Pages workflow #28631757588 passed.
+
+## Phase 28: Optional Multi-Page Web Portal
+
+GitHub parent issue: pending issue mapping.
+
+Branch: `feature/p28-web-portal`.
+
+Status: implementation complete; PR and closeout pending.
+
+Goal: add a local multi-page portal over the artifacts and notebook APIs FABLE Pyculator already
+uses, so analysts can prepare a matching workbook/model pair, run named scenarios, read and export
+generated outputs, compare saved runs, inspect compact validation evidence, browse artifact
+readiness, and optionally ask a local assistant.
+
+Tasks:
+
+- [x] P28.1 Define the portal service and artifact contract.
+- [x] P28.2 Add artifact discovery, compressed-model materialization, and spec caching.
+- [x] P28.3 Add preparation and scenario-run background jobs.
+- [x] P28.4 Add saved-run persistence, table retrieval, and run comparison.
+- [x] P28.5 Add the dependency-free multi-page SPA.
+- [x] P28.6 Add compact validation-evidence and scenario-bundle browsing.
+- [x] P28.7 Add the optional local assistant bridge and CLI entry point.
+- [x] P28.8 Add tests, documentation, and roadmap/changelog evidence.
+- [ ] P28.9 Open the PR, map issues, deploy docs, and close the phase.
+
+Scope:
+
+- Optional `fable-pyculator[web]` extra with FastAPI and uvicorn.
+- FastAPI service plus a vanilla ES-module SPA with no Node build.
+- Loopback-only default and an explicit `--allow-remote` guard.
+- Preparation, execution, saved runs, comparison, validation, artifacts, and assistant pages.
+- Real generated-model values only; no browser-side FABLE calculation.
+- Ignored `runtime/portal/` cache for prepared specs and saved runs.
+
+Out of scope:
+
+- Authentication, accounts, multi-tenant storage, or remote execution scheduling.
+- Source workbook mutation from the browser.
+- New generated-model equivalence claims.
+- Loading multi-gigabyte raw validation stage artifacts for display.
+
+Implementation evidence:
+
+- Added `src/fable_pyculator/web/` with artifact discovery/materialization, spec JSON caching,
+  background jobs, scenario execution, saved-run comparison, validation lookup, FastAPI app factory,
+  and the optional assistant bridge. Saved runs carry a provenance block with the portal version,
+  workbook and generated-model paths/sizes, preparation timestamp, and workbook id.
+- Added `src/fable_pyculator/cli.py` and the `fable-pyculator web` entry point.
+- Added a multi-page static SPA under `src/fable_pyculator/web/static/` with Overview, Workbench,
+  Results, Compare, Validation, Artifacts, and Assistant pages.
+- Added the `web` optional dependency extra and package-data declaration for static assets.
+- Added `tests/web/test_portal.py` covering spec round-tripping, artifact naming and materialization,
+  preparation, scenario execution, table retrieval, comparison, validation lookup, the
+  assistant-disabled guard, and the bind guard.
+- Added `docs/guides/web-portal.rst`, API reference entries, README guidance, and
+  `planning/phase-28-web-portal.md`.
+- Added `runtime/` to `.gitignore`.
+
+Verification evidence:
+
+- `.venv/bin/python -m ruff check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
+  passed.
+- `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
+  passed after formatting.
+- `.venv/bin/python -m pytest -q` passed with `155` tests and `12` skips.
+- Real restored-artifact 2021 preparation and scenario execution passed through the HTTP portal:
+  16 controls, 14 output tables, 4 headline series, a background prepare job, an 85.7 s scenario run,
+  a saved 968-row `trade_resultstrade` table, saved-run detail, and compact validation lookup.
+  A second app instance reloaded the prepared spec from cache in 0.54 s.
+- `.venv/bin/fable-pyculator web --root . --port 8767` served `/api/health`, `/`, and
+  `/static/app.js` successfully after an editable install with the `web` extra.
+- `.venv/bin/sphinx-build -b html docs _build/html -W -q` passed.
+- `.venv/bin/python scripts/verify_docs_theme.py _build/html` passed.
+- `scripts/check_release_artifacts.sh` passed, and the built wheel contains the portal package and
+  `web/static/*` assets.
+
+Closeout evidence:
+
+- Pending PR, issue mapping, and post-merge Test and Docs Pages workflows.

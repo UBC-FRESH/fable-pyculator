@@ -38,9 +38,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+web = [
+  "fastapi>=0.110",
+  "uvicorn>=0.29"
+]
 dev = [
   "build>=1.2",
+  "fastapi>=0.110",
   "freshforge>=0.1.0a5,<0.2",
+  "httpx>=0.27",
   "pytest>=8",
   "ruff>=0.8,<0.16",
   "sphinx>=7",
@@ -67,7 +73,9 @@ release = [
   "twine>=5"
 ]
 test = [
+  "fastapi>=0.110",
   "freshforge>=0.1.0a5,<0.2",
+  "httpx>=0.27",
   "pytest>=8"
 ]
 
@@ -81,8 +89,14 @@ Changelog = "https://github.com/UBC-FRESH/fable-pyculator/blob/main/CHANGE_LOG.m
 [project.entry-points."freshforge.providers"]
 fable_pyculator = "fable_pyculator.freshforge:provider_factory"
 
+[project.scripts]
+fable-pyculator = "fable_pyculator.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+fable_pyculator = ["web/static/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

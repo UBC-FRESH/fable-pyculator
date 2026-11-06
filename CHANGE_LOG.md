@@ -2,6 +2,27 @@
 
 This file records completed project work in chronological order.
 
+## 2026-11-06
+
+- Activated Phase 28 on `feature/p28-web-portal` and implemented the optional multi-page FABLE
+  Pyculator portal: FastAPI service, dependency-free vanilla ES-module SPA, artifact readiness,
+  compressed-model materialization, cached workbook-spec preparation, background scenario runs,
+  headline KPI cards and charts, output-table rendering and CSV export, saved-run comparison,
+  compact validation-evidence browsing, scenario-bundle browsing, provenance-bearing saved runs,
+  and an opt-in local assistant.
+- Added `fable-pyculator web` through `src/fable_pyculator/cli.py`, the `web` optional dependency
+  extra, static package data, and ignored `runtime/portal/` spec/run caches.
+- Added `tests/web/test_portal.py` for spec round-tripping, artifacts and materialization,
+  preparation jobs, scenario execution, saved tables, comparison, validation lookup, the
+  assistant-disabled guard, and the loopback bind guard.
+- Documented the portal in `docs/guides/web-portal.rst`, README, API reference, and
+  `planning/phase-28-web-portal.md`.
+- Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
+  full test suite (`155` passed and `12` skipped), a warning-clean Sphinx build, Read the Docs theme
+  verification, the release artifact check, and a real restored-artifact 2021 portal smoke
+  (prepare, 85.7 s scenario run, 968-row trade table, saved-run endpoints, validation endpoint).
+  The prepared-spec cache reloaded in 0.54 s on a second app instance.
+
 ## 2026-08-15
 
 - Added the tracked `examples/fable_2024/` generated-model artifact (compressed

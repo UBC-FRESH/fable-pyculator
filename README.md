@@ -59,7 +59,40 @@ python -m venv .venv
 .venv/bin/python -m pip install -e '.[dev,notebook,docs]'
 ```
 
-## Download FABLE Calculators
+## Optional Web Portal
+
+The package includes an optional local portal over the same artifacts the notebook workflow uses.
+It is a FastAPI service plus a dependency-free vanilla JavaScript SPA; there is no Node build and no
+second modelling engine. Install the optional dependencies and start it from the repository root:
+
+```bash
+.venv/bin/python -m pip install -e '.[web]'
+.venv/bin/fable-pyculator web --root . --port 8766
+```
+
+Open `http://127.0.0.1:8766`. The portal offers:
+
+- **Overview** and **Artifacts**: real file readiness, compressed/generated model state, and tracked
+  scenario bundles.
+- **Workbench**: prepare a workbook version, choose one option per FABLE selection control, and run
+  the matching generated model in a background job.
+- **Results**: headline KPI cards, time-series charts, every rendered output table, and CSV export.
+- **Compare**: align saved runs by year and inspect selection differences.
+- **Validation**: compact validation evidence from
+  `tmp/validation-evidence/fable-<version>/summary.json`.
+- **Assistant**: optional local `opencode` bridge, enabled only with `--allow-agent`.
+
+Preparation needs the source workbook under the ignored
+`tmp/private-workbooks/<version>_Open_FABLECalculator.xlsx` path and either the decompressed or
+tracked compressed generated model. The portal decompresses the approved archive when needed and
+caches workbook discovery and saved runs under ignored `runtime/portal/` paths. Real 2021
+preparation takes about two minutes on a warm local checkout and a scenario run takes about a
+minute; both run as background jobs with progress reporting.
+
+The portal is a presentation layer. It does not recompute a FABLE result in the browser, edit source
+workbooks, or provide authentication. A non-loopback bind requires `--allow-remote`.
+
+
 
 The current Modelwright benchmark metadata points to this public FABLE Calculator Dropbox folder:
 
