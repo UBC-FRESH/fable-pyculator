@@ -49,8 +49,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   and Docs Pages workflows passed.
 - Phase 28 is implemented on `feature/p28-web-portal`: an optional multi-page FastAPI portal over
   prepared generated models, saved runs, comparison, compact validation evidence, artifact
-  readiness, scenario bundles, and an opt-in local assistant. PR, issue mapping, and post-merge
-  deployment checks remain closeout work.
+  readiness, scenario bundles, and an opt-in local assistant. Parent issue #203 and child issues
+  #204-#213 are mapped; PR, CI, and post-merge deployment checks remain closeout work.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2092,7 +2092,7 @@ Closeout evidence:
 
 ## Phase 28: Optional Multi-Page Web Portal
 
-GitHub parent issue: pending issue mapping.
+GitHub parent issue: #203.
 
 Branch: `feature/p28-web-portal`.
 
@@ -2105,16 +2105,16 @@ readiness, and optionally ask a local assistant.
 
 Tasks:
 
-- [x] P28.1 Define the portal service and artifact contract.
-- [x] P28.2 Add artifact discovery, compressed-model materialization, and spec caching.
-- [x] P28.3 Add preparation and scenario-run background jobs.
-- [x] P28.4 Add saved-run persistence, table retrieval, and run comparison.
-- [x] P28.5 Add the dependency-free multi-page SPA.
-- [x] P28.6 Add compact validation-evidence and scenario-bundle browsing.
-- [x] P28.7 Add the optional local assistant bridge and CLI entry point.
-- [x] P28.8 Add tests, documentation, and roadmap/changelog evidence.
-- [x] P28.10 Add GitHub issue-filing guidance, templates, and validation to the portal assistant.
-- [ ] P28.9 Open the PR, map issues, deploy docs, and close the phase.
+- [x] P28.1 Define the portal service and artifact contract. Child issue: #204.
+- [x] P28.2 Add artifact discovery, compressed-model materialization, and spec caching. Child issue: #205.
+- [x] P28.3 Add preparation and scenario-run background jobs. Child issue: #206.
+- [x] P28.4 Add saved-run persistence, table retrieval, and run comparison. Child issue: #207.
+- [x] P28.5 Add the dependency-free multi-page SPA. Child issue: #208.
+- [x] P28.6 Add compact validation-evidence and scenario-bundle browsing. Child issue: #209.
+- [x] P28.7 Add the optional local assistant bridge and CLI entry point. Child issue: #210.
+- [x] P28.8 Add tests, documentation, and roadmap/changelog evidence. Child issue: #211.
+- [x] P28.10 Add GitHub issue-filing guidance, templates, and validation to the portal assistant. Child issue: #213.
+- [ ] P28.9 Open the PR, map issues, deploy docs, and close the phase. Child issue: #212.
 
 Scope:
 
