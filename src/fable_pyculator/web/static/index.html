@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
     <title>FABLE Pyculator</title>
-    <link rel="stylesheet" href="static/styles.css?v=p28b">
+    <link rel="stylesheet" href="static/styles.css?v=p28c">
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -262,10 +262,12 @@
           <span id="ask-model" class="ask-model">checking…</span>
         </div>
         <div class="ask-head-actions">
+          <button id="ask-history" class="button ghost small" type="button" aria-expanded="false" aria-controls="ask-sessions">Chats</button>
           <button id="ask-new" class="button ghost small" type="button">New</button>
           <button id="ask-close" class="icon-button" type="button" aria-label="Close assistant">×</button>
         </div>
       </div>
+      <div id="ask-sessions" class="ask-sessions" hidden aria-label="Saved chat sessions"></div>
       <div class="ask-context">
         <label class="field">
           <span>Run context <small>optional</small></span>
@@ -279,6 +281,7 @@
         <button type="button" data-ask-prompt="What does this portal read, and what does it never recompute?">What does the portal do?</button>
         <button type="button" data-ask-prompt="Explain the headline series in the selected run.">Explain this run</button>
         <button type="button" data-ask-prompt="Which artifact is missing for a clean checkout?">Check artifacts</button>
+        <a class="ask-grounding" href="api/assistant/cheatsheet.md" target="_blank" rel="noreferrer">Grounding sheet ↗</a>
       </div>
       <form id="ask-form" class="ask-form">
         <label class="sr-only" for="ask-input">Message</label>
@@ -313,6 +316,6 @@
     <noscript>
       <p class="noscript">This portal needs JavaScript to prepare models and render outputs.</p>
     </noscript>
-    <script type="module" src="static/app.js?v=p28b"></script>
+    <script type="module" src="static/app.js?v=p28c"></script>
   </body>
 </html>

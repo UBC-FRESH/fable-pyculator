@@ -50,15 +50,50 @@ Rules:
 - Do not print credentials, environment secrets, or full raw data tables.
 """
 
+NEW_SESSION_GROUNDING = """\
+MANDATORY NEW-SESSION GROUNDING:
+
+This is the first turn of a new chat. Read the compiled grounding sheet at:
+
+{cheat_sheet_path}
+
+That sheet is generated from every FABLE Pyculator and Modelwright documentation file listed under
+"Required reading" and includes a documentation digest plus an AST-generated source API index. Read
+the sheet in full before answering.
+
+Then open the full documentation or source file listed in "Required reading" whenever the question
+needs exact signatures, behaviour, examples, paths, counts, or caveats. Use the available
+file-reading tools. Do not answer from memory or from generic "vibes".
+
+If a fact is not in the cheat sheet, the current portal context, or a file you actually read, say
+that it is not available and explain where it would come from. Never invent API names, model
+behaviour, paths, counts, output values, or validation claims. Do not claim to have changed a
+scenario, prepared a model, or saved a run.
+
+The cheat sheet content is included below so the key facts and compiled doc/API digest are
+available even before you open the full files. Treat the actual files as authoritative when they
+differ.
+
+--- BEGIN CHEAT SHEET ---
+{cheat_sheet}
+--- END CHEAT SHEET ---
+
+Required reading:
+{required_reading}
+"""
+
 
 class AgentRequest(BaseModel):
-    """One assistant prompt, optionally scoped to a saved run and a session."""
+    """One assistant prompt, optionally scoped to a saved run and a persistent chat."""
 
     message: str = Field(min_length=1, max_length=8000)
     run_id: str | None = Field(default=None, max_length=200)
     session: str | None = Field(default=None, max_length=200)
     context: dict[str, Any] | None = None
     model: str | None = Field(default=None, max_length=200)
+    new_session: bool = False
+    cheat_sheet_path: str | None = None
+    required_reading: tuple[str, ...] = ()
 
 
 class AgentError(RuntimeError):
@@ -89,7 +124,21 @@ def run_agent(
     """Run one assistant turn and return markdown text, session id, and tool actions."""
 
     context = json.dumps(request.context or {}, indent=2, sort_keys=True, ensure_ascii=False)[-12000:]
-    prompt = f"{AGENT_GUIDE}\n\nCurrent portal context (JSON):\n{context}\n\nUser: {request.message}"
+    grounding = ""
+    if request.new_session:
+        cheat_sheet = ""
+        if request.cheat_sheet_path:
+            try:
+                cheat_sheet = Path(request.cheat_sheet_path).read_text(encoding="utf-8")[:180000]
+            except OSError:
+                cheat_sheet = "(cheat sheet could not be read)"
+        reading = "\n".join(f"- `{path}`" for path in request.required_reading) or "- (none)"
+        grounding = NEW_SESSION_GROUNDING.format(
+            cheat_sheet_path=request.cheat_sheet_path or "(not available)",
+            cheat_sheet=cheat_sheet,
+            required_reading=reading,
+        )
+    prompt = f"{AGENT_GUIDE}\n\n{grounding}\n\nCurrent portal context (JSON):\n{context}\n\nUser: {request.message}"
     argv = list(command)
     if request.model:
         argv.extend(["--model", request.model])

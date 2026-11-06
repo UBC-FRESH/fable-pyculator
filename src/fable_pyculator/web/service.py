@@ -31,6 +31,8 @@ from fable_pyculator.web.artifacts import (
     materialize_generated_model,
 )
 from fable_pyculator.web.assistant import DEFAULT_AGENT_MODEL
+from fable_pyculator.web.chats import ChatStore
+from fable_pyculator.web.cheatsheet import CheatSheet, ensure_cheat_sheet
 from fable_pyculator.web.spec_io import jsonable, spec_from_payload, spec_summary, spec_to_payload
 
 __all__ = [
@@ -191,7 +193,7 @@ class PortalConfig:
     allow_agent: bool = False
     agent_command: tuple[str, ...] = ("opencode", "run", "--format", "json", "--auto")
     agent_model: str | None = DEFAULT_AGENT_MODEL
-    agent_timeout: float = 180.0
+    agent_timeout: float = 600.0
     title: str = "FABLE Pyculator"
 
     def __post_init__(self) -> None:
@@ -211,8 +213,11 @@ class PortalState:
         self.config = config
         self.config.runtime_dir.mkdir(parents=True, exist_ok=True)  # type: ignore[union-attr]
         self.jobs = JobManager()
+        self.chats = ChatStore(self.runtime_dir / "chats")
         self._prepared: dict[str, PreparedModel] = {}
         self._compute_lock = threading.RLock()
+        self._cheat_sheet: CheatSheet | None = None
+        self.ensure_cheat_sheet()
 
     @property
     def runtime_dir(self) -> Path:
@@ -403,6 +408,7 @@ class PortalState:
                 prepared_at=prepared_at,
                 report=payload,
             )
+            self._refresh_cheat_sheet()
             report(100, "model prepared")
             return payload
 
@@ -558,6 +564,7 @@ class PortalState:
                 json.dumps(record, indent=2, ensure_ascii=False) + "\n",
                 encoding="utf-8",
             )
+            self._refresh_cheat_sheet()
             report(100, "scenario saved")
             return record
 
@@ -661,7 +668,12 @@ class PortalState:
     def assistant_context(self, run_id: str | None) -> dict[str, Any]:
         """Build a compact context object for the optional local assistant."""
 
-        context: dict[str, Any] = {"versions": [artifact["version"] for artifact in self.artifacts()]}
+        cheat_sheet = self._cheat_sheet or self.ensure_cheat_sheet()
+        context: dict[str, Any] = {
+            "versions": [artifact["version"] for artifact in self.artifacts()],
+            "cheat_sheet_path": str(cheat_sheet.path),
+            "cheat_sheet_generated_at": cheat_sheet.generated_at,
+        }
         if run_id:
             try:
                 record = self.run(run_id)
@@ -672,6 +684,57 @@ class PortalState:
                 for key in ("run_id", "name", "version", "created_at", "selections", "headline_summary")
             }
         return context
+
+    def ensure_cheat_sheet(self) -> CheatSheet:
+        """Regenerate the compiled assistant grounding sheet from current portal state."""
+
+        cheat_sheet = ensure_cheat_sheet(
+            repo_root=self.config.repo_root,
+            runtime_dir=self.runtime_dir,
+            artifacts=self.artifacts(),
+            prepared_summaries={version: prepared.summary for version, prepared in self._prepared.items()},
+            runs=self.runs(),
+        )
+        self._cheat_sheet = cheat_sheet
+        return cheat_sheet
+
+    def _refresh_cheat_sheet(self) -> None:
+        """Best-effort refresh after preparation or a saved run."""
+
+        try:
+            self.ensure_cheat_sheet()
+        except Exception:  # noqa: BLE001 - auxiliary cache must not fail model jobs
+            # The grounding sheet is auxiliary; never fail a model job because its cache write failed.
+            return
+
+    def create_chat(self, *, run_id: str | None = None) -> dict[str, Any]:
+        """Create a persistent assistant chat."""
+
+        return self.chats.create(run_id=run_id).to_dict()
+
+    def list_chats(self) -> list[dict[str, Any]]:
+        """Return persistent chat summaries, newest first."""
+
+        return self.chats.list()
+
+    def get_chat(self, chat_id: str) -> dict[str, Any]:
+        """Return one persistent chat."""
+
+        try:
+            return self.chats.get(chat_id).to_dict()
+        except KeyError as error:
+            raise PortalError(f"unknown chat id {chat_id!r}", status_code=404) from error
+
+    def delete_chat(self, chat_id: str) -> dict[str, Any]:
+        """Delete one persistent chat."""
+
+        try:
+            deleted = self.chats.delete(chat_id)
+        except KeyError as error:
+            raise PortalError(f"invalid chat id {chat_id!r}", status_code=400) from error
+        if not deleted:
+            raise PortalError(f"unknown chat id {chat_id!r}", status_code=404)
+        return {"chat_id": chat_id, "deleted": True}
 
     def _require_version(self, version: str) -> None:
         if version not in self.config.versions:

@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Query, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -43,10 +43,17 @@ class CompareRequest(BaseModel):
     run_ids: list[str] = Field(min_length=2, max_length=12)
 
 
+class ChatCreateRequest(BaseModel):
+    """Create a persistent assistant chat."""
+
+    run_id: str | None = None
+
+
 class AssistantPayload(BaseModel):
     """Browser assistant payload."""
 
     message: str = Field(min_length=1, max_length=8000)
+    chat_id: str | None = Field(default=None, max_length=80)
     run_id: str | None = None
     session: str | None = Field(default=None, max_length=200)
     model: str | None = None
@@ -173,6 +180,27 @@ def create_app(config: PortalConfig) -> FastAPI:
     def scenario_bundles() -> list[dict[str, Any]]:
         return state.bundles()
 
+    @app.get("/api/chats")
+    def chats() -> list[dict[str, Any]]:
+        return state.list_chats()
+
+    @app.post("/api/chats")
+    def create_chat(request: ChatCreateRequest) -> dict[str, Any]:
+        return state.create_chat(run_id=request.run_id)
+
+    @app.get("/api/chats/{chat_id}")
+    def chat_detail(chat_id: str) -> dict[str, Any]:
+        return state.get_chat(chat_id)
+
+    @app.delete("/api/chats/{chat_id}")
+    def delete_chat(chat_id: str) -> dict[str, Any]:
+        return state.delete_chat(chat_id)
+
+    @app.get("/api/assistant/cheatsheet.md", include_in_schema=False)
+    def assistant_cheatsheet() -> Response:
+        cheat_sheet = state.ensure_cheat_sheet()
+        return Response(content=cheat_sheet.markdown, media_type="text/markdown; charset=utf-8")
+
     @app.post("/api/assistant")
     def assistant(payload: AssistantPayload) -> dict[str, Any]:
         if not config.allow_agent:
@@ -180,21 +208,49 @@ def create_app(config: PortalConfig) -> FastAPI:
                 "the assistant is disabled; restart the portal with --allow-agent",
                 status_code=403,
             )
+        chat = state.get_chat(payload.chat_id) if payload.chat_id else state.create_chat(run_id=payload.run_id)
+        chat_id = str(chat["chat_id"])
+        new_session = not bool(chat.get("agent_session"))
+        cheat_sheet = state.ensure_cheat_sheet()
+        state.chats.append_message(
+            chat_id,
+            role="user",
+            content=payload.message,
+            run_id=payload.run_id,
+        )
         try:
-            return run_agent(
+            result = run_agent(
                 AgentRequest(
                     message=payload.message,
                     run_id=payload.run_id,
-                    session=payload.session,
+                    session=chat.get("agent_session") or payload.session,
                     model=payload.model or config.agent_model,
                     context=state.assistant_context(payload.run_id),
+                    new_session=new_session,
+                    cheat_sheet_path=str(cheat_sheet.path),
+                    required_reading=cheat_sheet.required_reading,
                 ),
                 workspace=config.repo_root,
                 command=config.agent_command,
                 timeout=config.agent_timeout,
             )
         except AgentError as error:
+            state.chats.append_message(chat_id, role="error", content=str(error))
             raise PortalError(str(error), status_code=502) from error
+        updated = state.chats.append_message(
+            chat_id,
+            role="assistant",
+            content=result.get("response", ""),
+            actions=result.get("actions"),
+            run_id=payload.run_id,
+        )
+        updated = state.chats.set_session(chat_id, result.get("session"))
+        return {
+            **result,
+            "chat_id": chat_id,
+            "chat": updated.summary(),
+            "messages": updated.to_dict()["messages"],
+        }
 
     @app.get("/", include_in_schema=False)
     def index() -> FileResponse:

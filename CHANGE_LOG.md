@@ -19,6 +19,14 @@ This file records completed project work in chronological order.
 - Added the global **+ Ask** pill and fixed overlay assistant: markdown rendering for both user and
   assistant messages, safe links/code/tables, session continuation, tool-action chips, run context,
   Enter-to-send, Shift+Enter newline, and `a`/Escape shortcuts.
+- Added persistent assistant chats under `runtime/portal/chats/`: the overlay lists saved chats,
+  remembers the last selected chat in browser storage, restores messages after reload, and continues
+  the same OpenCode session across service restarts.
+- Added a generated grounding sheet at `runtime/portal/assistant/cheat-sheet.md`: served model
+  instances, artifact readiness/paths, prepared spec counts, headline series, saved runs, API
+  surface, known version differences, a digest compiled from every listed FABLE/Modelwright doc, and
+  an AST-generated source API index. New chats must read it and open full cited files for exact
+  details. It is served at `GET /api/assistant/cheatsheet.md`.
 - Documented the portal in `docs/guides/web-portal.rst`, README, API reference, and
   `planning/phase-28-web-portal.md`.
 - Fixed a real portal preparation failure on FABLE 2024: the Canada workbook has no
@@ -29,10 +37,11 @@ This file records completed project work in chronological order.
   preparation plus scenario execution for both FABLE 2024 and FABLE 2020 through the portal:
   2024 prepared in 47.7 s and ran in 108.5 s with 24 controls, 17 output tables, and 3 headlines;
   2020 prepared in 137.0 s and ran in 167.2 s with 16 controls, 14 output tables, and 4 headlines.
-- Verified the assistant end to end against the live local service: first turn returned markdown in
-  11.9 s with an OpenCode session id, and a second turn continued the same session in 7.2 s.
+- Verified the assistant end to end against the live local service: the first grounded turn read
+  `notebook.py` and answered the exact `build_notebook_spec` signature in 25.5 s; after a service
+  restart the saved chat listed, reloaded, and continued the same OpenCode session in 10.4 s.
 - Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
-  full test suite (`161` passed and `13` skipped), workbook-backed headline tests (`2` passed), a
+  full test suite (`165` passed and `13` skipped), workbook-backed headline tests (`2` passed), a
   warning-clean Sphinx build, Read the Docs theme verification, the release artifact check, and a
   real restored-artifact 2021 portal smoke (prepare, 85.7 s scenario run, 968-row trade table,
   saved-run endpoints, validation endpoint). The prepared-spec cache reloaded in 0.54 s on a second

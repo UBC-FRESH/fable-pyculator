@@ -38,6 +38,8 @@ runtime/portal/
   specs/fable-<version>.json        # cached spec + workbook/model fingerprint
   runs/<run_id>/run.json            # metadata, selections, headline frames, table summaries
   runs/<run_id>/tables/<name>.json  # rendered table payloads
+  chats/<chat_id>.json              # persistent assistant conversations
+  assistant/cheat-sheet.md          # generated grounding sheet
 ```
 
 `runtime/` is ignored by Git.
@@ -56,6 +58,22 @@ installed `opencode` CLI with `--format json --auto`, keeps an OpenCode session 
 renders markdown for both user and assistant messages. Untrusted text is escaped and only safe
 link schemes are linked. The composer submits on Enter and inserts a newline on Shift+Enter.
 Tool-use events become compact action chips.
+
+Chats are persisted as JSON under `runtime/portal/chats/`. The overlay lists saved chats, remembers
+the last selected chat in browser storage, and reloads messages from the server after a page reload
+or service restart.
+
+## Grounding contract
+
+On the first turn of a new chat, the service regenerates
+`runtime/portal/assistant/cheat-sheet.md` and passes its path and required-reading list to the
+agent. The prompt requires the agent to read the cheat sheet and the FABLE Pyculator and Modelwright
+documentation/source files it lists before answering. The cheat sheet is built from current portal
+state: served versions, artifact readiness, prepared spec counts, headline series, saved runs, API
+surfaces, key modules, and known version differences. It also includes a digest compiled from every
+listed doc and an AST-generated source API index. The agent is told to open the full cited file when
+a question needs exact signatures, behaviour, examples, or caveats. The sheet is available to users
+at `GET /api/assistant/cheatsheet.md`.
 
 ## Out of scope
 

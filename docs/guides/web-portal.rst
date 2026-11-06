@@ -57,8 +57,9 @@ with the missing file named explicitly until the source workbook is restored.
 
 Preparation and execution are background jobs because real workbooks and generated models are large.
 On a warm checkout, the 2021 workbook spec takes roughly two minutes to discover and a scenario run
-takes roughly one minute. Prepared specs are cached under ``runtime/portal/specs/`` and saved runs
-under ``runtime/portal/runs/``. Both directories are ignored by Git.
+takes roughly one minute. Prepared specs are cached under ``runtime/portal/specs/``, saved runs
+under ``runtime/portal/runs/``, persistent chats under ``runtime/portal/chats/``, and the assistant
+grounding sheet under ``runtime/portal/assistant/``. These directories are ignored by Git.
 
 Pages
 -----
@@ -92,8 +93,16 @@ Assistant
    header opens a fixed overlay. The overlay keeps a local OpenCode session across turns, renders
    markdown for both the user and the assistant (including code blocks, lists, links, and tables),
    shows tool-action chips, and supports ``Enter`` to send with ``Shift+Enter`` for multiline
-   prompts. The bridge invokes the installed ``opencode`` CLI in the repository root and passes
-   compact portal context. The service never reads provider keys.
+   prompts. Chats are persisted under ``runtime/portal/chats/`` and listed in the overlay, so users
+   can resume a conversation after a reload or service restart. On the first turn of a new chat, the
+   assistant is required to read the generated grounding sheet at
+   ``runtime/portal/assistant/cheat-sheet.md`` and the FABLE/Modelwright documentation and source
+   paths it lists before answering. The sheet is compiled from every listed doc, contains a
+   documentation digest plus an AST-generated source API index, and is also available at
+   ``GET /api/assistant/cheatsheet.md``. The agent must open the full cited file when a question
+   needs exact signatures, behaviour, examples, or caveats. The bridge invokes the installed
+   ``opencode`` CLI in the repository root and passes compact portal context. The service never
+   reads provider keys.
 
 Service surface
 ---------------
@@ -136,6 +145,12 @@ The service is intentionally small and readable:
      - One saved rendered table.
    * - ``POST /api/compare``
      - Align saved runs by headline series and selection values.
+   * - ``GET /api/chats`` / ``POST /api/chats``
+     - List persistent assistant chats or create one.
+   * - ``GET /api/chats/{chat_id}`` / ``DELETE /api/chats/{chat_id}``
+     - Load or delete one persistent chat.
+   * - ``GET /api/assistant/cheatsheet.md``
+     - The generated grounding sheet and required-reading list.
    * - ``GET /api/scenario-bundles``
      - Tracked scenario-bundle examples.
    * - ``POST /api/assistant``

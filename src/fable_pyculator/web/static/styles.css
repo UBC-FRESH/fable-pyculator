@@ -352,6 +352,37 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .ask-head strong { display: block; font-size: 0.86rem; }
 .ask-model { display: block; margin-top: 0.1rem; color: var(--muted); font-size: 0.68rem; }
 .ask-head-actions { display: flex; align-items: center; gap: 0.35rem; }
+.ask-sessions {
+  max-height: 15rem; overflow: auto; padding: 0.4rem;
+  border-bottom: 1px solid var(--line); background: var(--panel-soft);
+}
+.ask-session {
+  display: flex; gap: 0.4rem; align-items: flex-start; width: 100%;
+  padding: 0.38rem 0.45rem; border: 1px solid transparent; border-radius: 0.4rem;
+  background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+}
+.ask-session:hover { background: var(--panel); border-color: var(--line); }
+.ask-session.active { background: var(--green-soft); border-color: #b9dcc7; }
+.ask-session-main {
+  display: flex; flex-direction: column; min-width: 0; flex: 1;
+  padding: 0; border: 0; background: transparent; color: inherit;
+  font: inherit; text-align: left; cursor: pointer;
+}
+.ask-session-main { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.ask-session strong { overflow: hidden; font-size: 0.76rem; text-overflow: ellipsis; white-space: nowrap; }
+.ask-session small { overflow: hidden; color: var(--muted); font-size: 0.66rem; text-overflow: ellipsis; white-space: nowrap; }
+.ask-session-delete {
+  flex: none; width: 1.35rem; height: 1.35rem; padding: 0; border: 1px solid transparent;
+  border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer; font: inherit;
+}
+.ask-session-delete:hover { border-color: #fecaca; background: var(--red-soft); color: var(--red); }
+.ask-sessions-empty { margin: 0; padding: 0.35rem; color: var(--muted); font-size: 0.7rem; }
+.ask-grounding {
+  display: inline-flex; align-items: center; padding: 0.16rem 0.45rem;
+  border: 1px dashed var(--line); border-radius: 999px; color: var(--muted);
+  font-size: 0.66rem; text-decoration: none;
+}
+.ask-grounding:hover { border-color: var(--green); color: var(--green); text-decoration: none; }
 .ask-context { padding: 0.55rem 0.8rem 0; }
 .ask-context .field { margin-bottom: 0.35rem; }
 .ask-context .field > span { font-size: 0.68rem; }

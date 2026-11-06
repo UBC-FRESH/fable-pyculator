@@ -1,4 +1,4 @@
-import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28b";
+import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28c";
 
 const API = new URL("api/", document.baseURI);
 const PAGES = ["overview", "workbench", "results", "compare", "validation", "artifacts"];
@@ -14,7 +14,8 @@ const state = {
   activeTable: null,
   pollToken: 0,
   agent: { enabled: false, available: false, model: null },
-  ask: { session: null, busy: false, runId: null },
+  chats: [],
+  ask: { session: null, busy: false, runId: null, chatId: null, title: "New chat" },
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -116,15 +117,17 @@ function showPage(page) {
 
 async function bootstrap() {
   try {
-    const [options, artifacts, runs, agent] = await Promise.all([
+    const [options, artifacts, runs, agent, chats] = await Promise.all([
       request("options"),
       request("artifacts"),
       request("runs"),
       request("agent").catch(() => null),
+      request("chats").catch(() => []),
     ]);
     state.options = options;
     state.artifacts = artifacts;
     state.runs = runs;
+    state.chats = chats;
     state.agent = agent || { enabled: Boolean(options.assistant_enabled), available: false, model: options.assistant_model };
     $("#docs-link").href = options.docs_url || "#";
     const docsBase = (options.docs_url || "").replace(/\/$/, "");
@@ -135,6 +138,7 @@ async function bootstrap() {
     }
     document.title = `${options.title || "FABLE Pyculator"} · Scenario portal`;
     setupAsk();
+    await restoreChat();
     setStatus("ready", "good");
     renderVersionSelect();
     renderOverview();
@@ -978,6 +982,7 @@ function setupAsk() {
     $("#ask-status").textContent = "opencode is not on the service PATH";
   }
   renderAskContext();
+  renderAskSessions();
 }
 
 function renderAskContext() {
@@ -997,12 +1002,146 @@ function renderAskContext() {
   }
 }
 
+function renderAskSessions() {
+  const container = $("#ask-sessions");
+  if (!container) return;
+  if (!state.chats.length) {
+    container.innerHTML = `<p class="ask-sessions-empty">No saved chats yet. Send a message to create one.</p>`;
+    return;
+  }
+  container.innerHTML = state.chats
+    .map(
+      (chat) => `
+      <div class="ask-session ${chat.chat_id === state.ask.chatId ? "active" : ""}">
+        <button class="ask-session-main" type="button" data-chat-id="${escapeHtml(chat.chat_id)}">
+          <strong>${escapeHtml(chat.title || "Chat")}</strong>
+          <small>${escapeHtml(chat.preview || "")} · ${formatDate(chat.updated_at)}</small>
+        </button>
+        <button class="ask-session-delete" type="button" data-delete-chat="${escapeHtml(chat.chat_id)}" aria-label="Delete chat" title="Delete chat">×</button>
+      </div>`,
+    )
+    .join("");
+  container.querySelectorAll("[data-chat-id]").forEach((button) => {
+    button.addEventListener("click", () => loadChat(button.dataset.chatId));
+  });
+  container.querySelectorAll("[data-delete-chat]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      deleteAskChat(button.dataset.deleteChat);
+    });
+  });
+}
+
+function toggleAskSessions() {
+  const panel = $("#ask-sessions");
+  panel.hidden = !panel.hidden;
+  $("#ask-history").setAttribute("aria-expanded", panel.hidden ? "false" : "true");
+}
+
+function renderChatMessages(messages) {
+  const log = $("#ask-log");
+  log.replaceChildren();
+  if (!messages?.length) {
+    const hint = document.createElement("p");
+    hint.className = "hint";
+    hint.textContent =
+      "New conversation. Ask about a saved run, a headline series, validation evidence, or where an artifact lives. Press Enter to send, Shift+Enter for a newline.";
+    log.append(hint);
+    return;
+  }
+  for (const message of messages) {
+    const role = message.role === "user" ? "user" : message.role === "error" ? "error" : "agent";
+    const content = role === "error" ? `Assistant unavailable: ${message.content}` : message.content;
+    const node = appendAskMessage(role, content, { markdown: true });
+    if (Array.isArray(message.actions) && message.actions.length) {
+      const row = document.createElement("div");
+      row.className = "ask-actions";
+      for (const action of message.actions) {
+        const chip = document.createElement("span");
+        chip.className = "ask-action";
+        chip.textContent = `${action.tool}${action.summary ? `: ${action.summary}` : ""}`;
+        row.append(chip);
+      }
+      node.append(row);
+    }
+  }
+}
+
+async function loadChat(chatId, { silent = false } = {}) {
+  if (!chatId) return;
+  try {
+    const chat = await request(`chats/${encodeURIComponent(chatId)}`);
+    state.ask.chatId = chat.chat_id;
+    state.ask.session = chat.agent_session || null;
+    state.ask.runId = chat.run_id || null;
+    state.ask.title = chat.title;
+    try {
+      localStorage.setItem("fable-portal-chat", chat.chat_id);
+    } catch {
+      /* localStorage can be unavailable in private contexts */
+    }
+    renderChatMessages(chat.messages || []);
+    renderAskContext();
+    renderAskSessions();
+    if (chat.run_id) $("#ask-run").value = chat.run_id;
+    if (!silent) {
+      $("#ask-sessions").hidden = true;
+      $("#ask-history").setAttribute("aria-expanded", "false");
+      $("#ask-input").focus();
+    }
+  } catch (error) {
+    if (!silent) toast(error.message, "bad");
+  }
+}
+
+async function restoreChat() {
+  if (!state.agent?.enabled || !state.chats.length) return;
+  let remembered = null;
+  try {
+    remembered = localStorage.getItem("fable-portal-chat");
+  } catch {
+    /* localStorage can be unavailable in private contexts */
+  }
+  const target = state.chats.find((chat) => chat.chat_id === remembered) || state.chats[0];
+  if (target) await loadChat(target.chat_id, { silent: true });
+}
+
+async function refreshChats() {
+  try {
+    state.chats = await request("chats");
+    renderAskSessions();
+  } catch {
+    /* keep the current list */
+  }
+}
+
+async function deleteAskChat(chatId) {
+  try {
+    await request(`chats/${encodeURIComponent(chatId)}`, { method: "DELETE" });
+    if (state.ask.chatId === chatId) {
+      state.ask.chatId = null;
+      state.ask.session = null;
+      state.ask.title = "New chat";
+      try {
+        localStorage.removeItem("fable-portal-chat");
+      } catch {
+        /* localStorage can be unavailable in private contexts */
+      }
+      renderChatMessages([]);
+    }
+    await refreshChats();
+  } catch (error) {
+    toast(error.message, "bad");
+  }
+}
+
 function openAsk(runId = null) {
   if (!state.agent?.enabled) return;
   const panel = $("#ask-panel");
   panel.hidden = false;
   $("#assistant-open").setAttribute("aria-expanded", "true");
   renderAskContext();
+  renderAskSessions();
   if (runId) {
     state.ask.runId = runId;
     $("#ask-run").value = runId;
@@ -1019,21 +1158,55 @@ function closeAsk() {
   $("#assistant-open").focus();
 }
 
-function newAskChat() {
+async function newAskChat() {
   if (state.ask.busy) return;
+  if (!state.agent?.enabled) return;
+  state.ask.chatId = null;
   state.ask.session = null;
-  state.ask.busy = false;
-  const log = $("#ask-log");
-  log.replaceChildren();
-  const hint = document.createElement("p");
-  hint.className = "hint";
-  hint.textContent =
-    "New conversation. Ask about a saved run, a headline series, validation evidence, or where an artifact lives. Press Enter to send, Shift+Enter for a newline.";
-  log.append(hint);
+  state.ask.runId = $("#ask-run")?.value || state.activeRun?.run_id || null;
+  state.ask.title = "New chat";
+  try {
+    localStorage.removeItem("fable-portal-chat");
+  } catch {
+    /* localStorage can be unavailable in private contexts */
+  }
+  renderChatMessages([]);
   $("#ask-status").textContent = "";
   $("#ask-input").disabled = !state.agent.available;
   $("#ask-send").disabled = !state.agent.available;
+  renderAskSessions();
   $("#ask-input").focus();
+}
+
+async function createAskChat() {
+  const runId = $("#ask-run")?.value || state.activeRun?.run_id || null;
+  const chat = await request("chats", {
+    method: "POST",
+    body: JSON.stringify({ run_id: runId }),
+  });
+  state.ask.chatId = chat.chat_id;
+  state.ask.session = null;
+  state.ask.runId = chat.run_id || null;
+  state.ask.title = chat.title || "New chat";
+  try {
+    localStorage.setItem("fable-portal-chat", chat.chat_id);
+  } catch {
+    /* localStorage can be unavailable in private contexts */
+  }
+  if (chat.run_id) $("#ask-run").value = chat.run_id;
+  const summary = {
+    chat_id: chat.chat_id,
+    title: chat.title || "New chat",
+    created_at: chat.created_at,
+    updated_at: chat.updated_at,
+    message_count: 0,
+    preview: "",
+    agent_session: null,
+    run_id: chat.run_id || null,
+  };
+  state.chats = [summary, ...state.chats.filter((item) => item.chat_id !== chat.chat_id)];
+  renderAskSessions();
+  return chat;
 }
 
 function appendAskMessage(role, content, { markdown = false } = {}) {
@@ -1051,6 +1224,12 @@ function appendAskMessage(role, content, { markdown = false } = {}) {
   return node;
 }
 
+async function ensureAskChat() {
+  if (state.ask.chatId) return state.ask.chatId;
+  const chat = await createAskChat();
+  return chat.chat_id;
+}
+
 async function sendAsk(message) {
   if (!state.agent?.enabled || state.ask.busy) return;
   if (!state.agent.available) {
@@ -1059,6 +1238,17 @@ async function sendAsk(message) {
   }
   const prompt = String(message ?? "").trim();
   if (!prompt) return;
+  let chatId = null;
+  try {
+    chatId = await ensureAskChat();
+  } catch (error) {
+    $("#ask-status").textContent = `Could not create a chat session: ${error.message}`;
+    return;
+  }
+  if (!chatId) {
+    $("#ask-status").textContent = "Could not create a chat session.";
+    return;
+  }
   appendAskMessage("user", prompt, { markdown: true });
   $("#ask-input").value = "";
   const thinking = appendAskMessage("agent", "thinking…");
@@ -1066,17 +1256,25 @@ async function sendAsk(message) {
   state.ask.busy = true;
   $("#ask-send").disabled = true;
   $("#ask-new").disabled = true;
-  $("#ask-status").textContent = "Running the local assistant…";
+  $("#ask-status").textContent = "Grounding and running the local assistant…";
   try {
     const payload = await request("assistant", {
       method: "POST",
       body: JSON.stringify({
         message: prompt,
+        chat_id: chatId,
         session: state.ask.session,
         run_id: $("#ask-run").value || null,
       }),
     });
     state.ask.session = payload.session || state.ask.session;
+    if (payload.chat) {
+      state.ask.title = payload.chat.title || state.ask.title;
+      const index = state.chats.findIndex((item) => item.chat_id === payload.chat.chat_id);
+      if (index >= 0) state.chats[index] = payload.chat;
+      else state.chats.unshift(payload.chat);
+      renderAskSessions();
+    }
     thinking.remove();
     const reply = appendAskMessage("agent", payload.response || "(no reply)", { markdown: true });
     if (Array.isArray(payload.actions) && payload.actions.length) {
@@ -1096,6 +1294,7 @@ async function sendAsk(message) {
     thinking.remove();
     appendAskMessage("error", `Assistant unavailable: ${error.message}`);
     $("#ask-status").textContent = "";
+    await refreshChats();
   } finally {
     state.ask.busy = false;
     $("#ask-send").disabled = false;
@@ -1145,6 +1344,7 @@ function bindEvents() {
     else closeAsk();
   });
   $("#ask-close").addEventListener("click", closeAsk);
+  $("#ask-history").addEventListener("click", toggleAskSessions);
   $("#ask-new").addEventListener("click", newAskChat);
   $("#ask-run").addEventListener("change", () => {
     state.ask.runId = $("#ask-run").value || null;

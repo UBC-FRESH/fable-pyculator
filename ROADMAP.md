@@ -2140,6 +2140,13 @@ Implementation evidence:
 - Added the global **+ Ask** pill and fixed overlay assistant with markdown rendering for user and
   assistant messages, safe links/code/tables, session continuation, tool-action chips, run context,
   Enter-to-send, Shift+Enter newline, and keyboard shortcuts.
+- Added persistent assistant chats under `runtime/portal/chats/`, with a saved-chat list in the
+  overlay, last-chat restoration, and OpenCode session continuation across service restarts.
+- Added a generated grounding sheet at `runtime/portal/assistant/cheat-sheet.md` with served model
+  instances, artifact paths, prepared spec counts, saved runs, API surface, known version
+  differences, a digest compiled from all listed FABLE/Modelwright docs, and an AST source API
+  index. New chats must read it and open full cited files for exact details. It is served at
+  `GET /api/assistant/cheatsheet.md`.
 - Added `src/fable_pyculator/cli.py` and the `fable-pyculator web` entry point.
 - Added a multi-page static SPA under `src/fable_pyculator/web/static/` with Overview, Workbench,
   Results, Compare, Validation, Artifacts, and Assistant pages.
@@ -2160,7 +2167,7 @@ Verification evidence:
   passed.
 - `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
   passed after formatting.
-- `.venv/bin/python -m pytest -q` passed with `161` tests and `13` skips.
+- `.venv/bin/python -m pytest -q` passed with `165` tests and `13` skips.
 - `FABLE_PYCULATOR_RUN_WORKBOOK_TESTS=1 .venv/bin/python -m pytest -q tests/test_fable_workbook_headline_series.py`
   passed with `2` workbook-backed tests for 2020 and 2024.
 - Real restored-artifact 2021 preparation and scenario execution passed through the HTTP portal:
@@ -2173,6 +2180,9 @@ Verification evidence:
   167.2 s run, 16 controls, 14 output tables, 4 headline series, and saved tables.
 - The live local assistant returned markdown in 11.9 s with an OpenCode session id, and a second turn
   continued the same session in 7.2 s.
+- The grounded new-chat assistant read `notebook.py` and answered the exact
+  `build_notebook_spec` signature in 25.5 s; after a service restart the saved chat listed,
+  reloaded, and continued the same OpenCode session in 10.4 s.
 - `.venv/bin/fable-pyculator web --root . --port 8767` served `/api/health`, `/`, and
   `/static/app.js` successfully after an editable install with the `web` extra.
 - `.venv/bin/sphinx-build -b html docs _build/html -W -q` passed.

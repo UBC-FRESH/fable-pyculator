@@ -57,6 +57,41 @@ def test_run_agent_continues_session_and_returns_actions(tmp_path, monkeypatch: 
     assert result["actions"] == [{"tool": "grep", "summary": "Search"}]
 
 
+def test_run_agent_new_session_includes_cheat_sheet_grounding(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, object] = {}
+    cheat_sheet = tmp_path / "cheat-sheet.md"
+    cheat_sheet.write_text("# Grounding\n\nKey fact.", encoding="utf-8")
+
+    def fake_run(argv, **kwargs):
+        captured["argv"] = argv
+        return SimpleNamespace(
+            returncode=0,
+            stdout='{"type":"text","sessionID":"ses_new","part":{"text":"Grounded reply"}}\n',
+            stderr="",
+        )
+
+    monkeypatch.setattr(assistant.subprocess, "run", fake_run)
+    run_agent(
+        AgentRequest(
+            message="hello",
+            new_session=True,
+            cheat_sheet_path=str(cheat_sheet),
+            required_reading=("/tmp/docs/index.rst",),
+        ),
+        workspace=tmp_path,
+        command=("opencode", "run", "--format", "json", "--auto"),
+        timeout=30,
+    )
+
+    argv = captured["argv"]
+    assert isinstance(argv, list)
+    prompt = argv[-1]
+    assert "MANDATORY NEW-SESSION GROUNDING" in prompt
+    assert "Key fact." in prompt
+    assert "/tmp/docs/index.rst" in prompt
+    assert "Do not answer from memory" in prompt
+
+
 def test_run_agent_reports_empty_reply(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     monkeypatch.setattr(
         assistant.subprocess,

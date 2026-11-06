@@ -78,7 +78,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     web.add_argument(
         "--agent-timeout",
-        default=180.0,
+        default=600.0,
         type=float,
         help="Assistant subprocess timeout in seconds.",
     )
