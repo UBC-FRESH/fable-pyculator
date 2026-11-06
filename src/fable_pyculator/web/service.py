@@ -914,12 +914,26 @@ def _extend_frame_to_2070(frame: pd.DataFrame) -> pd.DataFrame:
 def _extend_year_rows(frame: pd.DataFrame, year_column: Any) -> pd.DataFrame | None:
     years = [_coerce_year(value) for value in frame[year_column]]
     numeric_years = [year for year in years if year is not None]
-    if not numeric_years or len(set(numeric_years)) != len(numeric_years):
+    if not numeric_years:
         return None
     native_max = max(numeric_years)
     targets = [year for year in EXTENSION_YEARS if year > native_max]
     if not targets:
         return None
+    if len(set(numeric_years)) == len(numeric_years):
+        return _extend_series_rows(frame, year_column, years, native_max, targets)
+    return _extend_grouped_rows(frame, year_column, native_max, targets)
+
+
+def _extend_series_rows(
+    frame: pd.DataFrame,
+    year_column: Any,
+    years: list[int | None],
+    native_max: int,
+    targets: list[int],
+) -> pd.DataFrame:
+    """Extend a frame where each row is one year."""
+
     trend_floor = max(2035, native_max - 15)
     last_index = frame.index[max(range(len(years)), key=lambda index: years[index] or -1)]
     appended: list[dict[Any, Any]] = []
@@ -943,7 +957,60 @@ def _extend_year_rows(frame: pd.DataFrame, year_column: Any) -> pd.DataFrame | N
             projected = _trend_value(values, target)
             row[column] = projected if projected is not None else frame.loc[last_index, column]
         appended.append(row)
-    new = pd.DataFrame(appended, index=[target for target in targets])
+    new = pd.DataFrame(appended, index=targets)
+    extended = pd.concat([frame, new])
+    extended.attrs.update(frame.attrs)
+    return extended
+
+
+def _extend_grouped_rows(
+    frame: pd.DataFrame,
+    year_column: Any,
+    native_max: int,
+    targets: list[int],
+) -> pd.DataFrame | None:
+    """Extend a multi-row-per-year frame by grouping on its text identity columns."""
+
+    group_columns = [
+        column
+        for column in frame.columns
+        if column != year_column
+        and (pd.api.types.is_object_dtype(frame[column]) or pd.api.types.is_string_dtype(frame[column]))
+    ]
+    if not group_columns:
+        return None
+    trend_floor = max(2035, native_max - 15)
+    appended: list[dict[Any, Any]] = []
+    extended_groups = 0
+    for _, group in frame.groupby(group_columns, dropna=False, sort=False):
+        years = [_coerce_year(value) for value in group[year_column]]
+        numeric_years = [year for year in years if year is not None]
+        trend_years = [year for year in numeric_years if trend_floor <= year <= native_max]
+        if len(trend_years) < 2 or len(set(numeric_years)) != len(numeric_years):
+            continue
+        last_index = group.index[max(range(len(years)), key=lambda index: years[index] or -1)]
+        for target in targets:
+            row: dict[Any, Any] = {}
+            for column in frame.columns:
+                if column == year_column:
+                    row[column] = target
+                elif column == "cell_refs":
+                    row[column] = ()
+                elif column == "description":
+                    row[column] = "Trend extension (non-native)"
+                else:
+                    values = [
+                        (year, value)
+                        for year, value in zip(years, group[column], strict=False)
+                        if year is not None and trend_floor <= year <= native_max
+                    ]
+                    projected = _trend_value(values, target)
+                    row[column] = projected if projected is not None else group.loc[last_index, column]
+            appended.append(row)
+        extended_groups += 1
+    if not appended:
+        return None
+    new = pd.DataFrame(appended, index=[target for _ in range(extended_groups) for target in targets])
     extended = pd.concat([frame, new])
     extended.attrs.update(frame.attrs)
     return extended

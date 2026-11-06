@@ -2164,9 +2164,10 @@ Implementation evidence:
   expressions for `LAND!AA17:AA27`; old-vs-repaired execution across all 10,274 declared outputs
   changed only those 11 cells.
 - Added an optional 2070 trend extension in the Workbench: native FABLE results stay 2000-2050;
-  headline series and one-row-per-year tables are extrapolated from the 2035-2050 linear trend, and
-  multi-row-per-year tables stay native with an explicit note. Every extended run records the method
-  and non-native warning.
+  headline series and one-row-per-year tables are extrapolated from the 2035-2050 linear trend;
+  multi-row-per-year tables are extended group-by-group on text identity columns when possible, and
+  unsupported tables stay native with an explicit note. Every extended run records the method and
+  non-native warning.
 - Wired `scripts/evaluate_assistant_grounding.py` into the Test workflow; live agent and Chromium
   checks remain opt-in.
 - Added `src/fable_pyculator/cli.py` and the `fable-pyculator web` entry point.
@@ -2189,7 +2190,7 @@ Verification evidence:
   passed.
 - `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
   passed after formatting.
-- `.venv/bin/python -m pytest -q` passed with `183` tests and `15` skips.
+- `.venv/bin/python -m pytest -q` passed with `184` tests and `15` skips.
 - `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1 .venv/bin/python -m pytest -q tests/web/test_browser_e2e.py`
   passed against real Chromium and a live assistant chat across a page reload.
 - `scripts/evaluate_assistant_grounding.py` structural checks passed, and
@@ -2218,9 +2219,8 @@ Verification evidence:
   `LandSeq` discrepancy (`-223.30` model vs `-302.20` cached), now surfaced by the numeric derived
   series rather than hidden behind an empty chart.
 - Live 2024 horizon-2070 run: headline series extended to 2070 (`food 1,611.3`, `GHG 110.14`,
-  `land 896,559.0`); `land_resultsland` rendered 15 rows (native 11 + 4 trend rows); the
-  multi-row-per-year `food_results_diets` table remained at its native 187 rows with an explicit
-  "not extended" note.
+  `land 896,559.0`); `land_resultsland` rendered 15 rows; grouped `food_results_diets` extended
+  from 187 to 255 rows; grouped `trade_resultstrade` extended from 990 to 1,350 rows.
 - Real restored-artifact 2020 preparation and scenario execution passed: 137.0 s prepare,
   167.2 s run, 16 controls, 14 output tables, 4 headline series, and saved tables.
 - The live local assistant returned markdown in 11.9 s with an OpenCode session id, and a second turn

@@ -190,7 +190,9 @@ The native FABLE workbooks and generated models end at 2050. The portal optional
 
 - The 2070 option extrapolates 2055, 2060, 2065, and 2070.
 - Headline series and one-row-per-year output tables are extended.
-- Tables with multiple rows per year are left at their native 2050 values and carry an explicit
+- Multi-row-per-year tables are extended group-by-group using text identity columns such as
+  `PROD_GROUP`, `Product`, `PRODUCT`, or `CROP`.
+- Tables without a usable identity column or trend are left at native 2050 and carry an explicit
   "not extended" table note.
 - Every extended run records the method and a warning that 2055-2070 are not native FABLE results.
 - The extension never changes the generated model or workbook; it is a presentation-layer projection.

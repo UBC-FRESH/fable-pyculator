@@ -79,3 +79,21 @@ def test_extended_headline_rows_do_not_reuse_native_cell_refs() -> None:
 
     assert extended.iloc[-1]["cell_refs"] == ()
     assert extended.iloc[-1]["description"] == "Trend extension (non-native)"
+
+
+def test_extend_grouped_rows_appends_each_product_series() -> None:
+    rows = []
+    for product, offset in (("A", 0.0), ("B", 100.0)):
+        for year, value in zip((2035, 2040, 2045, 2050), (1.0, 2.0, 3.0, 4.0), strict=True):
+            rows.append({"PRODUCT": product, "YEAR": year, "value": value + offset})
+    frame = pd.DataFrame(rows)
+
+    extended = _extend_frame_to_2070(frame)
+
+    assert len(extended) == 16
+    product_a = extended[extended["PRODUCT"] == "A"]
+    product_b = extended[extended["PRODUCT"] == "B"]
+    assert product_a["YEAR"].tolist()[-4:] == [2055, 2060, 2065, 2070]
+    assert product_a["value"].tolist()[-4:] == pytest.approx([5.0, 6.0, 7.0, 8.0])
+    assert product_b["value"].tolist()[-4:] == pytest.approx([105.0, 106.0, 107.0, 108.0])
+    assert "trend extension" in extended.attrs["extension_note"]

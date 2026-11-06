@@ -114,7 +114,7 @@ workbooks, or provide authentication. A non-loopback bind requires `--allow-remo
 
 The Workbench can optionally extend a run to **2070** using a linear trend over 2035–2050. This is
 a clearly labelled presentation-layer projection, not native FABLE output. Native results end at
-2050; tables with multiple rows per year are left at 2050 with an explicit note.
+2050. Multi-row-per-year tables are extended group-by-group when a text identity column is available; tables without a usable trend stay native with an explicit note.
 
 Assistant grounding and browser checks:
 
