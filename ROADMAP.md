@@ -2155,6 +2155,11 @@ Implementation evidence:
   workbook formula and cached totals from `calc_land_cor[TotallandFin]`; the portal also applies the
   same component repair to the stale generated model's displayed LAND TOTAL column with an explicit
   warning note.
+- Curated the GHG headline from declared `OUTPUT-8` components instead of the `TotalCO2e` `CALC`
+  cell, so 2020/2021/2024 results pages now have a numeric GHG series. The 2024 series explicitly
+  notes that `LandSeqAffor` is excluded because it is not a declared `OUTPUT-8` cell in that
+  artifact. Derived values are generated-model outputs; cached-total validation matched 2020 to
+  ~1e-12 and exposed late-year component-model differences for 2021/2024.
 - Added `scripts/repair_fable_2024_generated_model.py` and repaired the tracked 2024 generated-model
   expressions for `LAND!AA17:AA27`; old-vs-repaired execution across all 10,274 declared outputs
   changed only those 11 cells.
@@ -2180,7 +2185,7 @@ Verification evidence:
   passed.
 - `.venv/bin/python -m ruff format --check src/fable_pyculator/web src/fable_pyculator/cli.py tests/web`
   passed after formatting.
-- `.venv/bin/python -m pytest -q` passed with `175` tests and `15` skips.
+- `.venv/bin/python -m pytest -q` passed with `176` tests and `15` skips.
 - `FABLE_PYCULATOR_RUN_BROWSER_TESTS=1 .venv/bin/python -m pytest -q tests/web/test_browser_e2e.py`
   passed against real Chromium and a live assistant chat across a page reload.
 - `scripts/evaluate_assistant_grounding.py` structural checks passed, and
@@ -2203,6 +2208,11 @@ Verification evidence:
   repair note, and all 11 LAND TOTAL values were `896,559.0` (float tolerance).
 - Old-vs-repaired generated-model execution comparison across all 10,274 declared outputs found
   exactly 11 differences, all `LAND!AA17:AA27` (`#REF!` → `896,559.0`).
+- Live 2024 GHG smoke after the derivation: `59.99 → 95.61 MtCO2e` with the workbook default
+  `gwp_scen = SAR`; cached workbook GHG values use `AR6`, so they are not directly comparable.
+- Live 2021 GHG smoke after the derivation: `430.13 → 186.52 MtCO2e`; 2050 remains a generated-model
+  `LandSeq` discrepancy (`-223.30` model vs `-302.20` cached), now surfaced by the numeric derived
+  series rather than hidden behind an empty chart.
 - Real restored-artifact 2020 preparation and scenario execution passed: 137.0 s prepare,
   167.2 s run, 16 controls, 14 output tables, 4 headline series, and saved tables.
 - The live local assistant returned markdown in 11.9 s with an OpenCode session id, and a second turn

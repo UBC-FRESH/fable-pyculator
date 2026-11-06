@@ -46,7 +46,7 @@ __all__ = [
 
 JobStatus = Literal["queued", "running", "ok", "error"]
 Report = Callable[[int, str], None]
-SPEC_CACHE_VERSION = "2026-11-06-land-totallandfin"
+SPEC_CACHE_VERSION = "2026-11-06-ghg-output-components"
 
 
 class PortalError(RuntimeError):

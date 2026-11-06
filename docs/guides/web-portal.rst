@@ -48,6 +48,12 @@ clearly labelled *Total land area (component sum)* series that reproduces the wo
 ``calc_land_cor[TotallandFin]`` total and records the broken source formula in the series
 description. Missing tables are skipped rather than reported as a failed preparation.
 
+The GHG headline is built from declared `OUTPUT-8` components rather than the `TotalCO2e` `CALC`
+cell. This makes it numeric for 2020, 2021, and 2024. Values are generated-model outputs, so they can
+differ from workbook-cached totals where an individual component model differs. The 2024 series
+explicitly excludes `LandSeqAffor` because that column is not a declared `OUTPUT-8` cell in the
+current artifact.
+
 The workflow artifact may instead be present as the approved compressed archive:
 
 .. code-block:: text

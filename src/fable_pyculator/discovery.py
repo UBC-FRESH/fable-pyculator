@@ -48,6 +48,16 @@ LAND_TOTAL_FALLBACK_HEADERS = (
     "OtherForest",
     "OtherLand",
 )
+GHG_TOTAL_OUTPUT_COMPONENTS = (
+    "CropCO2",
+    "LiveN2O",
+    "CropN2O",
+    "LiveCH4",
+    "CropCH4",
+    "DeforCO2",
+    "OtherLandCO2",
+    "BiofuelSavings",
+)
 
 
 def discover_scenario_parameters(
@@ -341,20 +351,28 @@ def curate_default_headline_series(
         )
 
     def ghg() -> HeadlineSeries:
+        points, aggregation, label, fallback_note = _ghg_headline_points(
+            workbook["GHG"],
+            "ResultsGHG",
+            year_header="Year",
+            total_header="TotalCO2e",
+        )
+        base_description = descriptions.get(_description_key("ResultsGHG"))
+        description = (
+            f"{base_description} {fallback_note}"
+            if base_description and fallback_note
+            else fallback_note or base_description
+        )
         return HeadlineSeries(
             name="ghg_total_co2e",
-            label="Total GHG emissions",
+            label=label,
             group="GHG",
             sheet="GHG",
             table_name="ResultsGHG",
-            points=_headline_points(
-                workbook["GHG"],
-                "ResultsGHG",
-                year_header="Year",
-                value_headers=("TotalCO2e",),
-            ),
+            points=points,
             unit="MtCO2e",
-            description=descriptions.get(_description_key("ResultsGHG")),
+            description=description,
+            aggregation=aggregation,
         )
 
     def water() -> HeadlineSeries:
@@ -492,6 +510,62 @@ def _land_headline_points(
             f"{', '.join(LAND_TOTAL_FALLBACK_HEADERS)} (LoggedForest is not added separately)."
         )
     return tuple(points), "sum", "Total land area (component sum)", note
+
+
+def _ghg_headline_points(
+    worksheet: Worksheet,
+    table_name: str,
+    *,
+    year_header: str,
+    total_header: str,
+) -> tuple[tuple[HeadlinePoint, ...], HeadlineAggregation, str, str | None]:
+    """Build total GHG from declared OUTPUT-8 components when possible.
+
+    ``TotalCO2e`` is a CALC cell and is not present in generated-model output refs for every FABLE
+    version. The workbook's formula is a sum of the OUTPUT-8 contributions, so use those cells when
+    they are all available. The 2024 schema separately reports ``LandSeqAffor``; it is not an
+    OUTPUT-8 cell in the generated model and is therefore called out in the description.
+    """
+
+    table = worksheet.tables[table_name]
+    min_col, min_row, max_col, max_row = range_boundaries(table.ref)
+    headers = {_optional_text(worksheet.cell(min_row, column).value): column for column in range(min_col, max_col + 1)}
+    year_column = _required_header(headers, year_header, table_name)
+    land_sequence_header = "LandSeq" if "LandSeq" in headers else "LandSeqReg" if "LandSeqReg" in headers else None
+    component_headers = GHG_TOTAL_OUTPUT_COMPONENTS + ((land_sequence_header,) if land_sequence_header else ())
+    if not all(header in headers for header in component_headers):
+        return (
+            _headline_points(
+                worksheet,
+                table_name,
+                year_header=year_header,
+                value_headers=(total_header,),
+            ),
+            "value",
+            "Total GHG emissions",
+            None,
+        )
+
+    component_columns = tuple(_required_header(headers, header, table_name) for header in component_headers)
+    points: list[HeadlinePoint] = []
+    for row in range(min_row + 1, max_row + 1):
+        year = worksheet.cell(row, year_column).value
+        if year is None:
+            continue
+        points.append(
+            HeadlinePoint(
+                year=year,
+                cell_refs=tuple(f"{worksheet.title}!{get_column_letter(column)}{row}" for column in component_columns),
+            )
+        )
+    note = (
+        "Derived from generated-model OUTPUT-8 components using the workbook's "
+        "ResultsGHG[TotalCO2e] formula. Values are model outputs and may differ from workbook-cached "
+        "totals where individual components differ."
+    )
+    if land_sequence_header == "LandSeqReg" and "LandSeqAffor" in headers:
+        note += " LandSeqAffor is excluded because it is not a declared OUTPUT-8 cell in this artifact."
+    return tuple(points), "sum", "Total GHG emissions (output components)", note
 
 
 def _indextable_descriptions(worksheet: Worksheet) -> dict[str, str]:

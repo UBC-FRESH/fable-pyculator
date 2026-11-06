@@ -1,4 +1,4 @@
-import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28e";
+import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28f";
 
 const API = new URL("api/", document.baseURI);
 const PAGES = ["overview", "workbench", "results", "compare", "validation", "artifacts"];
@@ -560,7 +560,7 @@ function renderRunDetail(record) {
         <div class="chart-head">
           <div>
             <h3>${escapeHtml(payload.label || name)}</h3>
-            <p class="hint">${escapeHtml(payload.sheet || "")}${payload.range_ref ? ` · ${escapeHtml(payload.range_ref)}` : ""}</p>
+            <p class="hint">${escapeHtml(payload.sheet || "")}${payload.range_ref ? ` · ${escapeHtml(payload.range_ref)}` : ""}${payload.description ? ` · ${escapeHtml(payload.description)}` : ""}</p>
           </div>
           <span class="pill muted">${escapeHtml(payload.unit || "value")}</span>
         </div>

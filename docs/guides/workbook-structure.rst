@@ -87,6 +87,15 @@ If you restore a decompressed generated model that predates the workbook repair,
 
 The tracked 2024 archive has already been repaired; the script is for older local working copies.
 
+GHG totals are derived from the declared `OUTPUT-8` component columns rather than the `TotalCO2e`
+`CALC` cell: `CropCO2`, `LiveN2O`, `CropN2O`, `LiveCH4`, `CropCH4`, `DeforCO2`, `OtherLandCO2`, the
+land-sequence column (`LandSeq` or `LandSeqReg`), and `BiofuelSavings`. This follows the workbook's
+`ResultsGHG[TotalCO2e]` formula, but the values are generated-model outputs and can differ where an
+individual component model differs. The 2024 artifact excludes `LandSeqAffor` because it is not a
+declared `OUTPUT-8` cell; the series description says so explicitly. A known example is the 2021
+`LandSeq` value at 2050 (`-223.30` generated vs `-302.20` cached), which makes the derived 2050 GHG
+total differ from the cached workbook total. The portal reports the generated-model value.
+
 Until the tracked 2024 generated model is rebuilt from the repaired workbook, the portal also applies
 the same component repair to the displayed ``land_resultsland`` TOTAL column and shows an explicit
 warning note under that table. It does not change generated-model validation semantics.

@@ -94,7 +94,12 @@ curation is version-tolerant: 2020/2021 expose FOOD, LAND, GHG, and WATER; the 2
 exposes FOOD, LAND, and GHG because it has no `TotalResultsWF` water-footprint table. The 2024
 `LAND[TOTAL]` formula contains `#REF!`, so the land headline uses a clearly labelled component sum
 that reproduces the workbook's valid `calc_land_cor[TotallandFin]` value and records the broken
-source formula in its description. To repair a local copy of the workbook itself, run:
+source formula in its description. The GHG headline is derived from the declared `OUTPUT-8`
+components (`CropCO2`, `LiveN2O`, `CropN2O`, `LiveCH4`, `CropCH4`, `DeforCO2`, `OtherLandCO2`,
+land-sequence, and `BiofuelSavings`) because `TotalCO2e` is a `CALC` cell rather than a generated
+output. Values are generated-model outputs, so they can differ from workbook-cached totals where an
+individual component model differs. The 2024 series notes that `LandSeqAffor` is excluded because it
+is not a declared `OUTPUT-8` cell in that artifact. To repair a local copy of the 2024 workbook itself, run:
 
 ```bash
 .venv/bin/python scripts/repair_fable_2024_land_total.py

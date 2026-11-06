@@ -67,13 +67,26 @@ This file records completed project work in chronological order.
   generated value affected. The repaired tracked archive checksum is
   `f62c74b246fa29068b54b2c8ad82ed34b35026e490f2e2d205148c18277ae469`, and a fresh portal run showed
   the LAND table TOTAL values coming directly from the model with no display repair note.
+- Curated the GHG headline from declared `OUTPUT-8` components instead of the `TotalCO2e` `CALC`
+  cell, so 2020/2021/2024 results pages now have a numeric GHG series. The 2024 series explicitly
+  notes that `LandSeqAffor` is excluded because it is not a declared `OUTPUT-8` cell in that
+  artifact.
+- Validated the derived GHG series against cached workbook `TotalCO2e`: 2020 matched to ~1e-12 at
+  every year; 2021 and 2024 showed late-year differences because individual generated-model
+  components differ from cached workbook cells (notably 2021 `LandSeq` at 2050). The headline
+  intentionally reports generated-model outputs, not cached workbook values, and says so in its
+  description.
+- Live 2024 GHG smoke: `59.99 → 95.61 MtCO2e` with default `gwp_scen = SAR`; cached workbook values
+  use `AR6`, so they are not directly comparable. Live 2021 GHG smoke: `430.13 → 186.52 MtCO2e`;
+  2050 still shows a generated-model `LandSeq` discrepancy (`-223.30` model vs `-302.20` cached),
+  now exposed by the numeric derived series rather than hidden by an empty chart.
 - Kept a transparent display repair for older/stale 2024 working models: if a `land_resultsland`
   TOTAL column still contains `#REF!`, the portal replaces only that displayed column with the same
   `TotallandFin` component sum and shows a warning note; generated-model semantics are unchanged.
 - Wired the deterministic assistant grounding check into the Test workflow so cheat-sheet/source
   drift fails CI, while live agent and Chromium checks remain opt-in.
 - Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
-  full test suite (`175` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
+  full test suite (`176` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
   headline tests (`2` passed), a warning-clean Sphinx build, Read the Docs theme verification, the
   release artifact check, and real restored-artifact 2021/2024/2020 preparation and runs.
 
