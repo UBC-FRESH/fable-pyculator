@@ -157,6 +157,7 @@ def test_artifact_summary_names_missing_files(tmp_path: Path) -> None:
     assert 'id="ask-panel"' in shell.text
     assert 'id="ask-sessions"' in shell.text
     assert 'id="ask-history"' in shell.text
+    assert 'id="run-horizon"' in shell.text
     assert "Grounding sheet" in shell.text
     assert "+" in shell.text and "Ask" in shell.text
     assert script.status_code == 200
@@ -167,6 +168,8 @@ def test_artifact_summary_names_missing_files(tmp_path: Path) -> None:
     assert "localStorage" in script.text
     assert "loadChat" in script.text
     assert "chat_id" in script.text
+    assert "run-horizon" in script.text
+    assert "2070" in script.text
     assert markdown.status_code == 200
     assert "export { escapeHtml, inlineMarkdown, renderMarkdown" in markdown.text
     assert styles.status_code == 200
@@ -322,6 +325,30 @@ def test_agent_info_and_assistant_session_passthrough(tmp_path: Path, monkeypatc
     assert payload["actions"][0]["tool"] == "read"
     assert captured["request"].session == "ses_123"
     assert captured["request"].model == config.agent_model
+
+
+def test_run_records_2070_trend_extension(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config = _config(tmp_path)
+    spec = _spec()
+    monkeypatch.setattr(service, "build_notebook_spec", lambda *_args, **_kwargs: spec)
+    monkeypatch.setattr(service, "load_generated_model", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(service, "run_notebook_loop", lambda *_args, **_kwargs: _fake_result())
+
+    app = create_app(config)
+    with TestClient(app) as client:
+        job = client.post(
+            "/api/runs",
+            json={"version": "2021", "name": "extension", "selections": {}, "horizon": 2070},
+        ).json()
+        finished = _wait(client, job["job_id"])
+
+    assert finished["status"] == "ok"
+    record = finished["result"]
+    assert record["horizon"] == 2070
+    assert record["extension"]["enabled"] is True
+    assert "trend extension" in record["extension"]["note"]
+    ghg = record["headline_series"]["ghg_total_co2e"]
+    assert ghg["rows"][-1]["year"] == 2070
 
 
 def test_2024_land_table_display_repair_uses_totallandfin_components() -> None:

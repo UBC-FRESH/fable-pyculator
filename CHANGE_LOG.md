@@ -80,13 +80,21 @@ This file records completed project work in chronological order.
   use `AR6`, so they are not directly comparable. Live 2021 GHG smoke: `430.13 → 186.52 MtCO2e`;
   2050 still shows a generated-model `LandSeq` discrepancy (`-223.30` model vs `-302.20` cached),
   now exposed by the numeric derived series rather than hidden by an empty chart.
+- Live 2024 horizon-2070 smoke: headline series extended to 2070 (`food 1,611.3`, `GHG 110.14`,
+  `land 896,559.0`); `land_resultsland` had 15 rows (native 11 + 4 trend rows), while the
+  multi-row-per-year `food_results_diets` table stayed at 187 rows with an explicit not-extended note.
 - Kept a transparent display repair for older/stale 2024 working models: if a `land_resultsland`
   TOTAL column still contains `#REF!`, the portal replaces only that displayed column with the same
   `TotallandFin` component sum and shows a warning note; generated-model semantics are unchanged.
 - Wired the deterministic assistant grounding check into the Test workflow so cheat-sheet/source
   drift fails CI, while live agent and Chromium checks remain opt-in.
+- Added an optional **2070 trend extension** to the Workbench. Native FABLE results remain
+  2000-2050; when selected, headline series and one-row-per-year tables are extended to 2055-2070
+  with a linear trend fitted over 2035-2050. Multi-row-per-year tables stay at 2050 with an explicit
+  note. Every extended run records the method and a warning that 2055-2070 are not native FABLE
+  results.
 - Verified the implementation with Ruff, targeted Ruff format checks, JavaScript syntax checking, the
-  full test suite (`176` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
+  full test suite (`183` passed and `15` skipped), the gated Chromium smoke (`1` passed), workbook
   headline tests (`2` passed), a warning-clean Sphinx build, Read the Docs theme verification, the
   release artifact check, and real restored-artifact 2021/2024/2020 preparation and runs.
 

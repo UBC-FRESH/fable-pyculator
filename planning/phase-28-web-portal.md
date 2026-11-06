@@ -75,6 +75,15 @@ listed doc and an AST-generated source API index. The agent is told to open the 
 a question needs exact signatures, behaviour, examples, or caveats. The sheet is available to users
 at `GET /api/assistant/cheatsheet.md`.
 
+## 2070 trend extension
+
+Native FABLE workbooks and generated models end at 2050. The Workbench optionally extends a run to
+2070 with a linear trend fitted over 2035-2050 numeric values. Headline series and one-row-per-year
+tables are extended; multi-row-per-year tables are left native and receive a "not extended" note.
+Every extended run records `horizon: 2070`, `extension.method: linear_trend_2035_2050`, and an
+explicit note that 2055-2070 are not native FABLE results. The generated model and source workbook
+are never modified by this projection.
+
 ## Out of scope
 
 - authentication or multi-user accounts;

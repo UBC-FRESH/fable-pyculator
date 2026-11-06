@@ -112,6 +112,10 @@ minute; both run as background jobs with progress reporting.
 The portal is a presentation layer. It does not recompute a FABLE result in the browser, edit source
 workbooks, or provide authentication. A non-loopback bind requires `--allow-remote`.
 
+The Workbench can optionally extend a run to **2070** using a linear trend over 2035–2050. This is
+a clearly labelled presentation-layer projection, not native FABLE output. Native results end at
+2050; tables with multiple rows per year are left at 2050 with an explicit note.
+
 Assistant grounding and browser checks:
 
 ```bash

@@ -191,6 +191,8 @@ def build_cheat_sheet(
         "- Source workbooks, generated models, and runtime caches are ignored local artifacts.",
         "- The portal is a reader. It does not convert workbooks, generate model code, mutate source files,",
         "  or recompute FABLE results in the browser.",
+        "- Scenario runs use the native FABLE horizon (2050) by default. The optional 2070 mode extends",
+        "  2055-2070 with a 2035-2050 linear trend and labels those values as non-native projections.",
         "",
         "## Served model instances",
         "",

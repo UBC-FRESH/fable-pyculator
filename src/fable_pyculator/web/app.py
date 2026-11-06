@@ -35,6 +35,7 @@ class ScenarioRequest(BaseModel):
     headline_series_names: list[str] | None = None
     column_flavour_tags: str | list[str] | None = None
     include_context_columns: bool = True
+    horizon: int = 2050
 
 
 class CompareRequest(BaseModel):
@@ -161,6 +162,7 @@ def create_app(config: PortalConfig) -> FastAPI:
             headline_series_names=request.headline_series_names,
             column_flavour_tags=request.column_flavour_tags,
             include_context_columns=request.include_context_columns,
+            horizon=request.horizon,
         )
         return job.to_dict()
 

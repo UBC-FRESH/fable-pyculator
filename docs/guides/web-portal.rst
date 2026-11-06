@@ -182,6 +182,22 @@ The portal reuses patterns proven in adjacent UBC FRESH projects:
 - **FABLE Pyculator itself**: the typed spec, selection controls, output-table renderer, headline
   frames, scenario bundles, and validation-evidence vocabulary remain the source of truth.
 
+2070 trend extension
+--------------------
+
+The native FABLE workbooks and generated models end at 2050. The portal optionally extends a run to
+2070 using a linear trend fitted over the 2035-2050 values for each numeric series.
+
+- The 2070 option extrapolates 2055, 2060, 2065, and 2070.
+- Headline series and one-row-per-year output tables are extended.
+- Tables with multiple rows per year are left at their native 2050 values and carry an explicit
+  "not extended" table note.
+- Every extended run records the method and a warning that 2055-2070 are not native FABLE results.
+- The extension never changes the generated model or workbook; it is a presentation-layer projection.
+
+Use it from the Workbench **Horizon** selector. Select **Native FABLE horizon (2050)** for actual
+model results.
+
 Security and limitations
 ------------------------
 

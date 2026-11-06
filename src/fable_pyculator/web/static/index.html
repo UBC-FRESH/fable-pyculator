@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
     <title>FABLE Pyculator</title>
-    <link rel="stylesheet" href="static/styles.css?v=p28f">
+    <link rel="stylesheet" href="static/styles.css?v=p28h">
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -130,6 +130,14 @@
               <span>Scenario name</span>
               <input id="scenario-name" type="text" value="Scenario 1" maxlength="120">
             </label>
+            <label class="field">
+              <span>Horizon</span>
+              <select id="run-horizon">
+                <option value="2050">Native FABLE horizon (2050)</option>
+                <option value="2070">2070 trend extension</option>
+              </select>
+            </label>
+            <p class="hint">The 2070 option extrapolates 2055–2070 from the 2035–2050 linear trend. It is not a native FABLE result.</p>
             <label class="field">
               <span>Output tables</span>
               <select id="table-mode">
@@ -316,6 +324,6 @@
     <noscript>
       <p class="noscript">This portal needs JavaScript to prepare models and render outputs.</p>
     </noscript>
-    <script type="module" src="static/app.js?v=p28f"></script>
+    <script type="module" src="static/app.js?v=p28h"></script>
   </body>
 </html>

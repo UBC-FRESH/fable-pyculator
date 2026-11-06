@@ -47,6 +47,11 @@ __all__ = [
 JobStatus = Literal["queued", "running", "ok", "error"]
 Report = Callable[[int, str], None]
 SPEC_CACHE_VERSION = "2026-11-06-ghg-output-components"
+NATIVE_LAST_YEAR = 2050
+EXTENSION_YEARS = (2055, 2060, 2065, 2070)
+EXTENSION_NOTE = (
+    "2055-2070 are trend extensions extrapolated from the 2035-2050 linear trend, not native FABLE Calculator results."
+)
 
 
 class PortalError(RuntimeError):
@@ -439,6 +444,7 @@ class PortalState:
         headline_series_names: Sequence[str] | None = None,
         column_flavour_tags: str | Sequence[str] | None = None,
         include_context_columns: bool = True,
+        horizon: int = NATIVE_LAST_YEAR,
     ) -> Job:
         """Start a background scenario run."""
 
@@ -453,6 +459,7 @@ class PortalState:
                 headline_series_names=headline_series_names,
                 column_flavour_tags=column_flavour_tags,
                 include_context_columns=include_context_columns,
+                horizon=horizon,
                 report=report,
             ),
         )
@@ -467,10 +474,13 @@ class PortalState:
         headline_series_names: Sequence[str] | None = None,
         column_flavour_tags: str | Sequence[str] | None = None,
         include_context_columns: bool = True,
+        horizon: int = NATIVE_LAST_YEAR,
         report: Report | None = None,
     ) -> dict[str, Any]:
         """Run one scenario and persist its summary and table payloads."""
 
+        if horizon not in {NATIVE_LAST_YEAR, 2070}:
+            raise PortalError("horizon must be 2050 or 2070")
         report = report or (lambda _progress, _message: None)
         with self._compute_lock:
             prepared = self._prepared.get(version)
@@ -503,8 +513,12 @@ class PortalState:
 
             table_summaries: list[dict[str, Any]] = []
             table_files: dict[str, str] = {}
+            table_frames: dict[str, pd.DataFrame] = {}
             for table_name, frame in result.output_tables.items():
                 frame = _repair_known_output_table(version, table_name, frame)
+                if horizon == 2070:
+                    frame = _extend_frame_to_2070(frame)
+                table_frames[table_name] = frame
                 payload = _frame_payload(frame, name=table_name)
                 slug = _slug(table_name)
                 relative = Path("tables") / f"{slug}.json"
@@ -523,14 +537,18 @@ class PortalState:
                         "column_count": len(payload["columns"]),
                         "file": str(relative),
                         "display_repair": payload.get("display_repair"),
+                        "extension_note": payload.get("extension_note"),
                     }
                 )
 
-            headline_payloads = {
-                series_name: _frame_payload(frame, name=series_name)
+            headline_frames = {
+                series_name: (_extend_frame_to_2070(frame) if horizon == 2070 else frame)
                 for series_name, frame in result.headline_frames.items()
             }
-            headline_summary = _headline_summary(prepared.spec, result.headline_frames)
+            headline_payloads = {
+                series_name: _frame_payload(frame, name=series_name) for series_name, frame in headline_frames.items()
+            }
+            headline_summary = _headline_summary(prepared.spec, headline_frames)
             paths = artifact_paths(self.config.repo_root, version)
             provenance = {
                 "portal_version": __version__,
@@ -549,6 +567,17 @@ class PortalState:
                 "created_at": datetime.now(UTC).isoformat(timespec="seconds"),
                 "status": "ok",
                 "duration_seconds": duration,
+                "horizon": horizon,
+                "extension": (
+                    {
+                        "enabled": horizon == 2070,
+                        "method": "linear_trend_2035_2050",
+                        "native_last_year": NATIVE_LAST_YEAR,
+                        "note": EXTENSION_NOTE,
+                    }
+                    if horizon == 2070
+                    else None
+                ),
                 "selections": jsonable(dict(selections)),
                 "input_count": len(result.run.inputs),
                 "inputs": jsonable(result.run.inputs),
@@ -819,6 +848,7 @@ def _frame_payload(frame: pd.DataFrame, *, name: str) -> dict[str, Any]:
         "matched_column_flavour_tags": jsonable(attrs.get("matched_column_flavour_tags")),
         "column_flavour_tags": jsonable(attrs.get("column_flavour_tags")),
         "display_repair": attrs.get("display_repair"),
+        "extension_note": attrs.get("extension_note"),
     }
 
 
@@ -852,6 +882,132 @@ def _repair_known_output_table(
         "not added separately)."
     )
     return repaired
+
+
+def _extend_frame_to_2070(frame: pd.DataFrame) -> pd.DataFrame:
+    """Extend a year-indexed or year-column table using the 2035-2050 linear trend."""
+
+    if frame.empty:
+        return frame
+    copied = frame.copy()
+    copied.attrs.update(frame.attrs)
+    year_column = next(
+        (column for column in copied.columns if str(column).casefold() == "year"),
+        None,
+    )
+    if year_column is not None:
+        extended = _extend_year_rows(copied, year_column)
+        if extended is not None:
+            extended.attrs.update(copied.attrs)
+            extended.attrs["extension_note"] = EXTENSION_NOTE
+            return extended
+        copied.attrs["extension_note"] = (
+            "This table has multiple rows per year; 2055-2070 trend extension was not applied."
+        )
+        return copied
+    if _extend_year_columns(copied):
+        copied.attrs["extension_note"] = EXTENSION_NOTE
+        return copied
+    return frame
+
+
+def _extend_year_rows(frame: pd.DataFrame, year_column: Any) -> pd.DataFrame | None:
+    years = [_coerce_year(value) for value in frame[year_column]]
+    numeric_years = [year for year in years if year is not None]
+    if not numeric_years or len(set(numeric_years)) != len(numeric_years):
+        return None
+    native_max = max(numeric_years)
+    targets = [year for year in EXTENSION_YEARS if year > native_max]
+    if not targets:
+        return None
+    trend_floor = max(2035, native_max - 15)
+    last_index = frame.index[max(range(len(years)), key=lambda index: years[index] or -1)]
+    appended: list[dict[Any, Any]] = []
+    for target in targets:
+        row: dict[Any, Any] = {}
+        for column in frame.columns:
+            if column == year_column:
+                row[column] = target
+                continue
+            if column == "cell_refs":
+                row[column] = ()
+                continue
+            if column == "description":
+                row[column] = "Trend extension (non-native)"
+                continue
+            values = [
+                (year, value)
+                for year, value in zip(years, frame[column], strict=False)
+                if year is not None and trend_floor <= year <= native_max
+            ]
+            projected = _trend_value(values, target)
+            row[column] = projected if projected is not None else frame.loc[last_index, column]
+        appended.append(row)
+    new = pd.DataFrame(appended, index=[target for target in targets])
+    extended = pd.concat([frame, new])
+    extended.attrs.update(frame.attrs)
+    return extended
+
+
+def _extend_year_columns(frame: pd.DataFrame) -> bool:
+    year_columns: list[tuple[Any, int]] = []
+    for column in frame.columns:
+        text = str(column)
+        if text.isdigit() and 2000 <= int(text) <= 2100:
+            year_columns.append((column, int(text)))
+    if len(year_columns) < 2:
+        return False
+    native_max = max(year for _, year in year_columns)
+    targets = [year for year in EXTENSION_YEARS if year > native_max]
+    if not targets:
+        return False
+    trend_floor = max(2035, native_max - 15)
+    style = type(year_columns[0][0])
+    for target in targets:
+        frame[style(target)] = [
+            _trend_value(
+                [
+                    (year, row[column])
+                    for column, year in year_columns
+                    if year is not None and trend_floor <= year <= native_max
+                ],
+                target,
+            )
+            for _, row in frame.iterrows()
+        ]
+    return True
+
+
+def _trend_value(points: Sequence[tuple[int, Any]], target: int) -> float | None:
+    usable = [
+        (float(year), float(value))
+        for year, value in points
+        if isinstance(value, int | float) and not isinstance(value, bool)
+    ]
+    if not usable:
+        return None
+    if len(usable) == 1:
+        return usable[0][1]
+    count = len(usable)
+    sum_x = sum(year for year, _ in usable)
+    sum_y = sum(value for _, value in usable)
+    sum_xy = sum(year * value for year, value in usable)
+    sum_xx = sum(year * year for year, _ in usable)
+    denominator = count * sum_xx - sum_x * sum_x
+    if denominator == 0:
+        return usable[-1][1]
+    slope = (count * sum_xy - sum_x * sum_y) / denominator
+    intercept = (sum_y - slope * sum_x) / count
+    return intercept + slope * target
+
+
+def _coerce_year(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int | float):
+        return int(value)
+    text = str(value).strip()
+    return int(text) if text.isdigit() else None
 
 
 def _headline_summary(spec: Any, frames: Mapping[str, pd.DataFrame]) -> list[dict[str, Any]]:

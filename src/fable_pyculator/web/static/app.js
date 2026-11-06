@@ -1,4 +1,4 @@
-import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28f";
+import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28h";
 
 const API = new URL("api/", document.baseURI);
 const PAGES = ["overview", "workbench", "results", "compare", "validation", "artifacts"];
@@ -400,6 +400,7 @@ function resetControls() {
     }
   });
   $("#scenario-name").value = "Scenario 1";
+  $("#run-horizon").value = "2050";
   $("#table-mode").value = "all";
   $("#flavour-tags").value = "";
   $("#include-context").checked = true;
@@ -432,6 +433,7 @@ async function runScenario() {
     output_table_names: outputTables,
     column_flavour_tags: flavour,
     include_context_columns: $("#include-context").checked,
+    horizon: Number($("#run-horizon").value || 2050),
   };
   const button = $("#run-scenario");
   button.disabled = true;
@@ -540,6 +542,9 @@ function renderRunDetail(record) {
   const selectionChips = Object.entries(record.selections || {})
     .map(([name, value]) => `<span class="chip"><b>${escapeHtml(name)}</b>${escapeHtml(value)}</span>`)
     .join("");
+  const extensionNote = record.extension
+    ? `<p class="table-note">${escapeHtml(record.extension.note || "2070 trend extension is active.")}</p>`
+    : "";
   const kpis = (record.headline_summary || [])
     .map((item) => {
       const delta = item.delta === null || item.delta === undefined ? "—" : formatSigned(item.delta);
@@ -600,6 +605,7 @@ function renderRunDetail(record) {
       </div>
     </div>
     <div class="chip-row">${selectionChips || `<span class="hint">No explicit selection overrides.</span>`}</div>
+    ${extensionNote}
     ${provenance}
     <div class="kpi-grid">${kpis || `<p class="hint">No headline series were declared for this version.</p>`}</div>
     <section class="section">
@@ -666,6 +672,7 @@ function renderTable(payload) {
   return `
     <div class="table-meta">${pill(`${rows.length} rows`)} ${pill(`${columns.length} columns`)} ${payload.sheet ? pill(payload.sheet) : ""} ${payload.selected_column_flavour_tags ? pill(`flavour ${payload.selected_column_flavour_tags}`) : ""}</div>
     ${payload.display_repair ? `<p class="table-note">${escapeHtml(payload.display_repair)}</p>` : ""}
+    ${payload.extension_note ? `<p class="table-note">${escapeHtml(payload.extension_note)}</p>` : ""}
     <div class="table-wrap"><table><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></div>
     ${note}`;
 }
