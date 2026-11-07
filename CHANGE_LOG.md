@@ -75,6 +75,10 @@ This file records completed project work in chronological order.
   2 rule-rejected, 0 errors, 321.6 s. No strict single-coordinate dominator was found; the candidate
   is a local Pareto point with 11 exact ties. PR #268 merged as `44b9ab5`; parent #266 and child #267
   are closed. Docs build passed; the GitHub Pages deploy job timed out in `finished_file_sync`.
+- Added `scripts/fable_exact_decision.py` and eight targeted exact land/diet/trade interaction runs.
+  The combined exact frontier has 169 points (160 unique selections) and 15 unique Pareto objective
+  triples. Balanced and food-first (GHG ≤ 110) pick the Phase 38 candidate at 3,301.11 kcal /
+  108.95 MtCO2e; GHG-first at food ≥ 3,000 picks 3,290.23 kcal / 108.84 MtCO2e.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

@@ -101,6 +101,12 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   found no strict dominator; 30 exact evaluations, 2 rule-rejected, 0 errors, 321.6 s, 11 exact ties.
   The candidate is a local Pareto point. PR #268 merged as `44b9ab5`; parent #266 and child #267 are
   closed. Docs build passed; the GitHub Pages deploy job timed out in `finished_file_sync`.
+- Phase 40 is implemented on `feature/p40-exact-decision-frontier`: eight targeted exact
+  land/diet/trade interactions plus a combined exact frontier (169 points, 160 unique selections,
+  15 unique Pareto objectives). Balanced pick is the Phase 38 candidate at 3,301.11 kcal / 108.95
+  MtCO2e; food-first at GHG ≤ 110 picks the same point, and GHG-first at food ≥ 3,000 picks
+  3,290.23 kcal / 108.84 MtCO2e. Parent #269 and children #270-#271 are mapped; PR #272 and closeout
+  remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3141,6 +3147,68 @@ Implementation evidence:
   `diet_scen=EATLancetAverage` at 2,254.06 kcal / 81.59 MtCO2e; `fixtrade_scen=No` at
   3,303.48 kcal / 213.40 MtCO2e; `affor_scen=Affor1` at 3,290.23 kcal / 108.84 MtCO2e.
 - The candidate is a local Pareto point, not a global optimum.
+
+Verification evidence:
+
+- Full test suite and docs build to be rerun after the report and PR are prepared.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
+
+## Phase 40: Exact Interaction Checks and Decision Frontier
+
+GitHub parent issue: #269.
+
+Branch: `feature/p40-exact-decision-frontier`.
+
+Status: pr-open.
+
+Pull request: #272.
+
+Goal: fill key exact interaction gaps around the Phase 38 candidate and combine all exact points into
+a decision frontier with balanced, food-first, and GHG-first picks.
+
+Tasks:
+
+- [x] P40.1 Run targeted exact interaction checks and build the decision frontier. Child issue: #270.
+- [x] P40.2 Write the exact decision brief, document, and close. Child issue: #271.
+
+Scope:
+
+- Eight targeted land/diet/trade interactions at fixed live/crop/afforestation levers.
+- Combined exact frontier from Phases 37-40.
+- Explicit caps, floors, and local boundary.
+
+Out of scope:
+
+- Surrogate approximation.
+- Global FABLE optimization.
+- Expert approval of provisional rules.
+
+Architecture notes:
+
+- Every point is a real Pyculator run.
+- Caps and floors are policy inputs, not model truths.
+- The frontier is local to the evaluated scenario set.
+
+Implementation evidence:
+
+- Added `scripts/fable_exact_decision.py` and unit tests for Pareto filtering, constrained selection,
+  deduplication, and CLI help.
+- Added eight targeted exact runs; 0 errors; each run 151.5-163.3 s.
+- Combined 169 exact points, 160 unique selections; 15 unique exact Pareto objective triples
+  (29 rows before collapsing duplicates).
+- Exact ranges: 1,571.24-3,303.48 kcal and 59.56-691.93 MtCO2e; land invariant at 896,559 ha.
+- Balanced pick: NoDefor2030 / FatDiet / trade Yes / live HighGrowth / crop HighGrowth /
+  BonnChallenge+, 3,301.11 kcal and 108.95 MtCO2e.
+- Food-first at GHG ≤ 110: same candidate.
+- Food-first at GHG ≤ 80: 2,249.39 kcal / 76.78 MtCO2e; at GHG ≤ 90: 2,435.90 / 80.88; at GHG ≤ 100:
+  2,939.96 / 98.04.
+- GHG-first at food ≥ 2,000: 2,184.58 kcal / 61.24 MtCO2e; at food ≥ 2,400: 2,435.90 / 80.88; at
+  food ≥ 2,800: 2,939.96 / 98.04; at food ≥ 3,000: 3,290.23 / 108.84.
+- At the 3,000 kcal floor, the strict GHG-first pick is live-high/crop-high without added
+  afforestation; the balanced candidate buys 10.88 kcal for 0.11 MtCO2e with BonnChallenge+.
 
 Verification evidence:
 

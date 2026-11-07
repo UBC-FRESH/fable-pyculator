@@ -431,15 +431,92 @@ The nearest one-coordinate tradeoffs are:
 The candidate is therefore a local Pareto point, not a global optimum. The result is exact for this
 neighborhood; multi-coordinate interactions outside the Phase 38 combined checks remain untested.
 
+Phase 40 exact decision frontier
+--------------------------------
+
+Phase 40 added eight targeted land/diet/trade interaction runs around the candidate, then combined
+every exact point from Phases 37–40 into one decision frontier.
+
+- 8 targeted exact runs, 0 errors; each run took 151.5–163.3 s;
+- 169 exact points collected, 160 unique selections;
+- 15 unique exact Pareto objective triples (29 rows before collapsing duplicates);
+- exact ranges: 1,571.24–3,303.48 kcal and 59.56–691.93 MtCO2e;
+- land remains invariant at 896,559 ha.
+
+The **balanced** weighting picks the Phase 38 candidate: 3,301.11 kcal and 108.95 MtCO2e.
+
+Decision views depend on the policy cap or floor:
+
+.. list-table::
+   :header-rows: 1
+
+   * - View
+     - Constraint
+     - Exact pick
+     - Food (kcal)
+     - GHG (MtCO2e)
+   * - Food-first
+     - GHG ≤ 80
+     - NoExpansion / SSP2 / trade Yes / live NoGrowth / crop NoGrowth / Affor1
+     - 2,249.39
+     - 76.78
+   * - Food-first
+     - GHG ≤ 90
+     - NoExpansion / FatDiet / trade Yes / live HighGrowth / crop HighGrowth / BonnChallenge+
+     - 2,435.90
+     - 80.88
+   * - Food-first
+     - GHG ≤ 100
+     - NoDefor2030 / SSP1 / trade Yes / live HighGrowth / crop HighGrowth / BonnChallenge+
+     - 2,939.96
+     - 98.04
+   * - Food-first
+     - GHG ≤ 110
+     - NoDefor2030 / FatDiet / trade Yes / live HighGrowth / crop HighGrowth / BonnChallenge+
+     - 3,301.11
+     - 108.95
+   * - GHG-first
+     - food ≥ 2,000
+     - NoExpansion / NoChange / trade Yes / live NoGrowth / crop NoGrowth / Affor1
+     - 2,184.58
+     - 61.24
+   * - GHG-first
+     - food ≥ 2,400
+     - NoExpansion / FatDiet / trade Yes / live HighGrowth / crop HighGrowth / BonnChallenge+
+     - 2,435.90
+     - 80.88
+   * - GHG-first
+     - food ≥ 2,800
+     - NoDefor2030 / SSP1 / trade Yes / live HighGrowth / crop HighGrowth / BonnChallenge+
+     - 2,939.96
+     - 98.04
+   * - GHG-first
+     - food ≥ 3,000
+     - NoDefor2030 / FatDiet / trade Yes / live HighGrowth / crop HighGrowth / Affor1
+     - 3,290.23
+     - 108.84
+
+At a 3,000 kcal food floor, the strict GHG-first pick is the live-high/crop-high point **without**
+additional afforestation: 108.84 MtCO2e at 3,290.23 kcal. The balanced candidate buys 10.88 kcal for
+0.11 MtCO2e by adding `affor_scen=BonnChallenge+`.
+
+The exact max-food point is 3,303.48 kcal at 213.40 MtCO2e (`fixtrade_scen=No`); the exact min-GHG
+point is 1,869.64 kcal at 59.56 MtCO2e. The decision frontier is the full 15-point set in
+`tmp/fable-exact-decision/decision.json`.
+
+The caps and floors are policy inputs, not model truths. The frontier is exact but local to the
+evaluated scenario set, and the provisional rules are not expert-approved.
+
 Next step
 ---------
 
 Do not scale the surrogate further without a structural change. The useful paths are now:
 
-1. Treat the Phase 38/39 candidate as a locally verified exact option, subject to the stated
-   one-coordinate boundary.
-2. Run targeted multi-coordinate interaction checks if a policy decision needs them.
-3. Expand the exact narrow domain only when a specific policy question requires it.
+1. Choose the policy cap or food floor with the decision owner; the exact frontier already answers
+   the main tradeoff views.
+2. Have FABLE experts review the provisional rules, especially the per-value custom-export rule.
+3. Expand the exact domain only if the chosen policy view needs points outside the current local
+   frontier.
 4. Build a compiled/vectorized exact evaluator only if broader exact search is required.
 5. Keep exact top-K replay as a hard gate regardless.
 
@@ -477,3 +554,11 @@ Commands
    .venv/bin/python scripts/fable_exact_sensitivity.py \
      --baseline-file tmp/fable-exact-optimization/baseline.json \
      --workers 24 --output-dir tmp/fable-exact-sensitivity
+
+   .venv/bin/python scripts/fable_exact_decision.py \
+     --input tmp/fable-exact-optimization/domain.json \
+     tmp/fable-exact-sensitivity/sensitivity.json \
+     tmp/fable-exact-sensitivity/combined \
+     tmp/fable-exact-neighborhood/sensitivity.json \
+     tmp/fable-exact-decision/targeted \
+     --output tmp/fable-exact-decision/decision.json
