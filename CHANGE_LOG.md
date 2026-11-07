@@ -55,6 +55,10 @@ This file records completed project work in chronological order.
   samples valid and 725,760 reduced-domain combinations valid, with 535,680 warning-only. Draft
   enforcement leaves 466,560 valid (64.3%) and 259,200 invalid. Counts and rule/spec hashes are in
   `tmp/fable-rules-audit/`.
+- Integrated provisional rule filtering into exact sampling and dataset filtering. The existing 201
+  samples filtered to 134 valid / 67 rejected / 112 warned. Retraining the ensemble on the filtered
+  set improved GHG rank correlation from −0.50 to +0.50 but worsened absolute GHG error to 46.5%;
+  the surrogate remains unusable.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

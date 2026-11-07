@@ -215,6 +215,33 @@ Output-ref slicing is therefore **not sufficient** for a fast exact optimizer. T
 the shared FABLE dependency closure, not the unrelated outputs. A useful exact evaluator would need
 compiled/vectorized formula execution, table-level vectorization, or a much narrower dependency slice.
 
+Phase 36 provisional rule-aware sampling
+-----------------------------------------
+
+The scenario-consistency rules were applied provisionally to the existing exact dataset:
+
+- 201 exact samples evaluated under draft-enforced rules;
+- 134 kept, 67 rejected, 112 with at least one warning;
+- the kept set was used to retrain the 5-member ensemble and rerun the GPU GA.
+
+The filter and sampler now support:
+
+- `--rules` and `--rule-mode` on `scripts/fable_optimization_samples.py`;
+- `scripts/filter_optimization_dataset.py` for existing datasets;
+- per-sample rule annotations and rule/spec hashes in the dataset.
+
+Exact top-five replay on the provisional-valid set:
+
+- food mean relative error: **1.8%**;
+- GHG mean relative error: **46.5%**;
+- GHG rank correlation: **+0.50**;
+- food rank correlation: **−0.50**;
+- land is constant.
+
+Rule filtering improved GHG **ranking** from −0.50 to +0.50, but the absolute GHG error got worse. It
+did not produce a usable surrogate. Applying the rules changes which region the GA explores but does
+not fix the underlying approximation problem.
+
 Next step
 ---------
 
