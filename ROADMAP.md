@@ -73,9 +73,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   all completed. Food scale improved to 0.8% error, but GHG local ranking remained wrong (−0.5 rank
   correlation) and the exact best candidate was ranked last. PR #243 merged as `9af5880`; the
   negative result and the consistency-rule draft are recorded. Parent #238 and P33.4 #242 are closed.
-- Phase 34 is implemented on `feature/p34-reduced-exact-evaluator`: the exact objective slice is
-  validated but only 1.35× faster than the full model, so output-ref slicing is not enough for a
-  useful optimizer. Parent #244 and child issues #245-#247 are mapped; PR #248 and closeout remain.
+- Phase 34 is closed: the exact objective slice is validated but only 1.35× faster than the full
+  model, so output-ref slicing is not enough for a useful optimizer. PR #248 merged as `d30488a`;
+  the negative speed result is recorded. Parent #244 and P34.3 #247 are closed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2715,9 +2715,9 @@ GitHub parent issue: #244.
 
 Branch: `feature/p34-reduced-exact-evaluator`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #248.
+Pull request: #248 (merged as `d30488a`).
 
 Goal: build and validate an exact evaluator that computes only the objective/headline slice, then
 benchmark whether it is fast enough to replace or augment the surrogate in the optimization loop.
@@ -2777,7 +2777,15 @@ Verification evidence:
 - Sphinx warning-as-error build and theme check to be rerun.
 - Reduced-vs-full comparison JSON under `tmp/fable-reduced-exact/`.
 
+Verification evidence:
+
+- PR #248 CI on `0568648` passed quality, pytest, release-artifacts, and Docs Pages build.
+- PR #248 was squash-merged as `d30488a`; post-merge Test workflow `42399834408` and Docs Pages
+  workflow `42399834335` passed.
+
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- Parent #244 and P34.3 #247 are closed.
+- Output-ref slicing is exact but insufficient; next exact path requires compiled/vectorized formula
+  execution or a much narrower dependency slice.
 
