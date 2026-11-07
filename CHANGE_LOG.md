@@ -29,6 +29,12 @@ This file records completed project work in chronological order.
   web app entry point.
 - Created the GitHub prerelease `v0.1.0a5` with release notes and the workflow-built wheel/sdist:
   https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a5
+- Added a FABLE surrogate-assisted GPU optimization pilot: exact one-scenario oracle, parallel
+  sample collection, Torch surrogate, CUDA population search, weighted-goal scalarization, and
+  exact top-K replay. The 33-sample pilot worked end to end, but exact replay showed 15.5% mean food
+  error and 35.0% mean GHG error, with top-five rank correlations of 0.10 and -0.10. Recorded the
+  negative result and the requirement for a reduced decision space and larger sample design.
+- Closed Phase 32 after PR #237 squash-merged as `cefc895`; post-merge Test and Docs Pages passed.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

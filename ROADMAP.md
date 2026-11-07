@@ -65,10 +65,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   runbook merged via PR #232 (`bd7cd0c`), with post-merge Test/Docs Pages passing. The user confirmed
   that `fable-pyculator.01101.dev` serves the local `8768` process, which reports `0.1.0a5` with all
   three models prepared; parent #228 and P31.3 #231 are closed.
-- Phase 32 is implemented on `feature/p32-fable-gpu-optimization`: the end-to-end surrogate/GPU-GA
-  pipeline works, but the 33-sample surrogate extrapolates badly and is not suitable for
-  optimization decisions without more sampling and a reduced decision space. Parent #233 and child
-  issues #234-#236 are mapped; PR #237 and closeout remain.
+- Phase 32 is closed: the end-to-end surrogate/GPU-GA pipeline works, but the 33-sample surrogate
+  extrapolates badly and is not suitable for optimization decisions. PR #237 merged as `cefc895`;
+  the negative result and the next-step conditions are recorded. Parent #233 and P32.3 #236 are
+  closed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2536,9 +2536,9 @@ GitHub parent issue: #233.
 
 Branch: `feature/p32-fable-gpu-optimization`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #237.
+Pull request: #237 (merged as `cefc895`).
 
 Goal: test whether a GPU-accelerated surrogate-assisted genetic search can turn the FABLE Pyculator
 into a fast, flexible weighted-goal optimization surface while preserving exact Pyculator verification
@@ -2606,7 +2606,15 @@ Verification evidence:
 - Sphinx warning-as-error build and Read the Docs theme check passed.
 - GPU pilot and exact top-five replay completed on CUDA.
 
+Verification evidence:
+
+- PR #237 CI on `362cad1` passed quality, pytest, release-artifacts, and Docs Pages build.
+- PR #237 was squash-merged as `cefc895`; post-merge Test workflow `42353841087` and Docs Pages
+  workflow `42353841014` passed.
+
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- Parent #233 and P32.3 #236 are closed with the negative-result pilot evidence.
+- Do not scale this surrogate without a reduced decision space, more exact samples, and uncertainty
+  handling.
 
