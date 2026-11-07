@@ -229,9 +229,10 @@ def _value(sample: dict[str, Any], name: str) -> float:
 def pareto_front(samples: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Return non-dominated exact samples for food(max), GHG(min), land(min)."""
 
+    active = [name for name in OBJECTIVES if not _is_constant([_value(sample, name) for sample in samples])]
     front: list[dict[str, Any]] = []
     for candidate in samples:
-        if not any(_dominates(other, candidate) for other in samples if other is not candidate):
+        if not any(_dominates(other, candidate, active) for other in samples if other is not candidate):
             front.append(candidate)
     return sorted(
         front,
@@ -239,12 +240,17 @@ def pareto_front(samples: list[dict[str, Any]]) -> list[dict[str, Any]]:
     )
 
 
-def _dominates(left: dict[str, Any], right: dict[str, Any]) -> bool:
-    left_values = [_value(left, name) * DIRECTIONS[name] for name in OBJECTIVES]
-    right_values = [_value(right, name) * DIRECTIONS[name] for name in OBJECTIVES]
+def _dominates(left: dict[str, Any], right: dict[str, Any], objectives: list[str]) -> bool:
+    left_values = [_value(left, name) * DIRECTIONS[name] for name in objectives]
+    right_values = [_value(right, name) * DIRECTIONS[name] for name in objectives]
     return all(a >= b for a, b in zip(left_values, right_values, strict=True)) and any(
         a > b for a, b in zip(left_values, right_values, strict=True)
     )
+
+
+def _is_constant(values: list[float]) -> bool:
+    low, high = min(values), max(values)
+    return high - low <= 1e-6 * max(1.0, abs(low), abs(high))
 
 
 def weighted_ranking(
@@ -266,7 +272,11 @@ def weighted_ranking(
         components: dict[str, float] = {}
         for name in OBJECTIVES:
             low, high = ranges[name]
-            normalized = 0.5 if high == low else (_value(sample, name) - low) / (high - low)
+            normalized = (
+                0.5
+                if _is_constant([_value(item, name) for item in samples])
+                else (_value(sample, name) - low) / (high - low)
+            )
             components[name] = weights[name] * (normalized - aspirations[name]) ** 2
         goal = sum(components.values()) / sum(weights.values())
         ranked.append(
