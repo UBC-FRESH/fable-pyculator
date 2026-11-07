@@ -65,6 +65,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   runbook merged via PR #232 (`bd7cd0c`), with post-merge Test/Docs Pages passing. The user confirmed
   that `fable-pyculator.01101.dev` serves the local `8768` process, which reports `0.1.0a5` with all
   three models prepared; parent #228 and P31.3 #231 are closed.
+- Phase 32 is active on `feature/p32-fable-gpu-optimization`: testing a GPU-accelerated,
+  surrogate-assisted weighted-goal search over FABLE scenario controls, with exact Pyculator replay
+  for the reported incumbents. Parent issue #233 and child issues #234-#236 are mapped.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2525,4 +2528,59 @@ Closeout evidence:
 - The user confirmed that `fable-pyculator.01101.dev` serves the local `8768` process. Local health
   reports `0.1.0a5` with all three models prepared; checksum states are 2021 verified, 2024 verified,
   and 2020 unknown (no tracked checksum). Parent #228 and P31.3 #231 are closed.
+
+## Phase 32: FABLE Surrogate-Assisted GPU Optimization
+
+GitHub parent issue: #233.
+
+Branch: `feature/p32-fable-gpu-optimization`.
+
+Status: active.
+
+Goal: test whether a GPU-accelerated surrogate-assisted genetic search can turn the FABLE Pyculator
+into a fast, flexible weighted-goal optimization surface while preserving exact Pyculator verification
+for the reported incumbents.
+
+Tasks:
+
+- [ ] P32.1 Build the exact FABLE sample oracle and baseline decision space. Child issue: #234.
+- [ ] P32.2 Implement the GPU surrogate GA with weighted goals and exact top-K replay. Child issue: #235.
+- [ ] P32.3 Run the feasibility pilot, document limits, and close Phase 32. Child issue: #236.
+
+Scope:
+
+- Start with the 24 categorical scenario controls and fixed numeric scenario tables.
+- Use the three current headline objectives: food, land, and GHG.
+- Build an exact one-scenario oracle and a small baseline dataset.
+- Train a Torch surrogate and run a GPU GA with weighted goals.
+- Exact-replay top candidates and measure surrogate/exact agreement.
+
+Out of scope:
+
+- Claiming exact optimization over the entire FABLE state space.
+- Continuous scenario-definition variables in the first spike.
+- Production portal UI integration.
+- More than a bounded feasibility sample.
+
+Architecture notes:
+
+- WS4 supplies the GPU population-search pattern; FABLE supplies the decision space and exact oracle.
+- Fresh Solutions' adapter contract is the long-term integration point; this pilot uses a Torch vectorized search directly.
+- The exact Pyculator remains the final authority for every reported incumbent.
+- A small sample set is a plumbing test, not a surrogate-quality claim.
+
+Acceptance boundary:
+
+- The exact worker records reproducible objective values.
+- The GPU GA runs and produces a weighted-goal ranked population.
+- Top candidates are exact-replayed and compared.
+- The pilot report states whether the approach is worth scaling.
+
+Verification evidence:
+
+- Pending Phase 32 execution.
+
+Closeout evidence:
+
+- Pending.
 
