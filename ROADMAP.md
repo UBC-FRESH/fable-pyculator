@@ -65,9 +65,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   runbook merged via PR #232 (`bd7cd0c`), with post-merge Test/Docs Pages passing. The user confirmed
   that `fable-pyculator.01101.dev` serves the local `8768` process, which reports `0.1.0a5` with all
   three models prepared; parent #228 and P31.3 #231 are closed.
-- Phase 32 is active on `feature/p32-fable-gpu-optimization`: testing a GPU-accelerated,
-  surrogate-assisted weighted-goal search over FABLE scenario controls, with exact Pyculator replay
-  for the reported incumbents. Parent issue #233 and child issues #234-#236 are mapped.
+- Phase 32 is implemented on `feature/p32-fable-gpu-optimization`: the end-to-end surrogate/GPU-GA
+  pipeline works, but the 33-sample surrogate extrapolates badly and is not suitable for
+  optimization decisions without more sampling and a reduced decision space. Parent #233 and child
+  issues #234-#236 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2543,9 +2544,9 @@ for the reported incumbents.
 
 Tasks:
 
-- [ ] P32.1 Build the exact FABLE sample oracle and baseline decision space. Child issue: #234.
-- [ ] P32.2 Implement the GPU surrogate GA with weighted goals and exact top-K replay. Child issue: #235.
-- [ ] P32.3 Run the feasibility pilot, document limits, and close Phase 32. Child issue: #236.
+- [x] P32.1 Build the exact FABLE sample oracle and baseline decision space. Child issue: #234.
+- [x] P32.2 Implement the GPU surrogate GA with weighted goals and exact top-K replay. Child issue: #235.
+- [x] P32.3 Run the feasibility pilot, document limits, and close Phase 32. Child issue: #236.
 
 Scope:
 
@@ -2576,11 +2577,34 @@ Acceptance boundary:
 - Top candidates are exact-replayed and compared.
 - The pilot report states whether the approach is worth scaling.
 
+Implementation evidence:
+
+- Added `scripts/fable_optimization_oracle.py` for exact one-scenario evaluation and provenance.
+- Added `scripts/fable_optimization_samples.py` for parallel exact sample collection.
+- Added `scripts/fable_gpu_optimizer.py` for Torch surrogate training, CUDA population search,
+  weighted-goal scalarization, and candidate export.
+- Added `docs/guides/optimization-pilot.rst` and focused tests.
+
+Pilot evidence:
+
+- 33/33 exact samples completed with 16 workers; per-run time 179.6–233.8 s (mean 217.6 s);
+  wall time about 392 s.
+- GPU GA: 512 population, 300 generations, CUDA.
+- Surrogate training rank correlation: 0.70; training/validation MSE near zero due to severe
+  overfitting on 33 samples.
+- Exact replay of the top five: exact food ~2,924 kcal and GHG ~86–91 MtCO2e, versus surrogate
+  ~3,300–3,420 kcal and ~56–60 MtCO2e.
+- Mean relative error: food 15.5%, GHG 35.0%; top-five rank correlation: food 0.10, GHG -0.10.
+- The pipeline is a plumbing success but not a surrogate-quality success.
+
 Verification evidence:
 
-- Pending Phase 32 execution.
+- `.venv/bin/python -m pytest -q` passed with `207` tests and `16` skips.
+- `.venv/bin/python -m ruff check .` passed.
+- Sphinx warning-as-error build and Read the Docs theme check passed.
+- GPU pilot and exact top-five replay completed on CUDA.
 
 Closeout evidence:
 
-- Pending.
+- Pending phase PR, CI, and review.
 

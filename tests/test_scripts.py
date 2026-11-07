@@ -1211,6 +1211,25 @@ def test_regenerate_fable_2024_model_script_help() -> None:
     assert "repaired 2024 workbook" in result.stdout.lower()
 
 
+def test_fable_optimization_oracle_and_sample_script_help() -> None:
+    oracle = subprocess.run(
+        [sys.executable, "scripts/fable_optimization_oracle.py", "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    sampler = subprocess.run(
+        [sys.executable, "scripts/fable_optimization_samples.py", "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "--selections-file" in oracle.stdout
+    assert "--count" in sampler.stdout
+    assert "--workers" in sampler.stdout
+
+
 def test_run_portal_script_help_documents_proxy_auth_and_remote_flags() -> None:
     script = Path("scripts/run_portal.sh")
     result = subprocess.run(
