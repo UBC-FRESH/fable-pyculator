@@ -73,6 +73,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   all completed. Food scale improved to 0.8% error, but GHG local ranking remained wrong (−0.5 rank
   correlation) and the exact best candidate was ranked last. PR #243 merged as `9af5880`; the
   negative result and the consistency-rule draft are recorded. Parent #238 and P33.4 #242 are closed.
+- Phase 34 is active on `feature/p34-reduced-exact-evaluator`: build an exact objective slice that
+  computes only the food/land/GHG headline cells, validate it against the full model, and benchmark
+  whether it is fast enough to replace or augment the surrogate. Parent #244 and child issues
+  #245-#247 are mapped.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2705,4 +2709,54 @@ Closeout evidence:
 - Parent #238 and P33.4 #242 are closed.
 - Do not scale this surrogate without a reduced exact evaluator, physics-informed features plus OOD
   rejection, or a narrower policy question.
+
+## Phase 34: Reduced Exact Objective Evaluator
+
+GitHub parent issue: #244.
+
+Branch: `feature/p34-reduced-exact-evaluator`.
+
+Status: active.
+
+Goal: build and validate an exact evaluator that computes only the objective/headline slice, then
+benchmark whether it is fast enough to replace or augment the surrogate in the optimization loop.
+
+Tasks:
+
+- [ ] P34.1 Build a reduced exact evaluator for the objective cell set. Child issue: #245.
+- [ ] P34.2 Validate the reduced evaluator against the full model. Child issue: #246.
+- [ ] P34.3 Benchmark, document, and close Phase 34. Child issue: #247.
+
+Scope:
+
+- Extract objective/headline cell refs from the spec.
+- Build a reduced generated-model copy with only those output refs.
+- Compare reduced and full objective values on baseline and sampled scenarios.
+- Benchmark exact speedup and document the boundary.
+
+Out of scope:
+
+- New surrogate training.
+- Production UI integration.
+- Changing FABLE formulas or workbook semantics.
+
+Architecture notes:
+
+- The reduced evaluator is still exact; only the output-ref tuple changes.
+- The objective closure is the dependency set required by food, land, and GHG headlines.
+- The full generated model remains the reference.
+
+Acceptance boundary:
+
+- Reduced and full objective values match.
+- Runtime and exactness are recorded.
+- The next optimization path is explicit.
+
+Verification evidence:
+
+- Pending Phase 34 execution.
+
+Closeout evidence:
+
+- Pending.
 
