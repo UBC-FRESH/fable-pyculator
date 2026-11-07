@@ -79,10 +79,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Prepared a compact expert-review package for the FABLE scenario consistency rules, including a
   fillable CSV worksheet and concrete example scenarios; awaiting Hisham/FABLE expert decisions before
   implementing the rule engine or choosing the next optimizer representation.
-- Phase 35 is implemented on `feature/p35-scenario-rule-engine`: the status-aware rule engine,
-  dataset audit, and 10-control domain enumeration are complete. Proposed rules warn in exploratory
-  mode (725,760 valid, 535,680 warning-only); if draft-enforced, 466,560 remain valid (64.3%).
-  Parent #249 and child issues #250-#252 are mapped; PR #253 and closeout remain.
+- Phase 35 is closed: the status-aware rule engine, dataset audit, and 10-control domain enumeration
+  are complete. Proposed rules warn in exploratory mode (725,760 valid, 535,680 warning-only); if
+  draft-enforced, 466,560 remain valid (64.3%). PR #253 merged as `ca1fd84`; parent #249 and P35.3
+  #252 are closed. Rules remain provisional pending expert review.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2802,9 +2802,9 @@ GitHub parent issue: #249.
 
 Branch: `feature/p35-scenario-rule-engine`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #253.
+Pull request: #253 (merged as `ca1fd84`).
 
 Goal: implement a status-aware scenario rule engine and quantify how the proposed consistency rules
 affect the exact sample dataset and the 10-control reduced domain.
@@ -2813,7 +2813,7 @@ Tasks:
 
 - [x] P35.1 Implement a status-aware scenario rule engine and tests. Child issue: #250.
 - [x] P35.2 Audit the exact dataset and enumerate the reduced valid domain. Child issue: #251.
-- [ ] P35.3 Document findings, open the PR, and close Phase 35. Child issue: #252.
+- [x] P35.3 Document findings, open the PR, and close Phase 35. Child issue: #252.
 
 Scope:
 
