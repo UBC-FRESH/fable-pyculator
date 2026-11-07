@@ -85,8 +85,17 @@ least:
 
 .. code-block:: bash
 
-   python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ fable-pyculator==0.1.0a5
+   python -m pip download --no-deps --index-url https://test.pypi.org/simple/ \
+     --dest /tmp/fable-a5 fable-pyculator==0.1.0a5
+   python -m pip install --no-deps /tmp/fable-a5/fable_pyculator-0.1.0a5-py3-none-any.whl
+   python -m pip install --index-url https://pypi.org/simple/ \
+     'modelwright[notebook]>=0.1.0a9' 'openpyxl>=3.1' 'pandas>=2' 'PyYAML>=6' \
+     'fastapi>=0.110' 'uvicorn>=0.29'
    python -c "import fable_pyculator; print(fable_pyculator.__version__)"
+
+Do not use TestPyPI as the primary dependency index. It can expose broken dependency artifacts
+that are unrelated to this package; use PyPI for dependencies and TestPyPI only for the exact
+release wheel/sdist.
 
 Real PyPI Publication
 ---------------------
