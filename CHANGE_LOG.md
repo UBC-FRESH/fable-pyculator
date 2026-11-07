@@ -65,6 +65,11 @@ This file records completed project work in chronological order.
   FatDiet / fixtrade Yes / NoGrowth at 3,288.73 kcal and 121.23 MtCO2e; enabling trade-fix cuts GHG
   by 50.0% for a 0.36% food loss in the narrow domain. PR #261 merged as `bc3f0f7`; parent #258 and
   children #259-#260 are closed.
+- Added `scripts/fable_exact_sensitivity.py` and ran exact one-at-a-time variants around the Phase 37
+  point: 20 exact evaluations, 1 rule-rejected, 0 errors, 168.9 s. `live_scen=HighGrowth` is the
+  strongest local GHG lever (−9.45% with +0.05% food). The exact three-way candidate
+  (`live_scen=HighGrowth`, `crop_scen=HighGrowth`, `affor_scen=BonnChallenge+`) reaches 3,301.11 kcal
+  and 108.95 MtCO2e, dominating the Phase 37 point.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

@@ -306,14 +306,111 @@ the surrogate's absolute GHG prediction is unusable.
 This result is **limited to the four varied controls**, with all other controls at baseline. It is
 not a full FABLE optimization and the provisional rules are not expert-approved.
 
+Phase 38 exact local sensitivity
+--------------------------------
+
+Phase 38 varied the six remaining priority controls one at a time around the Phase 37 weighted-goal
+point: `affor_scen`, `crop_scen`, `scen_exports`, `scen_imports`, `gwp_scen`, and `live_scen`.
+Everything else stayed fixed, including `land_scen=NoDefor2030`, `diet_scen=FatDiet`,
+`fixtrade_scen=Yes`, and `livedens_scen=NoGrowth`.
+
+- 20 exact evaluations: baseline plus 19 valid variants;
+- 1 rejected variant (`MyImportScen`) by provisional `CUSTOM-IMPORT-001`;
+- 0 errors;
+- **168.9 s** with 24 workers;
+- baseline: 3,288.73 kcal and 121.23 MtCO2e.
+
+Exact local deltas:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Control
+     - Value
+     - Δ food (kcal)
+     - Δ food (%)
+     - Δ GHG (MtCO2e)
+     - Δ GHG (%)
+   * - `live_scen`
+     - HighGrowth
+     - +1.79
+     - +0.05
+     - −11.46
+     - −9.45
+   * - `live_scen`
+     - LowGrowth
+     - +1.15
+     - +0.04
+     - −9.17
+     - −7.56
+   * - `live_scen`
+     - BAUGrowth
+     - +0.53
+     - +0.02
+     - −6.64
+     - −5.48
+   * - `affor_scen`
+     - BonnChallenge+
+     - +10.63
+     - +0.32
+     - +0.11
+     - +0.09
+   * - `crop_scen`
+     - HighGrowth
+     - −0.29
+     - −0.01
+     - −0.93
+     - −0.77
+   * - `crop_scen`
+     - ReducedGrowth
+     - +2.0
+     - +0.06
+     - +16.66
+     - +13.74
+   * - `gwp_scen`
+     - AR5
+     - 0
+     - 0
+     - +7.22
+     - +5.95
+   * - `scen_exports`
+     - E2 / E3 / custom
+     - 0
+     - 0
+     - 0
+     - 0
+   * - `scen_imports`
+     - I2 / I3
+     - 0
+     - 0
+     - 0
+     - 0
+
+The strongest local GHG lever is livestock productivity (`live_scen=HighGrowth`): −11.46 MtCO2e
+(−9.45%) with a tiny food gain. `gwp_scen` changes are metric conventions, not mitigation.
+Custom export variants are exactly zero under this fixed-trade point. They were not rejected because
+`CUSTOM-EXPORT-001` checks the populated `MyExportScen` row for all three custom export values; that
+rule needs a per-value review before it can be treated as authoritative.
+
+Two exact combined checks, added because the one-at-a-time result suggested additivity:
+
+- `live_scen=HighGrowth` + `crop_scen=HighGrowth`: **3,290.23 kcal**, **108.84 MtCO2e**
+  (food +0.05%, GHG −10.22%);
+- add `affor_scen=BonnChallenge+`: **3,301.11 kcal**, **108.95 MtCO2e**
+  (food +0.38%, GHG −10.13%).
+
+The second candidate dominates the Phase 37 weighted-goal point on both food and GHG at the same land
+area. It is an exact local candidate, not a global optimum. One-at-a-time variants cannot reveal
+interactions, and only two combined checks were run.
+
 Next step
 ---------
 
 Do not scale the surrogate further without a structural change. The useful paths are now:
 
-1. Run an exact local sensitivity around the Phase 37 weighted-goal point for the remaining controls.
-2. Expand the exact narrow domain only when a specific policy question requires it, such as adding
-   `affor_scen`, `scen_exports`, or `crop_scen`.
+1. Run exact interaction checks around the Phase 38 candidate before treating it as a policy
+   recommendation.
+2. Expand the exact narrow domain only when a specific policy question requires it.
 3. Build a compiled/vectorized exact evaluator only if broader exact search is required.
 4. Keep exact top-K replay as a hard gate regardless.
 
@@ -347,3 +444,7 @@ Commands
    .venv/bin/python scripts/fable_exact_optimization.py \
      --version 2024 --workers 24 \
      --output-dir tmp/fable-exact-optimization
+
+   .venv/bin/python scripts/fable_exact_sensitivity.py \
+     --baseline-file tmp/fable-exact-optimization/baseline.json \
+     --workers 24 --output-dir tmp/fable-exact-sensitivity

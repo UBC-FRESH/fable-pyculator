@@ -92,6 +92,12 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   point is NoDefor2030 / FatDiet / fixtrade Yes / NoGrowth at 3,288.73 kcal and 121.23 MtCO2e;
   fixing trade (`fixtrade Yes`) cuts GHG by 50.0% for a 0.36% food loss. PR #261 merged as
   `bc3f0f7`; parent #258 and children #259-#260 are closed.
+- Phase 38 is implemented on `feature/p38-exact-local-sensitivity`: exact one-at-a-time variants
+  around the Phase 37 point found livestock productivity as the strongest local GHG lever
+  (`live_scen=HighGrowth`: −9.45% GHG, +0.05% food). A combined exact candidate
+  (`live_scen=HighGrowth`, `crop_scen=HighGrowth`, `affor_scen=BonnChallenge+`) reaches 3,301.11 kcal
+  and 108.95 MtCO2e, dominating the Phase 37 point. Parent #262 and children #263-#264 are mapped;
+  PR #265 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3013,6 +3019,67 @@ Verification evidence:
 
 - Exact smoke test: one baseline run, 149.8 s, no errors.
 - Full suite and docs build rerun after the report and PR are prepared.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
+
+## Phase 38: Exact Local Sensitivity
+
+GitHub parent issue: #262.
+
+Branch: `feature/p38-exact-local-sensitivity`.
+
+Status: pr-open.
+
+Pull request: #265.
+
+Goal: exact-run one-at-a-time variants around the Phase 37 weighted-goal point and report the local
+food/GHG effects of the remaining priority controls.
+
+Tasks:
+
+- [x] P38.1 Enumerate exact one-at-a-time variants for the remaining priority controls. Child issue: #263.
+- [x] P38.2 Report exact local effects, document, and close. Child issue: #264.
+
+Scope:
+
+- `affor_scen`, `crop_scen`, `scen_exports`, `scen_imports`, `gwp_scen`, `live_scen`.
+- Baseline plus every non-default value.
+- Exact objectives, provisional rule annotations, and deltas.
+
+Out of scope:
+
+- Surrogate approximation.
+- Interaction claims or full-space claims.
+- Expert approval of provisional rules.
+
+Architecture notes:
+
+- This is a local exact sensitivity analysis, not a global optimization.
+- All other controls stay at the Phase 37 weighted-goal selections.
+- One-at-a-time cannot reveal interactions.
+
+Implementation evidence:
+
+- Added `scripts/fable_exact_sensitivity.py` and unit tests for exact delta calculation and CLI help.
+- 20 exact evaluations (baseline plus 19 valid variants); 1 rejected variant (`MyImportScen`) by
+  provisional `CUSTOM-IMPORT-001`; 0 errors; 168.9 s with 24 workers.
+- Baseline: 3,288.73 kcal and 121.23 MtCO2e.
+- Strongest local lever: `live_scen=HighGrowth` at −11.46 MtCO2e (−9.45%) and +1.79 kcal (+0.05%).
+- `affor_scen=BonnChallenge+`: +10.63 kcal (+0.32%) and +0.11 MtCO2e (+0.09%).
+- `crop_scen=HighGrowth`: −0.93 MtCO2e (−0.77%) and −0.29 kcal (−0.01%).
+- `gwp_scen` AR4/AR5/AR6 increase reported GHG by 5.3–6.0% with unchanged food; this is a metric
+  conversion, not mitigation.
+- Exact combined candidate `live_scen=HighGrowth` + `crop_scen=HighGrowth`:
+  3,290.23 kcal and 108.84 MtCO2e; add `affor_scen=BonnChallenge+`: 3,301.11 kcal and 108.95 MtCO2e.
+- The three-way candidate dominates the Phase 37 weighted-goal point on food and GHG at constant land.
+- `CUSTOM-EXPORT-001` did not reject `MyExportScen2` or `MyExportScen3` because `key_value` is fixed
+  to the populated `MyExportScen` row; this must be reviewed before the rule is authoritative.
+
+Verification evidence:
+
+- Full test suite and docs build to be rerun after the report and PR are prepared.
 
 Closeout evidence:
 
