@@ -65,7 +65,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   `fable-pyculator.01101.dev` is behind Cloudflare Access. Service-token-aware verification tooling
   and the upgrade runbook are implemented; the live version check and upgrade remain blocked on an
   Access token or approved health bypass plus the host update path. Parent #228 and child issues
-  #229-#231 are mapped.
+  #229-#231 are mapped; PR #232 is open.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2461,7 +2461,9 @@ GitHub parent issue: #228.
 
 Branch: `feature/p31-live-deployment`.
 
-Status: active.
+Status: pr-open (P31.3 blocked on external access).
+
+Pull request: #232.
 
 Goal: verify and upgrade the existing public deployment at `fable-pyculator.01101.dev`, which is
 protected by Cloudflare Access, and make the access and upgrade path reproducible.
