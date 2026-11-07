@@ -59,6 +59,11 @@ This file records completed project work in chronological order.
   samples filtered to 134 valid / 67 rejected / 112 warned. Retraining the ensemble on the filtered
   set improved GHG rank correlation from −0.50 to +0.50 but worsened absolute GHG error to 46.5%;
   the surrogate remains unusable.
+- Added `scripts/fable_exact_optimization.py` and ran the exact narrow-domain fallback over
+  `land_scen`, `diet_scen`, `fixtrade_scen`, and `livedens_scen`: 126 combinations, 18 rule-rejected,
+  108 exact valid scenarios, zero errors, 926.5 s. The exact weighted-goal point is NoDefor2030 /
+  FatDiet / fixtrade Yes / NoGrowth at 3,288.73 kcal and 121.23 MtCO2e; enabling trade-fix cuts GHG
+  by 50.0% for a 0.36% food loss in the narrow domain.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

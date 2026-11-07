@@ -87,6 +87,11 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   survive draft-enforced filtering. The filtered ensemble improved GHG rank correlation to +0.50 but
   worsened absolute GHG error to 46.5%, so the surrogate remains unusable. PR #257 merged as
   `d7d446d`; parent #254 and children #255-#256 are closed.
+- Phase 37 is implemented on `feature/p37-narrow-exact-optimization`: the exact fallback over
+  `land_scen`, `diet_scen`, `fixtrade_scen`, and `livedens_scen` ran 108 valid combinations with zero
+  errors in 926.5 s. The exact weighted-goal point is NoDefor2030 / FatDiet / fixtrade Yes / NoGrowth
+  at 3,288.73 kcal and 121.23 MtCO2e; fixing trade (`fixtrade Yes`) cuts GHG by 50.0% for a 0.36%
+  food loss. Parent #258 and children #259-#260 are mapped; PR #261 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2937,6 +2942,77 @@ Pilot evidence:
 Verification evidence:
 
 - Full test suite and docs build to be rerun after committing the integration.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
+
+## Phase 37: Narrow Exact Optimization Pilot
+
+GitHub parent issue: #258.
+
+Branch: `feature/p37-narrow-exact-optimization`.
+
+Status: pr-open.
+
+Pull request: #261.
+
+Goal: run every scenario in a narrow 4-control policy domain through the exact Pyculator and compute
+the exact Pareto and weighted-goal front. This is the exact fallback after the surrogate failed.
+
+Tasks:
+
+- [x] P37.1 Enumerate and exactly evaluate a narrow policy domain. Child issue: #259.
+- [x] P37.2 Compute the exact Pareto and weighted-goal front, document, and close. Child issue: #260.
+
+Scope:
+
+- `land_scen`, `diet_scen`, `fixtrade_scen`, `livedens_scen`.
+- 126 combinations before provisional rule filtering.
+- Exact food/GHG/land objectives.
+- Pareto and weighted-goal ranking.
+
+Out of scope:
+
+- Surrogate approximation.
+- Claims over the full FABLE state space.
+- Production UI integration.
+
+Architecture notes:
+
+- Every reported objective is a real Pyculator run.
+- Provisional rule filtering is recorded, not treated as expert-approved.
+- The narrow-domain boundary must be repeated in every summary.
+
+Acceptance boundary:
+
+- All 126 combinations are attempted or documented.
+- Exact objectives and Pareto/weighted rankings are reproducible.
+- The report distinguishes narrow-domain results from full-space claims.
+
+Implementation evidence:
+
+- Added `scripts/fable_exact_optimization.py`, an exhaustive exact evaluator with Pareto and
+  weighted-goal ranking.
+- Added unit tests for Pareto dominance, duplicate-objective collapsing, weighted ranking, and CLI
+  help.
+- Full run: 126 combinations enumerated; 18 rejected by provisional `CUSTOM-DIET-001`; 108 exact
+  valid scenarios; 0 errors; 926.5 s with 24 workers.
+- Exact front: 13 unique objective triples (41 rows before collapsing duplicate `livedens` outcomes).
+- Exact weighted-goal point: NoDefor2030 / FatDiet / fixtrade Yes / NoGrowth, 3,288.73 kcal and
+  121.23 MtCO2e.
+- Exact max-food point: NoDefor2030 / FatDiet / fixtrade No / NoGrowth, 3,300.67 kcal and
+  242.43 MtCO2e.
+- Exact min-GHG point: NoExpansion / EATLancetAverage / fixtrade Yes / HighGrowth, 1,869.64 kcal and
+  59.56 MtCO2e.
+- Trade-fix effect at fixed land/diet/live density: food −0.36%, GHG −50.0%.
+- Land is invariant at 896,559 ha; the narrow-domain tradeoff is food versus GHG.
+- 60 valid scenarios carry provisional warnings: 36 `LIVE-DENS-001` and 36 `NARRATIVE-SSP-001` hits.
+
+Verification evidence:
+
+- Exact smoke test: one baseline run, 149.8 s, no errors.
+- Full suite and docs build rerun after the report and PR are prepared.
 
 Closeout evidence:
 
