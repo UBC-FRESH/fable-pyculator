@@ -2,6 +2,14 @@
 
 This file records completed project work in chronological order.
 
+## 2026-11-07
+
+- Closed Phase 29 after PR #221 squash-merged to `main` as `a6534d9`, post-merge Test workflow
+  `42347244877` and Docs Pages workflow `42347245017` passed, and parent #215 plus P29.5 #220 were
+  closed. The phase proved that a fresh Modelwright `0.1.0a9` regeneration from the repaired 2024
+  workbook reproduces the tracked archive byte-for-byte (`cc8ac21…`), with 410,299 translated
+  formulas, 10,274 declared outputs, zero output-closure failures, and zero generation diagnostics.
+
 ## 2026-11-06
 
 - Activated Phase 28 on `feature/p28-web-portal` and implemented the optional multi-page FABLE

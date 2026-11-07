@@ -51,10 +51,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   Pages workflows passed, and parent issue #203 plus P28.9 child issue #212 are closed.
   The portal, issue-filing assistant workflow, and corrected 2021 authoritative-archive evidence
   are on `main`.
-- Phase 29 is implemented on `feature/p29-2024-regeneration`: a fresh Modelwright `0.1.0a9`
-  regeneration from the repaired 2024 workbook reproduces the tracked archive exactly, so no
-  artifact replacement is needed. Parent issue #215 and child issues #216-#220 are mapped; PR #221
-  is open and CI/closeout remain.
+- Phase 29 is closed: PR #221 was squash-merged as `a6534d9`; a fresh Modelwright `0.1.0a9`
+  regeneration from the repaired 2024 workbook reproduces the tracked archive exactly, and
+  post-merge Test/Docs Pages workflows passed. Parent #215 and P29.5 #220 are closed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2277,9 +2276,9 @@ GitHub parent issue: #215.
 
 Branch: `feature/p29-2024-regeneration`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #221.
+Pull request: #221 (merged as `a6534d9`).
 
 Goal: regenerate the 2024 FABLE Calculator (Canada) Python model from the repaired workbook with
 the current Modelwright checkout, eliminate the post-generation LAND TOTAL repair if possible, and
@@ -2291,7 +2290,7 @@ Tasks:
 - [x] P29.2 Run a fresh 2024 regeneration from the repaired workbook. Child issue: #217.
 - [x] P29.3 Resolve Modelwright translation gaps or record a concrete blocker. Child issue: #218.
 - [x] P29.4 Validate the regenerated model and decide whether to replace the tracked archive. Child issue: #219.
-- [ ] P29.5 Update provenance, documentation, tests, and close Phase 29. Child issue: #220.
+- [x] P29.5 Update provenance, documentation, tests, and close Phase 29. Child issue: #220.
 
 Scope:
 
@@ -2349,9 +2348,14 @@ Verification evidence:
   `scripts/verify_docs_theme.py _build/html` passed.
 - Live 2024 portal smoke with the explicit prior selection set: `food 2,720.9 → 1,984.5`,
   `GHG 59.99 → 95.61 MtCO2e`, `land 896,559.0 → 896,559.0`; no unexplained output regression.
-- `scripts/check_release_artifacts.sh` will be run before the phase PR is opened.
+- `scripts/check_release_artifacts.sh` passed.
+- PR #221 CI on `cdd4258` passed quality, pytest, release-artifacts, and Docs Pages build.
+- PR #221 was squash-merged as `a6534d9`; post-merge Test workflow `42347244877` and Docs Pages
+  workflow `42347245017` passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and merge.
+- PR #221 squash-merged to `main` as `a6534d9`.
+- Post-merge Test workflow `42347244877` and Docs Pages workflow `42347245017` passed.
+- Parent issue #215 and child issue #220 are closed; P29.1-P29.4 are closed with closeout comments.
 
