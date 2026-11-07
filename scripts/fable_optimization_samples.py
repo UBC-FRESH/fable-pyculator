@@ -41,6 +41,21 @@ def main(argv: list[str] | None = None) -> int:
             f"need both workbook and generated model under {paths.workbook.parent} and {paths.generated_model.parent}"
         )
     spec = build_notebook_spec(paths.workbook, workbook_id=f"fable-c-{args.version}")
+    rules = ()
+    table_status = None
+    rules_sha = None
+    if args.rules is not None:
+        from fable_pyculator.scenario_rules import (
+            evaluate_scenario,
+            load_rule_registry,
+            rule_registry_sha256,
+            table_population_from_spec,
+        )
+        from fable_pyculator.web.spec_io import spec_to_payload
+
+        rules = load_rule_registry(args.rules)
+        table_status = table_population_from_spec(spec_to_payload(spec))
+        rules_sha = rule_registry_sha256(args.rules)
     controls = [
         {
             "name": control.name,
@@ -50,6 +65,18 @@ def main(argv: list[str] | None = None) -> int:
         }
         for control in spec.selection_controls
     ]
+
+    def rule_payload(selections: dict[str, object]) -> dict[str, object] | None:
+        if not rules:
+            return None
+        result = evaluate_scenario(
+            selections,
+            rules,
+            table_status=table_status,
+            mode=args.rule_mode,
+        )
+        return result.to_dict()
+
     baseline = {control["name"]: control["default"] for control in controls}
     selected_names = [control["name"] for control in controls]
     if args.controls_file is not None:
@@ -68,8 +95,10 @@ def main(argv: list[str] | None = None) -> int:
             "sample_id": "baseline",
             "sample_kind": "baseline",
             "selections": baseline,
+            "rule_evaluation": rule_payload(baseline),
         }
     ]
+    rejected: list[dict[str, object]] = []
     seen = {json.dumps(baseline, sort_keys=True)}
     if args.design == "one-at-a-time":
         for control in selected_controls:
@@ -79,6 +108,17 @@ def main(argv: list[str] | None = None) -> int:
             variant = rng.choice(alternatives)
             selections = dict(baseline)
             selections[control["name"]] = variant
+            evaluation = rule_payload(selections)
+            if evaluation is not None and not evaluation["valid"] and args.rule_mode != "exploratory":
+                rejected.append(
+                    {
+                        "sample_kind": "one-at-a-time",
+                        "control_name": control["name"],
+                        "selections": selections,
+                        "rule_evaluation": evaluation,
+                    }
+                )
+                continue
             scenarios.append(
                 {
                     "sample_id": f"screen_{control['name']}",
@@ -87,6 +127,7 @@ def main(argv: list[str] | None = None) -> int:
                     "baseline_value": control["default"],
                     "variant_value": variant,
                     "selections": selections,
+                    "rule_evaluation": evaluation,
                 }
             )
     else:
@@ -99,12 +140,23 @@ def main(argv: list[str] | None = None) -> int:
             key = json.dumps(selections, sort_keys=True)
             if key in seen:
                 continue
+            evaluation = rule_payload(selections)
+            if evaluation is not None and not evaluation["valid"] and args.rule_mode != "exploratory":
+                rejected.append(
+                    {
+                        "sample_kind": "random",
+                        "selections": selections,
+                        "rule_evaluation": evaluation,
+                    }
+                )
+                continue
             seen.add(key)
             scenarios.append(
                 {
                     "sample_id": f"sample_{len(scenarios):03d}",
                     "sample_kind": "random",
                     "selections": selections,
+                    "rule_evaluation": evaluation,
                 }
             )
 
@@ -167,6 +219,11 @@ def main(argv: list[str] | None = None) -> int:
         "controls": controls,
         "variable_controls": selected_names,
         "baseline_selections": baseline,
+        "rules": str(args.rules) if args.rules is not None else None,
+        "rules_sha256": rules_sha,
+        "rule_mode": args.rule_mode if args.rules is not None else None,
+        "rejected_count": len(rejected),
+        "rejected": rejected,
         "samples": samples,
     }
     dataset_path = output_dir / "dataset.json"
@@ -195,6 +252,18 @@ def _parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help="Optional JSON array of control names to vary; others stay at baseline.",
+    )
+    parser.add_argument(
+        "--rules",
+        type=Path,
+        default=None,
+        help="Optional consistency-rule YAML. When supplied, invalid draft scenarios are skipped.",
+    )
+    parser.add_argument(
+        "--rule-mode",
+        choices=("approved", "exploratory", "draft_enforced"),
+        default="draft_enforced",
+        help="Rule semantics for rejection/annotation when --rules is supplied.",
     )
     parser.add_argument(
         "--output-dir",

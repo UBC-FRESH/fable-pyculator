@@ -83,9 +83,11 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   are complete. Proposed rules warn in exploratory mode (725,760 valid, 535,680 warning-only); if
   draft-enforced, 466,560 remain valid (64.3%). PR #253 merged as `ca1fd84`; parent #249 and P35.3
   #252 are closed. Rules remain provisional pending expert review.
-- Phase 36 is active on `feature/p36-provisional-rule-sampling`: applying the draft rules
-  provisionally to sampling, filtering the existing 201 samples, and comparing the ensemble on the
-  filtered set. Parent #254 and child issues #255-#256 are mapped.
+- Phase 36 is implemented on `feature/p36-provisional-rule-sampling`: rule-aware sampling and dataset
+  filtering are integrated; 134 of 201 samples survive draft-enforced filtering. The filtered
+  ensemble improved GHG rank correlation to +0.50 but worsened absolute GHG error to 46.5%, so the
+  surrogate remains unusable. Parent #254 and child issues #255-#256 are mapped; PR and closeout
+  remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2887,8 +2889,8 @@ retrain the ensemble, and compare against the unfiltered Phase 33 result.
 
 Tasks:
 
-- [ ] P36.1 Integrate provisional rule filtering into sampling and filter the existing dataset. Child issue: #255.
-- [ ] P36.2 Retrain the ensemble on provisional-valid data and exact-replay. Child issue: #256.
+- [x] P36.1 Integrate provisional rule filtering into sampling and filter the existing dataset. Child issue: #255.
+- [x] P36.2 Retrain the ensemble on provisional-valid data and exact-replay. Child issue: #256.
 
 Scope:
 
@@ -2916,11 +2918,26 @@ Acceptance boundary:
 - The ensemble comparison is recorded with exact values.
 - The outcome is documented explicitly.
 
+Implementation evidence:
+
+- Added `--rules` and `--rule-mode` to `scripts/fable_optimization_samples.py`, with per-sample rule
+  annotations and rejection of hard-invalid scenarios in draft-enforced mode.
+- Added `scripts/filter_optimization_dataset.py` to filter existing datasets without rerunning exact
+  models.
+- Added tests for the filter path.
+
+Pilot evidence:
+
+- 201 input samples: 134 kept, 67 rejected, 112 with warnings under draft-enforced provisional rules.
+- Ensemble remained 5 members, 512 population, 400 generations, CUDA.
+- Exact top-five: food error 1.8%, GHG error 46.5%; food rank correlation −0.50, GHG +0.50.
+- Rule filtering changed the explored region but did not make the surrogate usable.
+
 Verification evidence:
 
-- Pending Phase 36 execution.
+- Full test suite and docs build to be rerun after committing the integration.
 
 Closeout evidence:
 
-- Pending.
+- Pending phase PR, CI, and review.
 
