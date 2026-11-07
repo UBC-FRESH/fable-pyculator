@@ -27,6 +27,8 @@ This file records completed project work in chronological order.
   and PyPI publication jobs succeeded. A clean PyPI install with
   `python -m pip install --pre 'fable-pyculator[web]==0.1.0a5'` imported version `0.1.0a5` and the
   web app entry point.
+- Created the GitHub prerelease `v0.1.0a5` with release notes and the workflow-built wheel/sdist:
+  https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a5
 
 ## 2026-11-06
 

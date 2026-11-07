@@ -59,7 +59,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   complete, and post-merge Test/Docs Pages workflows passed. Parent #222 and P30.4 #226 are closed.
 - Released `fable-pyculator 0.1.0a5` with OIDC trusted publishing: TestPyPI rehearsal workflow
   `42348922051` passed, tag `v0.1.0a5` triggered PyPI workflow `42349225029`, and a clean PyPI
-  install of the wheel and web extra imported `0.1.0a5`.
+  install of the wheel and web extra imported `0.1.0a5`. The GitHub prerelease is
+  https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a5 with the wheel and sdist attached.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
