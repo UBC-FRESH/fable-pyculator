@@ -97,7 +97,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   (`live_scen=HighGrowth`: −9.45% GHG, +0.05% food). A combined exact candidate
   (`live_scen=HighGrowth`, `crop_scen=HighGrowth`, `affor_scen=BonnChallenge+`) reaches 3,301.11 kcal
   and 108.95 MtCO2e, dominating the Phase 37 point. Parent #262 and children #263-#264 are mapped;
-  PR and closeout remain.
+  PR #265 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3030,7 +3030,9 @@ GitHub parent issue: #262.
 
 Branch: `feature/p38-exact-local-sensitivity`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #265.
 
 Goal: exact-run one-at-a-time variants around the Phase 37 weighted-goal point and report the local
 food/GHG effects of the remaining priority controls.
