@@ -42,6 +42,11 @@ This file records completed project work in chronological order.
   draft scenario-consistency rule surface and extensible coefficient/switch architecture under
   `planning/`. Closed Phase 33 after PR #243 merged as `9af5880`; post-merge Test and Docs Pages
   passed. Do not scale this surrogate without a structural change.
+- Added and validated a reduced exact evaluator that rewrites only the generated model's
+  `_output_refs` tuple to the 176 headline objective cells. It was exact on baseline and three
+  samples, but only 1.35× faster (167 s → 123 s); food-only/GHG-only/land-only slices were 127/89/72 s.
+  Concluded that output-ref slicing does not materially reduce the shared FABLE dependency cost.
+  Closed Phase 34 after PR #248 merged as `d30488a`; post-merge Test and Docs Pages passed.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
