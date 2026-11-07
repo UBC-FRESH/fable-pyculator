@@ -39,6 +39,53 @@ def _dataset(path: Path) -> Path:
     return path
 
 
+def test_gpu_optimizer_merges_fixed_controls(tmp_path: Path) -> None:
+    import importlib.util
+    import sys
+
+    spec = importlib.util.spec_from_file_location("fable_gpu_optimizer_fixed", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    dataset = json.loads(_dataset(tmp_path / "dataset.json").read_text(encoding="utf-8"))
+    dataset["variable_controls"] = ["a", "b"]
+    dataset["baseline_selections"] = {"a": "a1", "b": "b2", "c": "c1"}
+    path = tmp_path / "dataset-fixed.json"
+    path.write_text(json.dumps(dataset), encoding="utf-8")
+    output = tmp_path / "result-fixed.json"
+
+    code = module.main(
+        [
+            "--dataset",
+            str(path),
+            "--output",
+            str(output),
+            "--population",
+            "16",
+            "--generations",
+            "3",
+            "--epochs",
+            "20",
+            "--ensemble-size",
+            "2",
+            "--top-k",
+            "2",
+            "--device",
+            "cpu",
+            "--objective",
+            "food:max:1.0",
+            "--objective",
+            "ghg:min:1.0",
+        ]
+    )
+
+    assert code == 0
+    result = json.loads(output.read_text(encoding="utf-8"))
+    assert all(candidate["selections"]["c"] == "c1" for candidate in result["top_candidates"])
+
+
 def test_gpu_optimizer_runs_on_synthetic_data(tmp_path: Path) -> None:
     import importlib.util
     import sys
