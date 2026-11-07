@@ -1230,11 +1230,19 @@ def test_fable_optimization_oracle_and_sample_script_help() -> None:
         capture_output=True,
         text=True,
     )
+    reduced = subprocess.run(
+        [sys.executable, "scripts/fable_reduced_exact_evaluator.py", "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
 
     assert "--selections-file" in oracle.stdout
     assert "--count" in sampler.stdout
     assert "--workers" in sampler.stdout
     assert "--controls-output" in screen.stdout
+    assert "--objective" in reduced.stdout
+    assert "--output" in reduced.stdout
 
 
 def test_run_portal_script_help_documents_proxy_auth_and_remote_flags() -> None:

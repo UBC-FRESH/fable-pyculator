@@ -73,10 +73,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   all completed. Food scale improved to 0.8% error, but GHG local ranking remained wrong (−0.5 rank
   correlation) and the exact best candidate was ranked last. PR #243 merged as `9af5880`; the
   negative result and the consistency-rule draft are recorded. Parent #238 and P33.4 #242 are closed.
-- Phase 34 is active on `feature/p34-reduced-exact-evaluator`: build an exact objective slice that
-  computes only the food/land/GHG headline cells, validate it against the full model, and benchmark
-  whether it is fast enough to replace or augment the surrogate. Parent #244 and child issues
-  #245-#247 are mapped.
+- Phase 34 is implemented on `feature/p34-reduced-exact-evaluator`: the exact objective slice is
+  validated but only 1.35× faster than the full model, so output-ref slicing is not enough for a
+  useful optimizer. Parent #244 and child issues #245-#247 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2723,9 +2722,9 @@ benchmark whether it is fast enough to replace or augment the surrogate in the o
 
 Tasks:
 
-- [ ] P34.1 Build a reduced exact evaluator for the objective cell set. Child issue: #245.
-- [ ] P34.2 Validate the reduced evaluator against the full model. Child issue: #246.
-- [ ] P34.3 Benchmark, document, and close Phase 34. Child issue: #247.
+- [x] P34.1 Build a reduced exact evaluator for the objective cell set. Child issue: #245.
+- [x] P34.2 Validate the reduced evaluator against the full model. Child issue: #246.
+- [x] P34.3 Benchmark, document, and close Phase 34. Child issue: #247.
 
 Scope:
 
@@ -2752,11 +2751,31 @@ Acceptance boundary:
 - Runtime and exactness are recorded.
 - The next optimization path is explicit.
 
+Implementation evidence:
+
+- Added `scripts/fable_reduced_exact_evaluator.py`, which rewrites only the generated model's
+  `_output_refs` tuple to the selected headline cells.
+- The 2024 objective slice contains 176 cell refs (food, land, GHG).
+- Baseline and three sample comparisons were exact: zero difference in all objective values.
+
+Benchmark evidence:
+
+- full baseline: 167 s;
+- reduced objective model: 123 s (1.35×);
+- food-only: 127 s; GHG-only: 89 s; land-only: 72 s;
+- running the three slices in parallel is bounded by the slowest slice and consumes three model
+  processes.
+
+Negative result: output-ref slicing does not materially reduce the shared FABLE dependency cost. The
+next exact path requires compiled/vectorized formula execution or a much narrower dependency slice.
+
 Verification evidence:
 
-- Pending Phase 34 execution.
+- `.venv/bin/python -m pytest -q` to be rerun after the Phase 34 commits.
+- Sphinx warning-as-error build and theme check to be rerun.
+- Reduced-vs-full comparison JSON under `tmp/fable-reduced-exact/`.
 
 Closeout evidence:
 
-- Pending.
+- Pending phase PR, CI, and review.
 

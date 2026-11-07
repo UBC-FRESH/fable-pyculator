@@ -193,6 +193,28 @@ exact best candidate was ranked last by the surrogate. Random validation did not
 high-food, high-GHG extrapolation region reached by the GA. Ensemble spread (roughly 8–16 MtCO2e)
 also understated the actual errors.
 
+Phase 34 reduced exact evaluator
+--------------------------------
+
+Phase 34 tested a cheaper exact path: keep every formula, but rewrite the generated model's
+`_output_refs` tuple to only the 176 cells used by the three headline objectives. This is still exact;
+it only removes output rendering and unrelated output evaluation.
+
+- baseline full model: 167 s;
+- baseline reduced objective model: 123 s (**1.35×**);
+- food-only slice: 127 s;
+- GHG-only slice: 89 s;
+- land-only slice: 72 s;
+- reduced vs full objective values on baseline and three samples: exact, zero difference.
+
+Running the three single-objective models in parallel gives a wall time around the slowest slice
+(about 127 s) but consumes three model processes and still is not a meaningful optimization-speed
+win.
+
+Output-ref slicing is therefore **not sufficient** for a fast exact optimizer. The dominant cost is
+the shared FABLE dependency closure, not the unrelated outputs. A useful exact evaluator would need
+compiled/vectorized formula execution, table-level vectorization, or a much narrower dependency slice.
+
 Next step
 ---------
 
