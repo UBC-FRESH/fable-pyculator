@@ -76,6 +76,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 34 is closed: the exact objective slice is validated but only 1.35× faster than the full
   model, so output-ref slicing is not enough for a useful optimizer. PR #248 merged as `d30488a`;
   the negative speed result is recorded. Parent #244 and P34.3 #247 are closed.
+- Prepared a compact expert-review package for the FABLE scenario consistency rules, including a
+  fillable CSV worksheet and concrete example scenarios; awaiting Hisham/FABLE expert decisions before
+  implementing the rule engine or choosing the next optimizer representation.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.

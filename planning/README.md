@@ -21,4 +21,6 @@ Current review drafts:
 - `fable-scenario-consistency-rules.md`: proposed FABLE switch-consistency rules and the extensible
   coefficient/switch architecture; expert review required.
 - `fable-scenario-consistency-rules.yaml`: machine-readable draft rule registry.
+- `fable-scenario-consistency-review-package.md`: compact review guide for Hisham/FABLE experts.
+- `fable-scenario-consistency-review-package.csv`: fillable rule-decision worksheet.
 
