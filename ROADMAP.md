@@ -101,12 +101,11 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   found no strict dominator; 30 exact evaluations, 2 rule-rejected, 0 errors, 321.6 s, 11 exact ties.
   The candidate is a local Pareto point. PR #268 merged as `44b9ab5`; parent #266 and child #267 are
   closed. Docs build passed; the GitHub Pages deploy job timed out in `finished_file_sync`.
-- Phase 40 is implemented on `feature/p40-exact-decision-frontier`: eight targeted exact
-  land/diet/trade interactions plus a combined exact frontier (169 points, 160 unique selections,
-  15 unique Pareto objectives). Balanced pick is the Phase 38 candidate at 3,301.11 kcal / 108.95
-  MtCO2e; food-first at GHG ≤ 110 picks the same point, and GHG-first at food ≥ 3,000 picks
-  3,290.23 kcal / 108.84 MtCO2e. Parent #269 and children #270-#271 are mapped; PR #272 and closeout
-  remain.
+- Phase 40 is closed: eight targeted exact land/diet/trade interactions plus a combined exact
+  frontier (169 points, 160 unique selections, 15 unique Pareto objectives). Balanced and food-first
+  (GHG ≤ 110) pick the Phase 38 candidate at 3,301.11 kcal / 108.95 MtCO2e; GHG-first at food ≥ 3,000
+  picks 3,290.23 kcal / 108.84 MtCO2e. PR #272 merged as `5b88e8d`; parent #269 and children
+  #270-#271 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3150,11 +3149,13 @@ Implementation evidence:
 
 Verification evidence:
 
-- Full test suite and docs build to be rerun after the report and PR are prepared.
+- Full suite: 223 passed, 16 skipped.
+- Docs build and theme verification passed.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #272 squash-merged as `5b88e8d`; parent #269 and children #270-#271 closed.
 
 ## Phase 40: Exact Interaction Checks and Decision Frontier
 
@@ -3162,9 +3163,9 @@ GitHub parent issue: #269.
 
 Branch: `feature/p40-exact-decision-frontier`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #272.
+Pull request: #272 (merged as `5b88e8d`).
 
 Goal: fill key exact interaction gaps around the Phase 38 candidate and combine all exact points into
 a decision frontier with balanced, food-first, and GHG-first picks.
