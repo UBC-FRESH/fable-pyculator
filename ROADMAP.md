@@ -69,10 +69,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   extrapolates badly and is not suitable for optimization decisions. PR #237 merged as `cefc895`;
   the negative result and the next-step conditions are recorded. Parent #233 and P32.3 #236 are
   closed.
-- Phase 33 is implemented on `feature/p33-optimization-scaling`: the 10-control screen, 201 exact
-  samples, 5-member ensemble, and exact replay all completed. Food scale improved to 0.8% error, but
-  GHG local ranking remained wrong (−0.5 rank correlation) and the exact best candidate was ranked
-  last. Parent #238 and child issues #239-#242 are mapped; PR #243 and closeout remain.
+- Phase 33 is closed: the 10-control screen, 201 exact samples, 5-member ensemble, and exact replay
+  all completed. Food scale improved to 0.8% error, but GHG local ranking remained wrong (−0.5 rank
+  correlation) and the exact best candidate was ranked last. PR #243 merged as `9af5880`; the
+  negative result and the consistency-rule draft are recorded. Parent #238 and P33.4 #242 are closed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2628,9 +2628,9 @@ GitHub parent issue: #238.
 
 Branch: `feature/p33-optimization-scaling`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #243.
+Pull request: #243 (merged as `9af5880`).
 
 Goal: scale the surrogate-assisted optimization pilot from a plumbing test to a defensible
 reduced-space experiment: screen control effects, freeze 8–12 variables, collect 200–400 exact
@@ -2641,7 +2641,7 @@ Tasks:
 - [x] P33.1 Screen control sensitivity and freeze the reduced decision space. Child issue: #239.
 - [x] P33.2 Collect a larger exact sample set over the reduced controls. Child issue: #240.
 - [x] P33.3 Add ensemble uncertainty and rerun the GPU surrogate. Child issue: #241.
-- [ ] P33.4 Exact replay, compare, document, and close Phase 33. Child issue: #242.
+- [x] P33.4 Exact replay, compare, document, and close Phase 33. Child issue: #242.
 
 Scope:
 
@@ -2694,7 +2694,15 @@ Verification evidence:
 - Exact screen, sample, ensemble, and exact replay artifacts are present under
   `tmp/fable-optimization-p33/`.
 
+Verification evidence:
+
+- PR #243 CI on `04e2be3` passed quality, pytest, release-artifacts, and Docs Pages build.
+- PR #243 was squash-merged as `9af5880`; post-merge Test workflow `42396463342` and Docs Pages
+  workflow `42396463322` passed.
+
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- Parent #238 and P33.4 #242 are closed.
+- Do not scale this surrogate without a reduced exact evaluator, physics-informed features plus OOD
+  rejection, or a narrower policy question.
 

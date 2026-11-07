@@ -35,6 +35,13 @@ This file records completed project work in chronological order.
   error and 35.0% mean GHG error, with top-five rank correlations of 0.10 and -0.10. Recorded the
   negative result and the requirement for a reduced decision space and larger sample design.
 - Closed Phase 32 after PR #237 squash-merged as `cefc895`; post-merge Test and Docs Pages passed.
+- Scaled the FABLE optimization pilot in Phase 33: exact one-at-a-time screen, 10-control reduced
+  space, 201 exact samples, 5-member ensemble, CUDA GA, and exact top-five replay. Food mean error
+  improved to 0.8%, but GHG mean error remained 23.6% with top-five rank correlations of −0.60
+  (food) and −0.50 (GHG); the exact best GHG candidate was ranked last by the surrogate. Added a
+  draft scenario-consistency rule surface and extensible coefficient/switch architecture under
+  `planning/`. Closed Phase 33 after PR #243 merged as `9af5880`; post-merge Test and Docs Pages
+  passed. Do not scale this surrogate without a structural change.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
