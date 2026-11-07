@@ -61,6 +61,11 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   `42348922051` passed, tag `v0.1.0a5` triggered PyPI workflow `42349225029`, and a clean PyPI
   install of the wheel and web extra imported `0.1.0a5`. The GitHub prerelease is
   https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a5 with the wheel and sdist attached.
+- Phase 31 is active on `feature/p31-live-deployment`: the public deployment at
+  `fable-pyculator.01101.dev` is behind Cloudflare Access. Service-token-aware verification tooling
+  and the upgrade runbook are implemented; the live version check and upgrade remain blocked on an
+  Access token or approved health bypass plus the host update path. Parent #228 and child issues
+  #229-#231 are mapped; PR #232 is open.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2449,4 +2454,74 @@ Closeout evidence:
 - PR #227 squash-merged to `main` as `ee344dd`.
 - Post-merge Test workflow `42348441589` and Docs Pages workflow `42348441626` passed.
 - Parent issue #222 and child issue #226 are closed; P30.1-P30.3 are closed with closeout comments.
+
+## Phase 31: Live Deployment Verification and Upgrade
+
+GitHub parent issue: #228.
+
+Branch: `feature/p31-live-deployment`.
+
+Status: pr-open (P31.3 blocked on external access).
+
+Pull request: #232.
+
+Goal: verify and upgrade the existing public deployment at `fable-pyculator.01101.dev`, which is
+protected by Cloudflare Access, and make the access and upgrade path reproducible.
+
+Tasks:
+
+- [x] P31.1 Add Cloudflare Access-aware deployment verification tooling. Child issue: #229.
+- [x] P31.2 Document Cloudflare Access, health policy, and upgrade runbook. Child issue: #230.
+- [ ] P31.3 Verify and upgrade the live deployment to 0.1.0a5. Child issue: #231.
+
+Scope:
+
+- Add service-token-aware deployment verification tooling.
+- Document Cloudflare Access, health monitoring, and the upgrade runbook.
+- Record the live version, prepared models, and checksum state.
+- Upgrade the host to `0.1.0a5` when access and host update details are supplied.
+- Run an authenticated smoke test.
+
+Out of scope:
+
+- Storing Cloudflare tokens, passwords, or host credentials in tracked files.
+- Changing DNS, TLS, or Cloudflare Access policy without maintainer approval.
+- New portal features unrelated to deployment verification.
+
+Architecture notes:
+
+- Cloudflare Access currently protects every public path, including `/api/health`.
+- The deployment checker reads optional service-token headers from environment variables.
+- A health bypass is one monitoring option; a service token is the safer default.
+- The published `0.1.0a5` artifact is the upgrade target.
+
+Acceptance boundary:
+
+- The deployment checker works with Access service tokens and reports version/checksum state.
+- The docs explain the health-policy tradeoff and the upgrade sequence.
+- The live deployment reports `0.1.0a5` and passes an authenticated smoke test.
+
+Implementation evidence:
+
+- Added `scripts/check_deployed_portal.py`, which checks `/api/health`, `/api/agent`, `/`, and
+  `/api/artifacts`, supports Cloudflare Access service-token headers and optional portal Basic auth,
+  and enforces `--expect-version`.
+- Documented Cloudflare Access, the health-bypass tradeoff, service-token use, and the live upgrade
+  runbook in `docs/guides/web-deployment.rst`; linked the checker from the README.
+- The unauthenticated live check correctly detects the Cloudflare Access redirect at
+  `https://fable-pyculator.01101.dev/api/health` and reports that a service token is required.
+
+Verification evidence:
+
+- `.venv/bin/python -m pytest -q` passed with `206` tests and `15` skips.
+- `.venv/bin/python -m ruff check .` passed.
+- Sphinx warning-as-error build and Read the Docs theme check passed.
+- `scripts/check_deployed_portal.py --url https://fable-pyculator.01101.dev --json
+  --allow-access-redirect` detected `access_required: true`.
+
+Closeout evidence:
+
+- P31.1 and P31.2 complete.
+- P31.3 remains blocked on a Cloudflare Access service token or approved health bypass, plus the
+  host update path for installing `0.1.0a5`.
 

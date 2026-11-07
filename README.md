@@ -122,7 +122,9 @@ takes about two minutes on a warm local checkout and a scenario run takes about 
 as background jobs with progress reporting.
 
 The portal is a presentation layer. It does not recompute a FABLE result in the browser, edit source
-workbooks, or provide authentication. A non-loopback bind requires `--allow-remote`.
+workbooks, or provide authentication. A non-loopback bind requires `--allow-remote`. For a
+Cloudflare Access-protected deployment, verify the live version and checksum state with
+`scripts/check_deployed_portal.py`; service tokens are read from environment variables.
 
 The Workbench can optionally extend a run to **2070** using a linear trend over 2035–2050. This is
 a clearly labelled presentation-layer projection, not native FABLE output. Native results end at
