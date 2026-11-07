@@ -54,6 +54,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 29 is closed: PR #221 was squash-merged as `a6534d9`; a fresh Modelwright `0.1.0a9`
   regeneration from the repaired 2024 workbook reproduces the tracked archive exactly, and
   post-merge Test/Docs Pages workflows passed. Parent #215 and P29.5 #220 are closed.
+- Phase 30 is active on `feature/p30-release-deployment`: harden approved-artifact checksums,
+  prepare the `0.1.0a5` release candidate, run authenticated staging behind a proxy prefix, and
+  document the public-host handoff. Parent issue #222 and child issues #223-#226 are mapped.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2358,4 +2361,59 @@ Closeout evidence:
 - PR #221 squash-merged to `main` as `a6534d9`.
 - Post-merge Test workflow `42347244877` and Docs Pages workflow `42347245017` passed.
 - Parent issue #215 and child issue #220 are closed; P29.1-P29.4 are closed with closeout comments.
+
+## Phase 30: Release and Deployment Hardening
+
+GitHub parent issue: #222.
+
+Branch: `feature/p30-release-deployment`.
+
+Status: active.
+
+Goal: harden the portal release and deployment path after the 2024 artifact provenance work:
+verify working models against approved checksums, prepare a `0.1.0a5` release candidate, run
+authenticated staging with a proxy prefix, and document the host handoff.
+
+Tasks:
+
+- [ ] P30.1 Add approved-artifact checksum verification and stale-model handling. Child issue: #223.
+- [ ] P30.2 Prepare and verify the v0.1.0a5 release candidate. Child issue: #224.
+- [ ] P30.3 Run authenticated staging with proxy prefix and deployment smoke tests. Child issue: #225.
+- [ ] P30.4 Document host handoff, review evidence, open the PR, and close Phase 30. Child issue: #226.
+
+Scope:
+
+- Approved-artifact checksum verification and stale-model handling.
+- Release candidate versioning, metadata, docs, and artifact checks.
+- Authenticated staging through `scripts/run_portal.sh`.
+- Deployment handoff inputs for the maintainer.
+- Phase PR, CI, and closeout.
+
+Out of scope:
+
+- Provisioning a public host, DNS, TLS, or credentials without maintainer-supplied details.
+- Creating a release tag or publishing to PyPI without separate approval.
+- New portal features unrelated to deployment hardening.
+
+Architecture notes:
+
+- The tracked archive remains authoritative; working models must match its checksum or be explicitly re-materialized.
+- Basic auth is a shared deployment credential; health remains public.
+- Proxy-prefix support is exercised through `FABLE_PORTAL_ROOT_PATH`.
+- Release publication remains a gated maintainer action.
+
+Acceptance boundary:
+
+- Stale working models are detected and cannot silently affect results.
+- Version 0.1.0a5 builds and passes release checks without publication.
+- Authenticated staging enforces auth while keeping health public and works under a proxy prefix.
+- The public deployment handoff is explicit and complete.
+
+Verification evidence:
+
+- Pending Phase 30 execution.
+
+Closeout evidence:
+
+- Pending.
 
