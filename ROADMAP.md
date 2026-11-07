@@ -87,6 +87,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   survive draft-enforced filtering. The filtered ensemble improved GHG rank correlation to +0.50 but
   worsened absolute GHG error to 46.5%, so the surrogate remains unusable. PR #257 merged as
   `d7d446d`; parent #254 and children #255-#256 are closed.
+- Phase 37 is active on `feature/p37-narrow-exact-optimization`: exact fallback over a narrow
+  4-control domain (`land_scen`, `diet_scen`, `fixtrade_scen`, `livedens_scen`). Parent #258 and
+  children #259-#260 are mapped. This is exact, not surrogate; results are limited to the narrow
+  domain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2941,4 +2945,54 @@ Verification evidence:
 Closeout evidence:
 
 - Pending phase PR, CI, and review.
+
+## Phase 37: Narrow Exact Optimization Pilot
+
+GitHub parent issue: #258.
+
+Branch: `feature/p37-narrow-exact-optimization`.
+
+Status: active.
+
+Goal: run every scenario in a narrow 4-control policy domain through the exact Pyculator and compute
+the exact Pareto and weighted-goal front. This is the exact fallback after the surrogate failed.
+
+Tasks:
+
+- [ ] P37.1 Enumerate and exactly evaluate a narrow policy domain. Child issue: #259.
+- [ ] P37.2 Compute the exact Pareto and weighted-goal front, document, and close. Child issue: #260.
+
+Scope:
+
+- `land_scen`, `diet_scen`, `fixtrade_scen`, `livedens_scen`.
+- 126 combinations before provisional rule filtering.
+- Exact food/GHG/land objectives.
+- Pareto and weighted-goal ranking.
+
+Out of scope:
+
+- Surrogate approximation.
+- Claims over the full FABLE state space.
+- Production UI integration.
+
+Architecture notes:
+
+- Every reported objective is a real Pyculator run.
+- Provisional rule filtering is recorded, not treated as expert-approved.
+- The narrow-domain boundary must be repeated in every summary.
+
+Acceptance boundary:
+
+- All 126 combinations are attempted or documented.
+- Exact objectives and Pareto/weighted rankings are reproducible.
+- The report distinguishes narrow-domain results from full-space claims.
+
+Verification evidence:
+
+- Exact smoke test: one baseline run, 149.8 s, no errors.
+- Full 126-combination run in progress.
+
+Closeout evidence:
+
+- Pending.
 
