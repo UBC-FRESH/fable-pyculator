@@ -68,7 +68,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 32 is implemented on `feature/p32-fable-gpu-optimization`: the end-to-end surrogate/GPU-GA
   pipeline works, but the 33-sample surrogate extrapolates badly and is not suitable for
   optimization decisions without more sampling and a reduced decision space. Parent #233 and child
-  issues #234-#236 are mapped; PR and closeout remain.
+  issues #234-#236 are mapped; PR #237 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2536,7 +2536,9 @@ GitHub parent issue: #233.
 
 Branch: `feature/p32-fable-gpu-optimization`.
 
-Status: active.
+Status: pr-open.
+
+Pull request: #237.
 
 Goal: test whether a GPU-accelerated surrogate-assisted genetic search can turn the FABLE Pyculator
 into a fast, flexible weighted-goal optimization surface while preserving exact Pyculator verification
