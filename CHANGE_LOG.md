@@ -71,6 +71,9 @@ This file records completed project work in chronological order.
   (`live_scen=HighGrowth`, `crop_scen=HighGrowth`, `affor_scen=BonnChallenge+`) reaches 3,301.11 kcal
   and 108.95 MtCO2e, dominating the Phase 37 point. PR #265 merged as `9acc215`; parent #262 and
   children #263-#264 are closed.
+- Ran the exact one-coordinate neighborhood around the Phase 38 candidate: 30 exact evaluations,
+  2 rule-rejected, 0 errors, 321.6 s. No strict single-coordinate dominator was found; the candidate
+  is a local Pareto point with 11 exact ties.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

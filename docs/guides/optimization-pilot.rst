@@ -403,16 +403,45 @@ The second candidate dominates the Phase 37 weighted-goal point on both food and
 area. It is an exact local candidate, not a global optimum. One-at-a-time variants cannot reveal
 interactions, and only two combined checks were run.
 
+Phase 39 exact candidate neighborhood
+-------------------------------------
+
+Phase 39 checked the immediate one-coordinate neighborhood of the Phase 38 candidate
+(`live_scen=HighGrowth`, `crop_scen=HighGrowth`, `affor_scen=BonnChallenge+`) across all ten reduced
+controls.
+
+- 30 exact evaluations: baseline plus 29 valid variants;
+- 2 rejected variants (`MyDiet`, `MyImportScen`) by provisional custom-table rules;
+- 0 errors;
+- **321.6 s** with 24 workers;
+- baseline: 3,301.11 kcal and 108.95 MtCO2e.
+
+No single-coordinate neighbor **strictly dominates** the candidate. There are 11 exact ties: land
+`FreeExpansion`, live density `BAUGrowth`/`HighGrowth`, exports `E2`/`E3`/custom, imports `I2`/`I3`,
+and afforestation `Affor2` all reproduce the same objective values.
+
+The nearest one-coordinate tradeoffs are:
+
+- `land_scen=NoExpansion`: 2,435.90 kcal, 80.88 MtCO2e (−865.21 kcal, −28.07 MtCO2e);
+- `diet_scen=EATLancetAverage`: 2,254.06 kcal, 81.59 MtCO2e (−1,047.04 kcal, −27.35 MtCO2e);
+- `diet_scen=SSP1/SSP2/SSP3/NoChange`: 2,939.96 kcal, 98.04 MtCO2e (−361.15 kcal, −10.91 MtCO2e);
+- `fixtrade_scen=No`: 3,303.48 kcal, 213.40 MtCO2e (+2.38 kcal, +104.45 MtCO2e);
+- `affor_scen=Affor1`: 3,290.23 kcal, 108.84 MtCO2e (−10.88 kcal, −0.11 MtCO2e).
+
+The candidate is therefore a local Pareto point, not a global optimum. The result is exact for this
+neighborhood; multi-coordinate interactions outside the Phase 38 combined checks remain untested.
+
 Next step
 ---------
 
 Do not scale the surrogate further without a structural change. The useful paths are now:
 
-1. Run exact interaction checks around the Phase 38 candidate before treating it as a policy
-   recommendation.
-2. Expand the exact narrow domain only when a specific policy question requires it.
-3. Build a compiled/vectorized exact evaluator only if broader exact search is required.
-4. Keep exact top-K replay as a hard gate regardless.
+1. Treat the Phase 38/39 candidate as a locally verified exact option, subject to the stated
+   one-coordinate boundary.
+2. Run targeted multi-coordinate interaction checks if a policy decision needs them.
+3. Expand the exact narrow domain only when a specific policy question requires it.
+4. Build a compiled/vectorized exact evaluator only if broader exact search is required.
+5. Keep exact top-K replay as a hard gate regardless.
 
 The detailed scenario-consistency rule surface and the extensible coefficient/switch architecture are
 in `planning/fable-scenario-consistency-rules.md` and

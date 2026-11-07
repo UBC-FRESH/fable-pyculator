@@ -97,6 +97,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   The exact three-way candidate (`live_scen=HighGrowth`, `crop_scen=HighGrowth`,
   `affor_scen=BonnChallenge+`) reaches 3,301.11 kcal and 108.95 MtCO2e, dominating the Phase 37
   point. PR #265 merged as `9acc215`; parent #262 and children #263-#264 are closed.
+- Phase 39 is implemented on `feature/p39-candidate-neighborhood`: exact one-coordinate neighborhood
+  verification around the Phase 38 candidate found no strict dominator; 30 exact evaluations,
+  2 rule-rejected, 0 errors, 321.6 s, 11 exact ties. The candidate is a local Pareto point. Parent
+  #266 and child #267 are mapped; PR #268 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3075,6 +3079,64 @@ Implementation evidence:
 - The three-way candidate dominates the Phase 37 weighted-goal point on food and GHG at constant land.
 - `CUSTOM-EXPORT-001` did not reject `MyExportScen2` or `MyExportScen3` because `key_value` is fixed
   to the populated `MyExportScen` row; this must be reviewed before the rule is authoritative.
+
+Verification evidence:
+
+- Full test suite and docs build to be rerun after the report and PR are prepared.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
+
+## Phase 39: Exact Candidate Neighborhood Verification
+
+GitHub parent issue: #266.
+
+Branch: `feature/p39-candidate-neighborhood`.
+
+Status: pr-open.
+
+Pull request: #268.
+
+Goal: exact-check the immediate one-coordinate neighborhood of the Phase 38 candidate and verify that
+no single-coordinate neighbor strictly dominates it.
+
+Tasks:
+
+- [x] P39.1 Verify no single-coordinate neighbor strictly dominates the Phase 38 candidate. Child issue: #267.
+
+Scope:
+
+- Ten reduced controls, one at a time.
+- Exact food/GHG/land objectives.
+- Strict-dominance check and local boundary.
+
+Out of scope:
+
+- Surrogate approximation.
+- Full-space claims.
+- Multi-coordinate interaction claims beyond the Phase 38 combined checks.
+
+Architecture notes:
+
+- This is a local verification, not a new global search.
+- Equal-objective coordinate changes are allowed and recorded as ties.
+- The candidate is only defensible within the stated local neighborhood.
+
+Implementation evidence:
+
+- Ran `scripts/fable_exact_sensitivity.py` with the Phase 38 candidate as baseline and all ten reduced
+  controls.
+- 30 exact evaluations (baseline plus 29 valid variants); 2 rejected variants (`MyDiet`,
+  `MyImportScen`); 0 errors; 321.6 s with 24 workers.
+- Baseline: 3,301.11 kcal and 108.95 MtCO2e.
+- No strict single-coordinate dominator.
+- 11 exact ties: land `FreeExpansion`; live density `BAUGrowth`/`HighGrowth`; exports
+  `E2`/`E3`/custom; imports `I2`/`I3`; afforestation `Affor2`.
+- Nearest tradeoffs: `land_scen=NoExpansion` at 2,435.90 kcal / 80.88 MtCO2e;
+  `diet_scen=EATLancetAverage` at 2,254.06 kcal / 81.59 MtCO2e; `fixtrade_scen=No` at
+  3,303.48 kcal / 213.40 MtCO2e; `affor_scen=Affor1` at 3,290.23 kcal / 108.84 MtCO2e.
+- The candidate is a local Pareto point, not a global optimum.
 
 Verification evidence:
 
