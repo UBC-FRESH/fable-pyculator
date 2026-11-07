@@ -92,12 +92,11 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   point is NoDefor2030 / FatDiet / fixtrade Yes / NoGrowth at 3,288.73 kcal and 121.23 MtCO2e;
   fixing trade (`fixtrade Yes`) cuts GHG by 50.0% for a 0.36% food loss. PR #261 merged as
   `bc3f0f7`; parent #258 and children #259-#260 are closed.
-- Phase 38 is implemented on `feature/p38-exact-local-sensitivity`: exact one-at-a-time variants
-  around the Phase 37 point found livestock productivity as the strongest local GHG lever
-  (`live_scen=HighGrowth`: −9.45% GHG, +0.05% food). A combined exact candidate
-  (`live_scen=HighGrowth`, `crop_scen=HighGrowth`, `affor_scen=BonnChallenge+`) reaches 3,301.11 kcal
-  and 108.95 MtCO2e, dominating the Phase 37 point. Parent #262 and children #263-#264 are mapped;
-  PR #265 and closeout remain.
+- Phase 38 is closed: exact one-at-a-time variants around the Phase 37 point found livestock
+  productivity as the strongest local GHG lever (`live_scen=HighGrowth`: −9.45% GHG, +0.05% food).
+  The exact three-way candidate (`live_scen=HighGrowth`, `crop_scen=HighGrowth`,
+  `affor_scen=BonnChallenge+`) reaches 3,301.11 kcal and 108.95 MtCO2e, dominating the Phase 37
+  point. PR #265 merged as `9acc215`; parent #262 and children #263-#264 are closed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3030,9 +3029,9 @@ GitHub parent issue: #262.
 
 Branch: `feature/p38-exact-local-sensitivity`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #265.
+Pull request: #265 (merged as `9acc215`).
 
 Goal: exact-run one-at-a-time variants around the Phase 37 weighted-goal point and report the local
 food/GHG effects of the remaining priority controls.
