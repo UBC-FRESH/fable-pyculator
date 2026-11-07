@@ -18,6 +18,7 @@ Modelwright-generated Python models.
    guides/web-deployment
    guides/assistant-grounding-evals
    guides/github-issue-workflow
+   guides/optimization-pilot
    guides/2020-notebook-workflow
    guides/generated-model-artifacts
    guides/freshforge-provider-integration

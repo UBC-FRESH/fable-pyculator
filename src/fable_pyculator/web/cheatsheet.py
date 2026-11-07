@@ -26,6 +26,7 @@ _FABLE_DOCS = (
     "docs/guides/web-portal.rst",
     "docs/guides/notebook-control-surface.rst",
     "docs/guides/github-issue-workflow.rst",
+    "docs/guides/optimization-pilot.rst",
     "docs/guides/workbook-structure.rst",
     "docs/guides/generated-model-artifacts.rst",
     "docs/guides/validation-scope.rst",
