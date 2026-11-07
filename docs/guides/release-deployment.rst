@@ -111,6 +111,16 @@ Expected sequence:
 5. Run the ``Release`` workflow or push the tag, then approve the protected PyPI environment.
 6. Verify the package page, wheel install, import, docs deployment, and GitHub release notes.
 
+Verify the public prerelease explicitly:
+
+.. code-block:: bash
+
+   python -m pip install --pre 'fable-pyculator[web]==0.1.0a5'
+   python -c "import fable_pyculator; print(fable_pyculator.__version__)"
+   fable-pyculator --version
+
+Pip needs ``--pre`` when resolving a prerelease by version, even when the version is pinned.
+
 Rollback And Yanking
 --------------------
 

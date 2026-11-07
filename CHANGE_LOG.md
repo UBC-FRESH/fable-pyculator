@@ -22,6 +22,11 @@ This file records completed project work in chronological order.
   `42348441589` and Docs Pages workflow `42348441626` passed, and parent #222 plus P30.4 #226 were
   closed. The phase is the `0.1.0a5` release candidate: checksum-verified artifacts, authenticated
   staging, and a documented public-host handoff.
+- Published `fable-pyculator 0.1.0a5` with OIDC trusted publishing: TestPyPI rehearsal workflow
+  `42348922051` passed, tag `v0.1.0a5` triggered PyPI workflow `42349225029`, and both the TestPyPI
+  and PyPI publication jobs succeeded. A clean PyPI install with
+  `python -m pip install --pre 'fable-pyculator[web]==0.1.0a5'` imported version `0.1.0a5` and the
+  web app entry point.
 
 ## 2026-11-06
 
