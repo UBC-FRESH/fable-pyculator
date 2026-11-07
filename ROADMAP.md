@@ -100,7 +100,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 39 is implemented on `feature/p39-candidate-neighborhood`: exact one-coordinate neighborhood
   verification around the Phase 38 candidate found no strict dominator; 30 exact evaluations,
   2 rule-rejected, 0 errors, 321.6 s, 11 exact ties. The candidate is a local Pareto point. Parent
-  #266 and child #267 are mapped; PR and closeout remain.
+  #266 and child #267 are mapped; PR #268 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3094,7 +3094,9 @@ GitHub parent issue: #266.
 
 Branch: `feature/p39-candidate-neighborhood`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #268.
 
 Goal: exact-check the immediate one-coordinate neighborhood of the Phase 38 candidate and verify that
 no single-coordinate neighbor strictly dominates it.
