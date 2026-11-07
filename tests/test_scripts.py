@@ -1197,6 +1197,20 @@ def test_repair_fable_2024_generated_model_xml_like_expression() -> None:
     assert "#REF!" not in patched
 
 
+def test_regenerate_fable_2024_model_script_help() -> None:
+    script = Path("scripts/regenerate_fable_2024_model.py")
+    result = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "0.1.0a9" in result.stdout
+    assert "--tracked-archive" in result.stdout
+    assert "repaired 2024 workbook" in result.stdout.lower()
+
+
 def test_run_portal_script_help_documents_proxy_auth_and_remote_flags() -> None:
     script = Path("scripts/run_portal.sh")
     result = subprocess.run(

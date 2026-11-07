@@ -48,9 +48,13 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   diagnostics, and notebook-failure issue hygiene are tracked, PR #201 merged, and post-merge Test
   and Docs Pages workflows passed.
 - Phase 28 is closed: PR #214 was squash-merged to `main` as `a6758db`, post-merge Test and Docs
-  Pages workflows passed, and parent issue #203 plus P28.9 child issue #212 are ready for closeout.
+  Pages workflows passed, and parent issue #203 plus P28.9 child issue #212 are closed.
   The portal, issue-filing assistant workflow, and corrected 2021 authoritative-archive evidence
   are on `main`.
+- Phase 29 is implemented on `feature/p29-2024-regeneration`: a fresh Modelwright `0.1.0a9`
+  regeneration from the repaired 2024 workbook reproduces the tracked archive exactly, so no
+  artifact replacement is needed. Parent issue #215 and child issues #216-#220 are mapped; PR #221
+  is open and CI/closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2266,3 +2270,88 @@ Closeout evidence:
 - Post-merge Test workflow `42308703202` and Docs Pages workflow `42308703198` passed.
 - Parent issue #203 and child issue #212 are closed; completed child issues #204-#211 and #213 were
   closed with closeout comments.
+
+## Phase 29: 2024 Generated-Model Regeneration
+
+GitHub parent issue: #215.
+
+Branch: `feature/p29-2024-regeneration`.
+
+Status: pr-open.
+
+Pull request: #221.
+
+Goal: regenerate the 2024 FABLE Calculator (Canada) Python model from the repaired workbook with
+the current Modelwright checkout, eliminate the post-generation LAND TOTAL repair if possible, and
+validate the result against the workbook and the tracked artifact before replacing anything.
+
+Tasks:
+
+- [x] P29.1 Baseline the repaired workbook, tracked artifact, and validation contract. Child issue: #216.
+- [x] P29.2 Run a fresh 2024 regeneration from the repaired workbook. Child issue: #217.
+- [x] P29.3 Resolve Modelwright translation gaps or record a concrete blocker. Child issue: #218.
+- [x] P29.4 Validate the regenerated model and decide whether to replace the tracked archive. Child issue: #219.
+- [ ] P29.5 Update provenance, documentation, tests, and close Phase 29. Child issue: #220.
+
+Scope:
+
+- Baseline the original, pristine, and repaired workbooks and the tracked 2024 archive.
+- Run a fresh Modelwright extraction, dependency analysis, translation, inference, and generation.
+- Resolve or explicitly block output-closure translation failures.
+- Validate all declared outputs, with special attention to LAND AA17:AA27, GHG, FOOD, and TRADE.
+- Update the tracked artifact only when old-vs-new and workbook comparisons support it.
+
+Out of scope:
+
+- Changing FABLE Calculator semantics.
+- Hardcoding generated values or silently accepting unexplained output regressions.
+- Releasing Modelwright without a separate approval.
+- Unrelated portal feature work.
+
+Architecture notes:
+
+- Modelwright remains the generic workbook-to-Python conversion engine.
+- FABLE Pyculator owns the 2024-specific validation contract and tracked artifact decision.
+- The repaired workbook is the source of truth for the LAND TOTAL correction.
+- Any tracked-artifact replacement needs provenance, checksums, and portal smoke evidence.
+
+Acceptance boundary:
+
+- A fresh regeneration from the repaired workbook is attempted with a reproducible command.
+- Every output-closure failure is fixed, proven out of scope, or recorded as a concrete blocker.
+- The tracked 2024 artifact is replaced only if the regenerated model is validated as at least as correct.
+- LAND AA17:AA27 are native generated formulas and reproduce the workbook total if regeneration succeeds.
+- Docs, tests, checksums, and portal smoke evidence agree with the final artifact.
+
+Implementation evidence:
+
+- Added `scripts/regenerate_fable_2024_model.py`, which builds the workbook spec, derives the 10,274
+  declared outputs, runs Modelwright extraction/dependency/translation/inference/generation, and
+  compares the result with the tracked archive.
+- Bumped the runtime dependency to `modelwright[notebook]>=0.1.0a9`; the failed repro logs used the
+  stale `0.1.0a8` environment.
+- A fresh conversion from the repaired workbook (checksum
+  `519f68d70d6338ca7030ab470e00686f76e62fe008d3adaf0210613d19d365fc`) translated 410,299 of
+  410,299 formulas, closed all 10,274 declared outputs with 0 failures, generated the model with 0
+  diagnostics, and produced SHA-256
+  `cc8ac21ab55293f648aa9f6b3b8782b1f2dbe1b7789fda43bb1d100c1d8221ee`.
+- That checksum is byte-identical to the decompressed tracked archive. `LAND!AA17:AA27` are native
+  generated formulas; no archive replacement or surgical patch is needed.
+- Updated the 2024 example README, generated-model-artifact guide, README, changelog, and script
+  help to document the reproduction command and the `0.1.0a9` floor.
+
+Verification evidence:
+
+- `python scripts/regenerate_fable_2024_model.py` passed with an exact tracked-archive match.
+- `.venv/bin/python -m pytest -q` passed with `199` tests and `15` skips.
+- `.venv/bin/python -m ruff check .` passed.
+- `.venv/bin/sphinx-build -b html docs _build/html -W -q` and
+  `scripts/verify_docs_theme.py _build/html` passed.
+- Live 2024 portal smoke with the explicit prior selection set: `food 2,720.9 → 1,984.5`,
+  `GHG 59.99 → 95.61 MtCO2e`, `land 896,559.0 → 896,559.0`; no unexplained output regression.
+- `scripts/check_release_artifacts.sh` will be run before the phase PR is opened.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and merge.
+
