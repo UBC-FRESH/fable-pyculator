@@ -95,7 +95,9 @@ Validation
 
 Artifacts
    A file-by-file readiness table with paths and sizes, model materialization, and tracked
-   scenario-bundle examples.
+   scenario-bundle examples. For 2021 and 2024, the page shows whether the working model matches
+   the tracked uncompressed checksum. A mismatch offers a re-materialize action; preparation also
+   detects and repairs a stale model from the approved archive.
 
 Assistant
    Enabled only when the service is started with ``--allow-agent``. A green **+ Ask** pill in the

@@ -943,13 +943,18 @@ async function loadArtifacts() {
             </tr>`,
           )
           .join("");
-        const canMaterialize = !artifact.files.generated_model.exists && artifact.files.compressed_model.exists;
+        const checksumState = artifact.model_checksum?.state || "unknown";
+        const checksumTone = checksumState === "verified" ? "good" : checksumState === "mismatch" ? "bad" : "muted";
+        const canMaterialize =
+          artifact.files.compressed_model.exists &&
+          (!artifact.files.generated_model.exists || checksumState === "mismatch");
         return `
           <article class="panel artifact-card">
             <div class="panel-head">
               <div><h2>FABLE ${escapeHtml(artifact.version)}</h2><p class="hint">${escapeHtml(artifact.model_source || "no model")} model · ${artifact.can_prepare ? "preparable" : "missing files"}</p></div>
               <div class="button-row">
-                ${canMaterialize ? `<button class="button ghost small" type="button" data-materialize="${escapeHtml(artifact.version)}">Materialize model</button>` : ""}
+                ${canMaterialize ? `<button class="button ghost small" type="button" data-materialize="${escapeHtml(artifact.version)}" data-force="${checksumState === "mismatch" ? "true" : "false"}">${checksumState === "mismatch" ? "Re-materialize approved model" : "Materialize model"}</button>` : ""}
+                ${pill(`model ${checksumState}`, checksumTone)}
                 ${counts ? pill(`${counts.output_tables} tables`, "muted") : ""}
               </div>
             </div>
@@ -961,8 +966,9 @@ async function loadArtifacts() {
       button.addEventListener("click", async () => {
         button.disabled = true;
         try {
-          await request(`models/${button.dataset.materialize}/materialize`, { method: "POST" });
-          toast("Generated model materialized", "good");
+          const force = button.dataset.force === "true" ? "?force=true" : "";
+          await request(`models/${button.dataset.materialize}/materialize${force}`, { method: "POST" });
+          toast(force ? "Approved model re-materialized and verified" : "Generated model materialized", "good");
           await refreshArtifacts();
           await loadArtifacts();
         } catch (error) {

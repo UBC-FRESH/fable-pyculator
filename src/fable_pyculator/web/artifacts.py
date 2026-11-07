@@ -7,6 +7,7 @@ compressed generated-model artifact when a local working copy is missing.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import lzma
 import os
@@ -25,6 +26,7 @@ __all__ = [
     "bundle_summaries",
     "file_info",
     "materialize_generated_model",
+    "model_checksum_status",
 ]
 
 DEFAULT_VERSIONS: tuple[str, ...] = ("2021", "2024", "2020")
@@ -38,6 +40,7 @@ class ArtifactPaths:
     workbook: Path
     generated_model: Path
     compressed_model: Path
+    checksum: Path
     contract: Path
     inference_result: Path
     validation_scenario: Path
@@ -54,6 +57,7 @@ class ArtifactPaths:
             "workbook": str(self.workbook),
             "generated_model": str(self.generated_model),
             "compressed_model": str(self.compressed_model),
+            "checksum": str(self.checksum),
             "contract": str(self.contract),
             "inference_result": str(self.inference_result),
             "validation_scenario": str(self.validation_scenario),
@@ -79,6 +83,7 @@ def artifact_paths(repo_root: str | Path, version: str) -> ArtifactPaths:
         workbook=root / "tmp" / "private-workbooks" / f"{version}_Open_FABLECalculator.xlsx",
         generated_model=artifact_dir / f"generated_fable_{version}_model.py",
         compressed_model=root / "examples" / f"fable_{version}" / f"generated_fable_{version}_model.py.xz",
+        checksum=root / "examples" / f"fable_{version}" / f"generated_fable_{version}_model.py.sha256",
         contract=artifact_dir / "contract.json",
         inference_result=artifact_dir / "inference-result.json",
         validation_scenario=artifact_dir / "validation-scenario.json",
@@ -105,6 +110,42 @@ def file_info(path: Path) -> dict[str, Any]:
     }
 
 
+def _sha256_file(path: Path) -> str:
+    """Return the SHA-256 digest of a file without loading it all into memory."""
+
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        while chunk := source.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def model_checksum_status(repo_root: str | Path, version: str) -> dict[str, Any]:
+    """Compare the local working model with the tracked approved checksum."""
+
+    paths = artifact_paths(repo_root, version)
+    approved_checksum: str | None = None
+    if paths.checksum.is_file():
+        parts = paths.checksum.read_text(encoding="utf-8").split()
+        if parts:
+            approved_checksum = parts[0].lower()
+    working_checksum = _sha256_file(paths.generated_model) if paths.generated_model.is_file() else None
+    if approved_checksum is None:
+        state = "unknown"
+    elif working_checksum is None:
+        state = "missing"
+    elif working_checksum == approved_checksum:
+        state = "verified"
+    else:
+        state = "mismatch"
+    return {
+        "state": state,
+        "approved_checksum": approved_checksum,
+        "working_checksum": working_checksum,
+        "checksum_path": str(paths.checksum),
+    }
+
+
 def artifact_summary(repo_root: str | Path, version: str) -> dict[str, Any]:
     """Summarize whether a version can be prepared, validated, or run.
 
@@ -117,6 +158,7 @@ def artifact_summary(repo_root: str | Path, version: str) -> dict[str, Any]:
         "workbook": file_info(paths.workbook),
         "generated_model": file_info(paths.generated_model),
         "compressed_model": file_info(paths.compressed_model),
+        "checksum": file_info(paths.checksum),
         "contract": file_info(paths.contract),
         "inference_result": file_info(paths.inference_result),
         "validation_scenario": file_info(paths.validation_scenario),
@@ -124,10 +166,11 @@ def artifact_summary(repo_root: str | Path, version: str) -> dict[str, Any]:
         "generated_values": file_info(paths.generated_values),
         "validation_summary": file_info(paths.validation_summary),
     }
-    missing = [name for name, info in files.items() if not info["exists"]]
+    missing = [name for name, info in files.items() if name != "checksum" and not info["exists"]]
     has_model = files["generated_model"]["exists"] or files["compressed_model"]["exists"]
     can_prepare = files["workbook"]["exists"] and has_model
     can_run = can_prepare
+    checksum = model_checksum_status(repo_root, version)
     return {
         "version": version,
         "paths": paths.to_dict(),
@@ -142,6 +185,8 @@ def artifact_summary(repo_root: str | Path, version: str) -> dict[str, Any]:
             if files["compressed_model"]["exists"]
             else None
         ),
+        "model_checksum": checksum,
+        "model_verified": checksum["state"] == "verified",
         "has_validation_evidence": files["validation_summary"]["exists"],
     }
 
@@ -170,12 +215,22 @@ def materialize_generated_model(
     if not paths.compressed_model.exists():
         raise FileNotFoundError(f"compressed generated model not found: {paths.compressed_model}")
 
+    approved_checksum = None
+    if paths.checksum.is_file():
+        parts = paths.checksum.read_text(encoding="utf-8").split()
+        if parts:
+            approved_checksum = parts[0].lower()
+
     paths.generated_model.parent.mkdir(parents=True, exist_ok=True)
     temporary = paths.generated_model.with_name(paths.generated_model.name + ".tmp")
+    digest = hashlib.sha256()
     try:
         with lzma.open(paths.compressed_model, "rb") as source, temporary.open("wb") as target:
             while chunk := source.read(1024 * 1024):
                 target.write(chunk)
+                digest.update(chunk)
+        if approved_checksum is not None and digest.hexdigest() != approved_checksum:
+            raise ValueError("decompressed generated model checksum does not match the approved sidecar")
         os.replace(temporary, paths.generated_model)
     finally:
         temporary.unlink(missing_ok=True)

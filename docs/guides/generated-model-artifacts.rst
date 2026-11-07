@@ -39,9 +39,21 @@ models tracked in this repository:
    examples/fable_2021/generated_fable_2021_model.py.xz
    examples/fable_2024/generated_fable_2024_model.py.xz
 
-Those archives are the tracked generated-model exceptions in this repository. Source workbooks,
-decompressed generated models, raw generation JSON files, and validation reports still belong under
-ignored ``tmp/`` paths.
+Those archives are the tracked generated-model exceptions in this repository. Each archive has a
+tracked ``.sha256`` sidecar for the uncompressed model:
+
+.. code-block:: text
+
+   examples/fable_2021/generated_fable_2021_model.py.sha256
+   examples/fable_2024/generated_fable_2024_model.py.sha256
+
+The portal hashes the local working model against the sidecar before preparation. A mismatch
+triggers re-materialization from the tracked archive and is shown explicitly on the Artifacts page.
+The 2020 artifact has no tracked archive sidecar because it is restored from a sibling Modelwright
+checkout.
+
+Source workbooks, decompressed generated models, raw generation JSON files, and validation reports
+still belong under ignored ``tmp/`` paths.
 
 2024 Regeneration Check
 -----------------------

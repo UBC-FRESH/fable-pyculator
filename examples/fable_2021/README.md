@@ -53,8 +53,12 @@ archive. The compressed archive checksum is:
 c9ab8dd1fba273cdd53386af1b65fae216086b4a05df78467681fdddbf5186d9
 ```
 
+The uncompressed model checksum is tracked in
+`generated_fable_2021_model.py.sha256` and is used by the portal to detect stale working models.
+
 ## Artifact Boundary
 
-Only the compressed generated Python model is tracked here. Do not commit the 2021 source workbook,
-decompressed generated source, `contract.json`, `expressions.json`, `constants.json`, raw validation
-reports, logs, or scratch outputs. Those belong under ignored `tmp/` paths.
+Only the compressed generated Python model and its checksum sidecar are tracked here. Do not commit
+the 2021 source workbook, decompressed generated source, `contract.json`, `expressions.json`,
+`constants.json`, raw validation reports, logs, or scratch outputs. Those belong under ignored
+`tmp/` paths.

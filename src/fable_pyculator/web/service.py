@@ -29,6 +29,7 @@ from fable_pyculator.web.artifacts import (
     bundle_summaries,
     file_info,
     materialize_generated_model,
+    model_checksum_status,
 )
 from fable_pyculator.web.assistant import DEFAULT_AGENT_MODEL
 from fable_pyculator.web.chats import ChatStore
@@ -377,6 +378,23 @@ class PortalState:
                     )
                 report(5, "decompressing approved generated-model artifact")
                 materialize_generated_model(self.config.repo_root, version)
+
+            checksum = model_checksum_status(self.config.repo_root, version)
+            if checksum["state"] == "mismatch":
+                if not paths.compressed_model.exists():
+                    raise PortalError(
+                        "working generated model does not match the approved checksum and no "
+                        f"compressed archive is available: {paths.generated_model}",
+                        status_code=409,
+                    )
+                report(6, "working model checksum mismatch; re-materializing approved archive")
+                materialize_generated_model(self.config.repo_root, version, force=True)
+                checksum = model_checksum_status(self.config.repo_root, version)
+                if checksum["state"] not in {"verified", "unknown"}:
+                    raise PortalError(
+                        "approved generated model failed checksum verification after materialization",
+                        status_code=409,
+                    )
 
             fingerprint = _fingerprint(paths.workbook, paths.generated_model)
             cache = self._read_spec_cache(version, fingerprint)

@@ -172,6 +172,8 @@ def create_app(config: PortalConfig) -> FastAPI:
             return materialize_generated_model(config.repo_root, version, force=force)
         except FileNotFoundError as error:
             raise PortalError(str(error), status_code=404) from error
+        except ValueError as error:
+            raise PortalError(str(error), status_code=409) from error
 
     @app.get("/api/models/{version}/spec")
     def spec(version: str) -> dict[str, Any]:
