@@ -83,11 +83,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   are complete. Proposed rules warn in exploratory mode (725,760 valid, 535,680 warning-only); if
   draft-enforced, 466,560 remain valid (64.3%). PR #253 merged as `ca1fd84`; parent #249 and P35.3
   #252 are closed. Rules remain provisional pending expert review.
-- Phase 36 is implemented on `feature/p36-provisional-rule-sampling`: rule-aware sampling and dataset
-  filtering are integrated; 134 of 201 samples survive draft-enforced filtering. The filtered
-  ensemble improved GHG rank correlation to +0.50 but worsened absolute GHG error to 46.5%, so the
-  surrogate remains unusable. Parent #254 and child issues #255-#256 are mapped; PR #257 and closeout
-  remain.
+- Phase 36 is closed: rule-aware sampling and dataset filtering are integrated; 134 of 201 samples
+  survive draft-enforced filtering. The filtered ensemble improved GHG rank correlation to +0.50 but
+  worsened absolute GHG error to 46.5%, so the surrogate remains unusable. PR #257 merged as
+  `d7d446d`; parent #254 and children #255-#256 are closed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2882,9 +2881,9 @@ GitHub parent issue: #254.
 
 Branch: `feature/p36-provisional-rule-sampling`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #257.
+Pull request: #257 (merged as `d7d446d`).
 
 Goal: apply the draft scenario-consistency rules provisionally, filter the existing exact dataset,
 retrain the ensemble, and compare against the unfiltered Phase 33 result.
