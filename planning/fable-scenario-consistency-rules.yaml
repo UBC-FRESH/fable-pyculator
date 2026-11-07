@@ -1,0 +1,267 @@
+# DRAFT rule registry for FABLE scenario consistency.
+# Status: proposed. Expert review required before any rule is marked approved.
+
+version: 1
+status: draft
+schema_id: fable-scenario-consistency-draft
+applies_to: ["2020", "2021", "2024"]
+review_owner: "FABLE Calculator experts"
+review_status: "not_reviewed"
+
+rules:
+  - id: CUSTOM-DIET-001
+    family: custom_tables
+    severity: error
+    confidence: high
+    status: proposed
+    when:
+      switch: diet_scen
+      in: [MyDiet]
+    require:
+      table: scenarios_definition_diettarget
+      non_null_columns: [target]
+    message: "MyDiet requires populated DietTarget values."
+    review_question: "Is DietTarget the authoritative custom diet table, and are there additional required columns?"
+
+  - id: CUSTOM-FOODLOSS-001
+    family: custom_tables
+    severity: error
+    confidence: high
+    status: proposed
+    when:
+      switch: scen_foodloss
+      in: [MyFoodLossScen]
+    require:
+      table: scenarios_definition_foodlosstarget
+      non_null_columns: [Target]
+    message: "MyFoodLossScen requires populated FoodLossTarget values."
+    review_question: "Which FoodLossTarget columns are mandatory for an exact run?"
+
+  - id: CUSTOM-IMPORT-001
+    family: custom_tables
+    severity: error
+    confidence: high
+    status: proposed
+    when:
+      switch: scen_imports
+      in: [MyImportScen]
+    require:
+      table: scenarios_definition_impscentarget
+      non_null_columns: [ImportShare_2050]
+    message: "MyImportScen requires populated ImpScenTarget values."
+    review_question: "Does ImportDef also require explicit values, or are its defaults valid?"
+
+  - id: CUSTOM-EXPORT-001
+    family: custom_tables
+    severity: error
+    confidence: high
+    status: proposed
+    when:
+      switch: scen_exports
+      in: [MyExportScen, MyExportScen2, MyExportScen3]
+    require:
+      table: scenarios_definition_expscentarget
+      non_null_columns: [Exports_2050]
+    message: "Custom export scenarios require populated ExpScenTarget values."
+    review_question: "What distinguishes MyExportScen, MyExportScen2, and MyExportScen3?"
+
+  - id: CUSTOM-PHLOSS-001
+    family: custom_tables
+    severity: error
+    confidence: high
+    status: proposed
+    when:
+      switch: postharvestloss_scen
+      in: [MyPHLossScen]
+    require:
+      table: scenarios_definition_phloss_target
+      non_null_columns: [RelTarget2050]
+    message: "MyPHLossScen requires populated PHLoss_target values."
+    review_question: "Is PhLossTarget_def also required?"
+
+  - id: CUSTOM-PRICE-001
+    family: custom_tables
+    severity: error
+    confidence: high
+    status: proposed
+    when:
+      switch: price_scen
+      in: [Custom]
+    require:
+      table: scenarios_definition_price_def
+      non_null_columns: [Custom]
+    message: "Custom prices require populated Price_Def custom CPI values."
+    review_question: "Which price columns are authoritative for the exact model?"
+
+  - id: LAND-AFFOR-001
+    family: land
+    severity: warning
+    confidence: medium
+    status: proposed
+    when:
+      all:
+        - switch: land_scen
+          in: [NoExpansion]
+        - switch: affor_scen
+          in: [BonnChallenge+]
+    message: "A large afforestation target may conflict with no productive-land expansion."
+    review_question: "Does NoExpansion constrain the land available for BonnChallenge+ afforestation?"
+
+  - id: LAND-PA-001
+    family: land
+    severity: warning
+    confidence: medium
+    status: proposed
+    when:
+      all:
+        - switch: land_scen
+          in: [NoExpansion]
+        - switch: pa_scen
+          in: [PAExpansion, PAExpansion2]
+    message: "Protected-area expansion may conflict with no land expansion."
+    review_question: "Can protected-area expansion occur without productive-land expansion?"
+
+  - id: LAND-URBAN-001
+    family: land
+    severity: warning
+    confidence: medium
+    status: proposed
+    when:
+      all:
+        - switch: land_scen
+          in: [NoExpansion]
+        - switch: urbanarea_scen
+          in: [CurrentTrend, SSP2]
+    message: "Urban expansion may conflict with no land expansion."
+    review_question: "Does NoExpansion include urban land, or only agricultural land?"
+
+  - id: AFFOR-PA-001
+    family: land
+    severity: warning
+    confidence: low
+    status: proposed
+    when:
+      all:
+        - switch: affor_scen
+          in: [BonnChallenge+]
+        - switch: pa_scen
+          in: [PAExpansion, PAExpansion2]
+    message: "Afforestation and protected-area expansion may compete for the same land."
+    review_question: "Are these targets additive, overlapping, or mutually exclusive?"
+
+  - id: URBAN-POP-001
+    family: land
+    severity: warning
+    confidence: medium
+    status: proposed
+    when:
+      all:
+        - switch: urbanarea_scen
+          in: [SSP2]
+        - switch: pop_scen
+          not_in: [SSP2, UN_medium]
+    message: "SSP2 urbanisation uses a different population narrative."
+    review_question: "Does urbanarea_scen=SSP2 require pop_scen=SSP2, or is it independent?"
+
+  - id: NARRATIVE-SSP-001
+    family: narrative
+    severity: warning
+    confidence: low
+    status: proposed
+    coherence:
+      switches: [gdp_scen, pop_scen, diet_scen]
+      rule: equal_when_all_in_ssp_1_3
+    message: "Mixed SSP narratives may be intentional, but should be explicit."
+    review_question: "Which mixed-SSP combinations are legitimate sensitivity experiments?"
+
+  - id: NARRATIVE-SSP-002
+    family: narrative
+    severity: warning
+    confidence: low
+    status: proposed
+    when:
+      all:
+        - switch: pop_scen
+          in: [SSP4, SSP5]
+        - switch: gdp_scen
+          in: [SSP1, SSP2, SSP3]
+        - switch: diet_scen
+          in: [SSP1, SSP2, SSP3]
+    message: "No matching SSP GDP/diet narrative exists for this population scenario."
+    review_question: "What is the intended mapping for SSP4/SSP5 population scenarios?"
+
+  - id: CLIMATE-NARRATIVE-001
+    family: narrative
+    severity: warning
+    confidence: low
+    status: proposed
+    when:
+      all:
+        - switch: climatechange_scen
+          in: [rcp2p6_hadgem2-es_n_GEPIC]
+        - any:
+            - switch: gdp_scen
+              in: [SSP3]
+            - switch: pop_scen
+              in: [SSP3, SSP4]
+    message: "The climate pathway and socioeconomic narrative may disagree."
+    review_question: "Should climate pathway and SSP narrative be linked at all?"
+
+  - id: TRADE-FIX-001
+    family: trade
+    severity: warning
+    confidence: medium
+    status: proposed
+    when:
+      all:
+        - switch: fixtrade_scen
+          in: [Yes]
+        - any:
+            - switch: scen_imports
+              in: [MyImportScen]
+            - switch: scen_exports
+              in: [MyExportScen, MyExportScen2, MyExportScen3]
+    message: "Fixed trade adjustment may conflict with user-defined trade trajectories."
+    review_question: "Does fixtrade_scen=Yes compose with or override custom trade targets?"
+
+  - id: AGPRAC-CROP-001
+    family: agriculture
+    severity: warning
+    confidence: low
+    status: proposed
+    when:
+      all:
+        - switch: agpractice_scen
+          in: [Organic]
+        - switch: crop_scen
+          in: [MiddleGrowth, HighGrowth]
+    message: "Organic practice with high yield-gap closure needs expert review."
+    review_question: "Are organic systems compatible with MiddleGrowth/HighGrowth yield targets?"
+
+  - id: LIVE-DENS-001
+    family: livestock
+    severity: warning
+    confidence: low
+    status: proposed
+    when:
+      all:
+        - switch: livedens_scen
+          in: [HighGrowth]
+        - switch: live_scen
+          in: [NoGrowth]
+    message: "High ruminant density with no livestock productivity growth needs review."
+    review_question: "Is this combination biologically or economically plausible?"
+
+  - id: IRR-CROP-001
+    family: agriculture
+    severity: warning
+    confidence: low
+    status: proposed
+    when:
+      all:
+        - switch: irrarea_scen
+          in: [HighGrowth]
+        - switch: crop_scen
+          in: [NoGrowth]
+    message: "Large irrigation expansion with no crop productivity response needs review."
+    review_question: "Can irrigation expansion occur without a crop productivity response?"
