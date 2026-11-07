@@ -69,6 +69,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   extrapolates badly and is not suitable for optimization decisions. PR #237 merged as `cefc895`;
   the negative result and the next-step conditions are recorded. Parent #233 and P32.3 #236 are
   closed.
+- Phase 33 is active on `feature/p33-optimization-scaling`: screening control effects, freezing an
+  8–12 variable decision space, collecting 200–400 exact samples, adding ensemble uncertainty, and
+  exact-replaying the best candidates. Parent #238 and child issues #239-#242 are mapped.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2617,4 +2620,59 @@ Closeout evidence:
 - Parent #233 and P32.3 #236 are closed with the negative-result pilot evidence.
 - Do not scale this surrogate without a reduced decision space, more exact samples, and uncertainty
   handling.
+
+## Phase 33: FABLE Optimization Scaling
+
+GitHub parent issue: #238.
+
+Branch: `feature/p33-optimization-scaling`.
+
+Status: active.
+
+Goal: scale the surrogate-assisted optimization pilot from a plumbing test to a defensible
+reduced-space experiment: screen control effects, freeze 8–12 variables, collect 200–400 exact
+samples, add ensemble uncertainty, and exact-replay the best candidates.
+
+Tasks:
+
+- [ ] P33.1 Screen control sensitivity and freeze the reduced decision space. Child issue: #239.
+- [ ] P33.2 Collect a larger exact sample set over the reduced controls. Child issue: #240.
+- [ ] P33.3 Add ensemble uncertainty and rerun the GPU surrogate. Child issue: #241.
+- [ ] P33.4 Exact replay, compare, document, and close Phase 33. Child issue: #242.
+
+Scope:
+
+- Exact one-at-a-time control screening.
+- Reduced decision space with fixed baseline for excluded controls.
+- Larger exact sample collection.
+- Ensemble surrogate and uncertainty-aware GPU GA.
+- Exact top-K replay and comparison.
+
+Out of scope:
+
+- Claiming exact optimization over the full FABLE state space.
+- Continuous scenario-definition variables in this phase.
+- Production UI integration.
+
+Architecture notes:
+
+- Exact Pyculator remains the oracle and final authority.
+- The reduced space must be explicit and reproducible.
+- Ensemble spread is an uncertainty signal, not a correctness proof.
+- A negative result is acceptable if it is measured and documented.
+
+Acceptance boundary:
+
+- The reduced control set is frozen from exact one-at-a-time effects.
+- At least 200 exact samples complete or the shortfall is documented.
+- The ensemble GA reports uncertainty and exact top-K replay.
+- The phase records whether to continue, change approach, or stop.
+
+Verification evidence:
+
+- Pending Phase 33 execution.
+
+Closeout evidence:
+
+- Pending.
 
