@@ -104,3 +104,31 @@ Security boundaries
 - Source workbooks, generated models, saved runs, chats, and caches are local files. Keep the
   runtime directory on a controlled filesystem.
 - Do not expose the service directly to the public internet without TLS and authentication.
+
+Public deployment handoff
+-------------------------
+
+A public deployment is a maintainer-controlled action. Before provisioning anything, collect these
+inputs and record them in the deployment report:
+
+- public hostname and DNS owner;
+- TLS approach and certificate/ACME owner;
+- reverse-proxy path, including whether the portal is mounted at ``/`` or a prefix such as ``/fable``;
+- credential source for ``FABLE_PORTAL_AUTH_USER`` and ``FABLE_PORTAL_AUTH_PASSWORD``;
+- service user, install root, runtime root, and backup location;
+- whether the local assistant is enabled, and who owns the OpenCode process and its access;
+- monitoring target for ``GET /api/health`` and the expected public/private boundary;
+- firewall, proxy timeouts, and maximum upload/response settings;
+- the named maintainer who will approve the deployment and receive the rollback instructions.
+
+After those inputs exist, the deployment sequence is:
+
+1. Build and pass the release-candidate checks.
+2. Install the wheel and runtime under the agreed service paths.
+3. Configure the environment file with a real password, then start the systemd unit or proxy wrapper.
+4. Verify unauthenticated ``GET /api/health`` succeeds and every other route returns ``401``.
+5. Verify the SPA, static assets, and one prepared model run through the public prefix.
+6. Record the URL, commit, package version, workflow runs, and any limits in the phase report.
+7. Keep the previous package artifact and runtime backup available for rollback.
+
+No password, token, private workbook, or personal path belongs in a tracked file.

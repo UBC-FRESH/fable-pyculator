@@ -2376,9 +2376,9 @@ authenticated staging with a proxy prefix, and document the host handoff.
 
 Tasks:
 
-- [ ] P30.1 Add approved-artifact checksum verification and stale-model handling. Child issue: #223.
-- [ ] P30.2 Prepare and verify the v0.1.0a5 release candidate. Child issue: #224.
-- [ ] P30.3 Run authenticated staging with proxy prefix and deployment smoke tests. Child issue: #225.
+- [x] P30.1 Add approved-artifact checksum verification and stale-model handling. Child issue: #223.
+- [x] P30.2 Prepare and verify the v0.1.0a5 release candidate. Child issue: #224.
+- [x] P30.3 Run authenticated staging with proxy prefix and deployment smoke tests. Child issue: #225.
 - [ ] P30.4 Document host handoff, review evidence, open the PR, and close Phase 30. Child issue: #226.
 
 Scope:
@@ -2409,11 +2409,33 @@ Acceptance boundary:
 - Authenticated staging enforces auth while keeping health public and works under a proxy prefix.
 - The public deployment handoff is explicit and complete.
 
+Implementation evidence:
+
+- Added tracked uncompressed checksum sidecars for the 2021 and 2024 archives, portal checksum
+  state in artifact summaries, a model-verification pill and re-materialize action on the Artifacts
+  page, and pre-preparation stale-model detection with automatic re-materialization from the
+  approved archive.
+- Bumped the package to `0.1.0a5`, updated provider/version assertions, release notes, README, and
+  the release/deployment guide, and kept `modelwright>=0.1.0a9`.
+- Verified the local authenticated staging path with `FABLE_PORTAL_ROOT_PATH=/fable`: health returned
+  `200` without auth, API/static routes returned `401` without auth and `200` with auth, and the SPA
+  and one proxied 2024 run completed.
+- Added the public deployment handoff checklist covering hostname/DNS, TLS, proxy prefix,
+  credentials, service/runtime paths, assistant ownership, monitoring, firewall, rollback, and the
+  approving maintainer.
+
 Verification evidence:
 
-- Pending Phase 30 execution.
+- `.venv/bin/python -m pytest -q` passed with `202` tests and `15` skips.
+- `.venv/bin/python -m ruff check .` passed.
+- Sphinx warning-as-error build and Read the Docs theme check passed.
+- `scripts/check_release_artifacts.sh` passed and installed `fable-pyculator-0.1.0a5`.
+- Artifact API reports `2021 verified`, `2024 verified`, `2020 unknown` (no tracked 2020 checksum).
+- Authenticated staging proxy smoke: health `200`, unauth API `401`, auth API `200`, prefixed root
+  and static `200`; 2024 run `food 2,720.9 → 1,984.5`, `GHG 59.99 → 95.61 MtCO2e`,
+  `land 896,559.0`.
 
 Closeout evidence:
 
-- Pending.
+- Pending phase PR, CI, and merge.
 

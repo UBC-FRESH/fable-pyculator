@@ -9,6 +9,15 @@ This file records completed project work in chronological order.
   closed. The phase proved that a fresh Modelwright `0.1.0a9` regeneration from the repaired 2024
   workbook reproduces the tracked archive byte-for-byte (`cc8ac21…`), with 410,299 translated
   formulas, 10,274 declared outputs, zero output-closure failures, and zero generation diagnostics.
+- Phase 30 added approved-artifact checksum sidecars and verification: the portal now reports
+  `verified`/`mismatch`/`unknown`, re-materializes a stale working model from the tracked archive
+  before preparation, and offers a re-materialize action on the Artifacts page.
+- Prepared the `0.1.0a5` release candidate with the web portal, checksum verification, authenticated
+  staging, and issue-filing assistant surface; the release artifact check installed
+  `fable-pyculator-0.1.0a5`.
+- Verified authenticated staging with `FABLE_PORTAL_ROOT_PATH=/fable`: health remained public, API
+  and static routes required Basic auth, the SPA loaded through the proxied prefix, and a 2024 run
+  completed with the expected headline values.
 
 ## 2026-11-06
 
