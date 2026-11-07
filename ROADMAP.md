@@ -82,7 +82,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 35 is implemented on `feature/p35-scenario-rule-engine`: the status-aware rule engine,
   dataset audit, and 10-control domain enumeration are complete. Proposed rules warn in exploratory
   mode (725,760 valid, 535,680 warning-only); if draft-enforced, 466,560 remain valid (64.3%).
-  Parent #249 and child issues #250-#252 are mapped; PR and closeout remain.
+  Parent #249 and child issues #250-#252 are mapped; PR #253 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2802,7 +2802,9 @@ GitHub parent issue: #249.
 
 Branch: `feature/p35-scenario-rule-engine`.
 
-Status: active.
+Status: pr-open.
+
+Pull request: #253.
 
 Goal: implement a status-aware scenario rule engine and quantify how the proposed consistency rules
 affect the exact sample dataset and the 10-control reduced domain.
