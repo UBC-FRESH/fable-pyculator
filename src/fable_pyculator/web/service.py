@@ -636,6 +636,54 @@ class PortalState:
 
         return bundle_summaries(self.config.repo_root)
 
+    def optimization_frontiers(self) -> list[dict[str, Any]]:
+        """Return summaries of tracked exact frontier artifacts."""
+
+        directory = self.config.repo_root / "examples" / "optimization"
+        if not directory.is_dir():
+            return []
+        records: list[dict[str, Any]] = []
+        for path in sorted(directory.glob("*/frontier.json")):
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if not isinstance(payload, dict):
+                continue
+            points = payload.get("points") or []
+            origins: dict[str, int] = {}
+            for point in points if isinstance(points, list) else []:
+                if isinstance(point, dict):
+                    origin = str(point.get("origin") or "Other")
+                    origins[origin] = origins.get(origin, 0) + 1
+            records.append(
+                {
+                    "version": str(payload.get("version") or path.parent.name.removeprefix("fable_")),
+                    "title": str(payload.get("title") or "Exact decision frontier"),
+                    "point_count": len(points) if isinstance(points, list) else 0,
+                    "pareto_count": len(payload.get("pareto_ids") or []),
+                    "generated_at": payload.get("generated_at"),
+                    "boundary": payload.get("boundary"),
+                    "origins": origins,
+                }
+            )
+        return sorted(records, key=lambda item: item["version"])
+
+    def optimization_frontier(self, version: str) -> dict[str, Any]:
+        """Return one tracked exact frontier artifact for the browser."""
+
+        directory = self.config.repo_root / "examples" / "optimization"
+        for path in sorted(directory.glob("*/frontier.json")) if directory.is_dir() else []:
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if not isinstance(payload, dict):
+                continue
+            if str(payload.get("version")) == str(version):
+                return payload
+        raise PortalError(f"unknown optimization frontier {version!r}", status_code=404)
+
     def runs(self) -> list[dict[str, Any]]:
         """Return saved runs, newest first, without loading table files."""
 

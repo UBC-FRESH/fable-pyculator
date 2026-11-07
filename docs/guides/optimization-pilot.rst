@@ -520,6 +520,20 @@ Do not scale the surrogate further without a structural change. The useful paths
 4. Build a compiled/vectorized exact evaluator only if broader exact search is required.
 5. Keep exact top-K replay as a hard gate regardless.
 
+Portal viewer
+-------------
+
+The portal now has an **Optimization** page that reads
+`examples/optimization/fable_2024/frontier.json` through `/api/optimization/frontiers`. It maps food,
+GHG, land, and the weighted-goal score to X/Y/Z, supports colour and size mapping, quality-floor
+filtering, and an exact-front-only toggle. A point can be selected, pinned with up to two other
+points for comparison, and loaded into the Workbench as a scenario prefill.
+
+This is the same interaction pattern as the urban-forest lab and WS4 Pareto explorer. The FABLE
+viewer is read-only over exact points: it does not run the optimizer, a surrogate, or a hidden model
+in the browser. The artifact can be regenerated with `--artifact-output` on
+`scripts/fable_exact_decision.py`.
+
 The detailed scenario-consistency rule surface and the extensible coefficient/switch architecture are
 in `planning/fable-scenario-consistency-rules.md` and
 `planning/fable-scenario-consistency-rules.yaml`.
@@ -561,4 +575,5 @@ Commands
      tmp/fable-exact-sensitivity/combined \
      tmp/fable-exact-neighborhood/sensitivity.json \
      tmp/fable-exact-decision/targeted \
-     --output tmp/fable-exact-decision/decision.json
+     --output tmp/fable-exact-decision/decision.json \
+     --artifact-output examples/optimization/fable_2024/frontier.json

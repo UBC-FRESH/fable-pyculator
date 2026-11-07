@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +18,14 @@ for _candidate in Path(__file__).resolve().parents:
         sys.path.insert(0, str(_candidate / "src"))
         break
 
-__all__ = ["collect_points", "main", "pareto_front", "select_food_first", "select_ghg_first"]
+__all__ = [
+    "build_artifact",
+    "collect_points",
+    "main",
+    "pareto_front",
+    "select_food_first",
+    "select_ghg_first",
+]
 
 OBJECTIVES = ("food_total_kcal_feas", "ghg_total_co2e", "land_total_area")
 DIRECTIONS = {"food_total_kcal_feas": 1.0, "ghg_total_co2e": -1.0, "land_total_area": -1.0}
@@ -65,6 +73,19 @@ def main(argv: list[str] | None = None) -> int:
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if args.artifact_output is not None:
+        artifact = build_artifact(
+            payload=payload,
+            unique_points=unique_points,
+            front=front,
+            front_unique=front_unique,
+            ranked=ranked,
+            version=args.version,
+            title=args.title,
+        )
+        args.artifact_output.parent.mkdir(parents=True, exist_ok=True)
+        args.artifact_output.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(f"artifact: {args.artifact_output}")
     print(f"decision: {args.output}")
     print(
         f"points: {len(points)} input, {len(unique_points)} unique; "
@@ -78,6 +99,143 @@ def main(argv: list[str] | None = None) -> int:
         objectives = point["objectives"]
         print(f"{label}: {objectives['food_total_kcal_feas']:.2f} kcal, {objectives['ghg_total_co2e']:.2f} MtCO2e")
     return 0
+
+
+def build_artifact(
+    *,
+    payload: dict[str, Any],
+    unique_points: list[dict[str, Any]],
+    front: list[dict[str, Any]],
+    front_unique: list[dict[str, Any]],
+    ranked: list[dict[str, Any]],
+    version: str,
+    title: str,
+) -> dict[str, Any]:
+    """Build a compact browser-ready artifact from one decision payload."""
+
+    ordered = sorted(
+        unique_points,
+        key=lambda point: (-_value(point, "food_total_kcal_feas"), _value(point, "ghg_total_co2e")),
+    )
+    front_keys = {_selection_key(point) for point in front}
+    goal_by_key = {_selection_key(row): row["goal"] for row in ranked}
+    points: list[dict[str, Any]] = []
+    ids_by_key: dict[str, str] = {}
+    for index, point in enumerate(ordered):
+        point_id = f"p{index:03d}"
+        key = _selection_key(point)
+        ids_by_key[key] = point_id
+        warnings = _warning_ids(point)
+        points.append(
+            {
+                "id": point_id,
+                "objectives": {name: _value(point, name) for name in OBJECTIVES},
+                "goal": goal_by_key.get(key),
+                "front": key in front_keys,
+                "origin": _origin(point.get("source")),
+                "selections": point["selections"],
+                "warnings": warnings,
+            }
+        )
+    dimensions = [
+        {"key": "food_total_kcal_feas", "label": "Food", "unit": "kcal", "direction": "max"},
+        {"key": "ghg_total_co2e", "label": "GHG", "unit": "MtCO2e", "direction": "min"},
+        {"key": "land_total_area", "label": "Land", "unit": "ha", "direction": "min"},
+        {"key": "goal", "label": "Goal score", "unit": "", "direction": "min"},
+    ]
+    ranges = {name: list(bounds) for name, bounds in payload["ranges"].items()}
+    goals = [row["goal"] for row in ranked]
+    ranges["goal"] = [min(goals), max(goals)] if goals else [0.0, 0.0]
+    views = {
+        "balanced": _view_entry(payload.get("balanced"), ids_by_key, "Balanced", "weighted goal"),
+        "food_first": _view_entry(
+            payload.get("food_first"), ids_by_key, "Food-first", f"GHG ≤ {payload['food_first_cap_ghg']:g}"
+        ),
+        "ghg_first": _view_entry(
+            payload.get("ghg_first"), ids_by_key, "GHG-first", f"food ≥ {payload['ghg_first_floor_food']:g}"
+        ),
+        "food_first_views": [
+            _view_entry(row.get("point"), ids_by_key, "Food-first", f"GHG ≤ {row['ghg_cap']:g}")
+            for row in payload.get("food_first_views", [])
+        ],
+        "ghg_first_views": [
+            _view_entry(row.get("point"), ids_by_key, "GHG-first", f"food ≥ {row['food_floor']:g}")
+            for row in payload.get("ghg_first_views", [])
+        ],
+    }
+    control_names = sorted({name for point in ordered for name in point.get("selections", {})})
+    return {
+        "artifact_version": 1,
+        "version": version,
+        "title": title,
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
+        "boundary": (
+            "Exact Pyculator points from the local Phases 37-40 scenario set. "
+            "The frontier is local, not global; caps and floors are policy inputs."
+        ),
+        "provenance": {
+            "point_count": payload["point_count"],
+            "unique_point_count": payload["unique_point_count"],
+            "pareto_count": payload["pareto_count"],
+            "pareto_unique_count": payload["pareto_unique_count"],
+            "input": payload["input"],
+            "aspirations": payload["aspirations"],
+            "weights": payload["weights"],
+        },
+        "dimensions": dimensions,
+        "ranges": ranges,
+        "controls": control_names,
+        "points": points,
+        "pareto_ids": [ids_by_key[_selection_key(point)] for point in front_unique],
+        "views": views,
+    }
+
+
+def _selection_key(point: dict[str, Any]) -> str:
+    return json.dumps(point["selections"], sort_keys=True)
+
+
+def _warning_ids(point: dict[str, Any]) -> list[str]:
+    evaluation = point.get("rule_evaluation")
+    if not isinstance(evaluation, dict):
+        return []
+    found: list[str] = []
+    for key in ("errors", "warnings", "exploratory"):
+        for hit in evaluation.get(key) or []:
+            if isinstance(hit, dict) and hit.get("rule_id"):
+                found.append(str(hit["rule_id"]))
+    return sorted(set(found))
+
+
+def _origin(source: Any) -> str:
+    text = str(source or "")
+    if "fable-exact-optimization" in text:
+        return "Phase 37"
+    if "fable-exact-sensitivity" in text:
+        return "Phase 38"
+    if "fable-exact-neighborhood" in text:
+        return "Phase 39"
+    if "fable-exact-decision" in text:
+        return "Phase 40"
+    return "Other"
+
+
+def _view_entry(
+    point: dict[str, Any] | None,
+    ids_by_key: dict[str, str],
+    label: str,
+    constraint: str,
+) -> dict[str, Any] | None:
+    if not point:
+        return None
+    key = _selection_key(point)
+    return {
+        "label": label,
+        "constraint": constraint,
+        "point_id": ids_by_key.get(key),
+        "objectives": point.get("objectives"),
+        "selections": point.get("selections"),
+    }
 
 
 def collect_points(paths: list[Path]) -> list[dict[str, Any]]:
@@ -247,6 +405,9 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--food-ghg-cap", type=float, default=110.0)
     parser.add_argument("--ghg-food-floor", type=float, default=3000.0)
+    parser.add_argument("--version", default="2024", help="Workbook version label for the artifact.")
+    parser.add_argument("--title", default="FABLE 2024 exact decision frontier")
+    parser.add_argument("--artifact-output", type=Path, default=None)
     parser.add_argument(
         "--food-ghg-caps",
         nargs="+",

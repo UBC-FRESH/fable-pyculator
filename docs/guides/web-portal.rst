@@ -88,6 +88,17 @@ Results
 Compare
    Align two or more saved runs by year and show selection and latest-value differences.
 
+Optimization
+   Explore the tracked exact Pareto frontier for the optimization pilot. The page maps food, GHG,
+   land, and the weighted-goal score to X/Y/Z, supports colour, size, quality-floor filtering, and an
+   exact-front-only toggle, and lets you inspect, pin, compare, and load a frontier point into the
+   Workbench. The viewer reads ``examples/optimization/fable_2024/frontier.json`` through
+   ``/api/optimization/frontiers``; it never runs an optimizer or a surrogate in the browser.
+
+   .. image:: /_static/optimization-frontier.png
+      :alt: Optimization page with the exact FABLE Pareto solution cloud and decision views
+      :width: 100%
+
 Validation
    Read the compact evidence summary at
    ``tmp/validation-evidence/fable-<version>/summary.json``. The portal deliberately does not load
