@@ -72,7 +72,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 33 is implemented on `feature/p33-optimization-scaling`: the 10-control screen, 201 exact
   samples, 5-member ensemble, and exact replay all completed. Food scale improved to 0.8% error, but
   GHG local ranking remained wrong (−0.5 rank correlation) and the exact best candidate was ranked
-  last. Parent #238 and child issues #239-#242 are mapped; PR and closeout remain.
+  last. Parent #238 and child issues #239-#242 are mapped; PR #243 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2628,7 +2628,9 @@ GitHub parent issue: #238.
 
 Branch: `feature/p33-optimization-scaling`.
 
-Status: active.
+Status: pr-open.
+
+Pull request: #243.
 
 Goal: scale the surrogate-assisted optimization pilot from a plumbing test to a defensible
 reduced-space experiment: screen control effects, freeze 8–12 variables, collect 200–400 exact
