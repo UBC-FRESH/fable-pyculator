@@ -54,9 +54,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 29 is closed: PR #221 was squash-merged as `a6534d9`; a fresh Modelwright `0.1.0a9`
   regeneration from the repaired 2024 workbook reproduces the tracked archive exactly, and
   post-merge Test/Docs Pages workflows passed. Parent #215 and P29.5 #220 are closed.
-- Phase 30 is implemented on `feature/p30-release-deployment`: approved-artifact checksums,
-  the `0.1.0a5` release candidate, authenticated proxy-prefix staging, and the public-host handoff
-  are complete. Parent #222 and child issues #223-#226 are mapped; PR #227 and closeout remain.
+- Phase 30 is closed: PR #227 was squash-merged as `ee344dd`; approved-artifact checksums, the
+  `0.1.0a5` release candidate, authenticated proxy-prefix staging, and the public-host handoff are
+  complete, and post-merge Test/Docs Pages workflows passed. Parent #222 and P30.4 #226 are closed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2368,9 +2368,9 @@ GitHub parent issue: #222.
 
 Branch: `feature/p30-release-deployment`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #227.
+Pull request: #227 (merged as `ee344dd`).
 
 Goal: harden the portal release and deployment path after the 2024 artifact provenance work:
 verify working models against approved checksums, prepare a `0.1.0a5` release candidate, run
@@ -2381,7 +2381,7 @@ Tasks:
 - [x] P30.1 Add approved-artifact checksum verification and stale-model handling. Child issue: #223.
 - [x] P30.2 Prepare and verify the v0.1.0a5 release candidate. Child issue: #224.
 - [x] P30.3 Run authenticated staging with proxy prefix and deployment smoke tests. Child issue: #225.
-- [ ] P30.4 Document host handoff, review evidence, open the PR, and close Phase 30. Child issue: #226.
+- [x] P30.4 Document host handoff, review evidence, open the PR, and close Phase 30. Child issue: #226.
 
 Scope:
 
@@ -2436,8 +2436,13 @@ Verification evidence:
 - Authenticated staging proxy smoke: health `200`, unauth API `401`, auth API `200`, prefixed root
   and static `200`; 2024 run `food 2,720.9 → 1,984.5`, `GHG 59.99 → 95.61 MtCO2e`,
   `land 896,559.0`.
+- PR #227 CI on `4a377f3` passed quality, pytest, release-artifacts, and Docs Pages build.
+- PR #227 was squash-merged as `ee344dd`; post-merge Test workflow `42348441589` and Docs Pages
+  workflow `42348441626` passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and merge.
+- PR #227 squash-merged to `main` as `ee344dd`.
+- Post-merge Test workflow `42348441589` and Docs Pages workflow `42348441626` passed.
+- Parent issue #222 and child issue #226 are closed; P30.1-P30.3 are closed with closeout comments.
 

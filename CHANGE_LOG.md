@@ -18,6 +18,10 @@ This file records completed project work in chronological order.
 - Verified authenticated staging with `FABLE_PORTAL_ROOT_PATH=/fable`: health remained public, API
   and static routes required Basic auth, the SPA loaded through the proxied prefix, and a 2024 run
   completed with the expected headline values.
+- Closed Phase 30 after PR #227 squash-merged as `ee344dd`; post-merge Test workflow
+  `42348441589` and Docs Pages workflow `42348441626` passed, and parent #222 plus P30.4 #226 were
+  closed. The phase is the `0.1.0a5` release candidate: checksum-verified artifacts, authenticated
+  staging, and a documented public-host handoff.
 
 ## 2026-11-06
 
