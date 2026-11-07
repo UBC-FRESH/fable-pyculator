@@ -79,6 +79,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Prepared a compact expert-review package for the FABLE scenario consistency rules, including a
   fillable CSV worksheet and concrete example scenarios; awaiting Hisham/FABLE expert decisions before
   implementing the rule engine or choosing the next optimizer representation.
+- Phase 35 is active on `feature/p35-scenario-rule-engine`: implementing a status-aware rule engine,
+  auditing the 201 exact samples, and enumerating the 10-control valid domain under proposed rules.
+  Parent #249 and child issues #250-#252 are mapped.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2791,4 +2794,58 @@ Closeout evidence:
 - Parent #244 and P34.3 #247 are closed.
 - Output-ref slicing is exact but insufficient; next exact path requires compiled/vectorized formula
   execution or a much narrower dependency slice.
+
+## Phase 35: Scenario Rule Engine and Valid-Domain Audit
+
+GitHub parent issue: #249.
+
+Branch: `feature/p35-scenario-rule-engine`.
+
+Status: active.
+
+Goal: implement a status-aware scenario rule engine and quantify how the proposed consistency rules
+affect the exact sample dataset and the 10-control reduced domain.
+
+Tasks:
+
+- [ ] P35.1 Implement a status-aware scenario rule engine and tests. Child issue: #250.
+- [ ] P35.2 Audit the exact dataset and enumerate the reduced valid domain. Child issue: #251.
+- [ ] P35.3 Document findings, open the PR, and close Phase 35. Child issue: #252.
+
+Scope:
+
+- Typed rule loading and condition evaluation.
+- Custom-table requirement checks.
+- Approved, proposed, and rejected rule semantics.
+- Audit of 201 exact samples.
+- Enumeration of the 10-control reduced domain.
+- Decision-ready report for FABLE experts.
+
+Out of scope:
+
+- Declaring proposed rules authoritative.
+- New surrogate or optimizer representation.
+- Production UI integration.
+
+Architecture notes:
+
+- Proposed rules warn in exploratory mode and do not silently block.
+- Approved hard rules block; approved soft rules warn.
+- Rejected rules are ignored.
+- Table-population status comes from the prepared workbook spec.
+- Counts are reproducible and versioned by rule/spec hashes.
+
+Acceptance boundary:
+
+- The rule engine behaves differently for approved, proposed, and rejected rules.
+- The dataset audit and reduced-domain counts are reproducible.
+- The review package reports the measured impact.
+
+Verification evidence:
+
+- Pending Phase 35 execution.
+
+Closeout evidence:
+
+- Pending.
 
