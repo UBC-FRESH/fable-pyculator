@@ -97,10 +97,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   The exact three-way candidate (`live_scen=HighGrowth`, `crop_scen=HighGrowth`,
   `affor_scen=BonnChallenge+`) reaches 3,301.11 kcal and 108.95 MtCO2e, dominating the Phase 37
   point. PR #265 merged as `9acc215`; parent #262 and children #263-#264 are closed.
-- Phase 39 is implemented on `feature/p39-candidate-neighborhood`: exact one-coordinate neighborhood
-  verification around the Phase 38 candidate found no strict dominator; 30 exact evaluations,
-  2 rule-rejected, 0 errors, 321.6 s, 11 exact ties. The candidate is a local Pareto point. Parent
-  #266 and child #267 are mapped; PR #268 and closeout remain.
+- Phase 39 is closed: exact one-coordinate neighborhood verification around the Phase 38 candidate
+  found no strict dominator; 30 exact evaluations, 2 rule-rejected, 0 errors, 321.6 s, 11 exact ties.
+  The candidate is a local Pareto point. PR #268 merged as `44b9ab5`; parent #266 and child #267 are
+  closed. Docs build passed; the GitHub Pages deploy job timed out in `finished_file_sync`.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3082,11 +3082,15 @@ Implementation evidence:
 
 Verification evidence:
 
-- Full test suite and docs build to be rerun after the report and PR are prepared.
+- Full suite: 219 passed, 16 skipped.
+- Docs build and theme artifact verification passed.
+- Post-merge Test workflow passed.
+- Post-merge Docs Pages deploy timed out in `finished_file_sync` on the initial run and on retry;
+  this is a GitHub Pages infrastructure failure, not a docs build failure.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #268 squash-merged as `44b9ab5`; parent #266 and child #267 closed.
 
 ## Phase 39: Exact Candidate Neighborhood Verification
 
@@ -3094,9 +3098,9 @@ GitHub parent issue: #266.
 
 Branch: `feature/p39-candidate-neighborhood`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #268.
+Pull request: #268 (merged as `44b9ab5`).
 
 Goal: exact-check the immediate one-coordinate neighborhood of the Phase 38 candidate and verify that
 no single-coordinate neighbor strictly dominates it.
