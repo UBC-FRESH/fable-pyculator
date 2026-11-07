@@ -29,6 +29,10 @@ This file records completed project work in chronological order.
   web app entry point.
 - Created the GitHub prerelease `v0.1.0a5` with release notes and the workflow-built wheel/sdist:
   https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a5
+- Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
+  merged them in PR #232 (`bd7cd0c`). The checker detects the live
+  `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
+  blocked on an Access service token or approved health bypass plus host update access.
 
 ## 2026-11-06
 

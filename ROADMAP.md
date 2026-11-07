@@ -61,11 +61,11 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   `42348922051` passed, tag `v0.1.0a5` triggered PyPI workflow `42349225029`, and a clean PyPI
   install of the wheel and web extra imported `0.1.0a5`. The GitHub prerelease is
   https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a5 with the wheel and sdist attached.
-- Phase 31 is active on `feature/p31-live-deployment`: the public deployment at
-  `fable-pyculator.01101.dev` is behind Cloudflare Access. Service-token-aware verification tooling
-  and the upgrade runbook are implemented; the live version check and upgrade remain blocked on an
-  Access token or approved health bypass plus the host update path. Parent #228 and child issues
-  #229-#231 are mapped; PR #232 is open.
+- Phase 31 is partially complete: service-token-aware verification tooling and the Cloudflare Access
+  upgrade runbook are merged via PR #232 (`bd7cd0c`), with post-merge Test/Docs Pages passing.
+  P31.3 remains open because the live deployment at `fable-pyculator.01101.dev` redirects every
+  path, including `/api/health`, to Cloudflare Access; an Access service token or approved health
+  bypass plus the host update path are still required. Parent #228 remains open.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2461,9 +2461,9 @@ GitHub parent issue: #228.
 
 Branch: `feature/p31-live-deployment`.
 
-Status: pr-open (P31.3 blocked on external access).
+Status: pr-open (P31.1/P31.2 merged; P31.3 blocked on external access).
 
-Pull request: #232.
+Pull request: #232 (merged as `bd7cd0c`).
 
 Goal: verify and upgrade the existing public deployment at `fable-pyculator.01101.dev`, which is
 protected by Cloudflare Access, and make the access and upgrade path reproducible.
@@ -2521,7 +2521,8 @@ Verification evidence:
 
 Closeout evidence:
 
-- P31.1 and P31.2 complete.
+- P31.1 and P31.2 are complete and were merged in PR #232 (`bd7cd0c`); post-merge Test workflow
+  `42350786820` and Docs Pages workflow `42350786800` passed.
 - P31.3 remains blocked on a Cloudflare Access service token or approved health bypass, plus the
   host update path for installing `0.1.0a5`.
 
