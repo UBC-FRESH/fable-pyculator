@@ -109,7 +109,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 41 is implemented on `feature/p41-pareto-viewer`: the portal now serves a tracked exact
   frontier artifact (160 points, 15 unique Pareto objectives) and has an Optimization page with a
   Three.js solution cloud, X/Y/Z/colour/size mapping, quality-floor and exact-front filters, pinning,
-  comparison, and Workbench prefill. Parent #273 and children #274-#275 are mapped; PR and closeout
+  comparison, and Workbench prefill. Parent #273 and children #274-#275 are mapped; PR #276 and closeout
   remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
@@ -3230,7 +3230,9 @@ GitHub parent issue: #273.
 
 Branch: `feature/p41-pareto-viewer`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #276.
 
 Goal: port the reference multi-dimensional Pareto solution-space interaction into the FABLE portal,
 backed by the exact Phases 37-40 frontier.
