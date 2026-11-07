@@ -62,9 +62,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   install of the wheel and web extra imported `0.1.0a5`. The GitHub prerelease is
   https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a5 with the wheel and sdist attached.
 - Phase 31 is active on `feature/p31-live-deployment`: the public deployment at
-  `fable-pyculator.01101.dev` is behind Cloudflare Access, so tooling and documentation are being
-  added to verify its version, prepared state, and artifact checksums before upgrading it to
-  `0.1.0a5`. Parent issue #228 and child issues #229-#231 are mapped.
+  `fable-pyculator.01101.dev` is behind Cloudflare Access. Service-token-aware verification tooling
+  and the upgrade runbook are implemented; the live version check and upgrade remain blocked on an
+  Access token or approved health bypass plus the host update path. Parent #228 and child issues
+  #229-#231 are mapped.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2467,8 +2468,8 @@ protected by Cloudflare Access, and make the access and upgrade path reproducibl
 
 Tasks:
 
-- [ ] P31.1 Add Cloudflare Access-aware deployment verification tooling. Child issue: #229.
-- [ ] P31.2 Document Cloudflare Access, health policy, and upgrade runbook. Child issue: #230.
+- [x] P31.1 Add Cloudflare Access-aware deployment verification tooling. Child issue: #229.
+- [x] P31.2 Document Cloudflare Access, health policy, and upgrade runbook. Child issue: #230.
 - [ ] P31.3 Verify and upgrade the live deployment to 0.1.0a5. Child issue: #231.
 
 Scope:
@@ -2498,11 +2499,27 @@ Acceptance boundary:
 - The docs explain the health-policy tradeoff and the upgrade sequence.
 - The live deployment reports `0.1.0a5` and passes an authenticated smoke test.
 
+Implementation evidence:
+
+- Added `scripts/check_deployed_portal.py`, which checks `/api/health`, `/api/agent`, `/`, and
+  `/api/artifacts`, supports Cloudflare Access service-token headers and optional portal Basic auth,
+  and enforces `--expect-version`.
+- Documented Cloudflare Access, the health-bypass tradeoff, service-token use, and the live upgrade
+  runbook in `docs/guides/web-deployment.rst`; linked the checker from the README.
+- The unauthenticated live check correctly detects the Cloudflare Access redirect at
+  `https://fable-pyculator.01101.dev/api/health` and reports that a service token is required.
+
 Verification evidence:
 
-- Pending Phase 31 execution.
+- `.venv/bin/python -m pytest -q` passed with `206` tests and `15` skips.
+- `.venv/bin/python -m ruff check .` passed.
+- Sphinx warning-as-error build and Read the Docs theme check passed.
+- `scripts/check_deployed_portal.py --url https://fable-pyculator.01101.dev --json
+  --allow-access-redirect` detected `access_required: true`.
 
 Closeout evidence:
 
-- Pending.
+- P31.1 and P31.2 complete.
+- P31.3 remains blocked on a Cloudflare Access service token or approved health bypass, plus the
+  host update path for installing `0.1.0a5`.
 

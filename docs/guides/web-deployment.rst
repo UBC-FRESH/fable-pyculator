@@ -94,6 +94,49 @@ The example nginx config terminates TLS and proxies to loopback. If the portal i
 is on the same host. Set a long ``proxy_read_timeout`` because generated-model runs and prepared
 specs can take minutes.
 
+Cloudflare Access
+-----------------
+
+The public deployment may sit behind Cloudflare Access, as ``fable-pyculator.01101.dev`` does. In
+that case every path, including ``/api/health``, redirects to the Access login unless a service token
+or an Access bypass policy is used.
+
+Use a service token for verification:
+
+.. code-block:: bash
+
+   export CF_ACCESS_CLIENT_ID='...'
+   export CF_ACCESS_CLIENT_SECRET='...'
+   python scripts/check_deployed_portal.py \
+     --url https://fable-pyculator.01101.dev \
+     --expect-version 0.1.0a5
+
+The checker prints the deployed version, prepared models, assistant state, and artifact checksum
+states. It never writes credentials to disk.
+
+If the portal also has built-in HTTP Basic auth, set ``FABLE_PORTAL_AUTH_USER`` and
+``FABLE_PORTAL_AUTH_PASSWORD``. Both Access and Basic auth must accept the request.
+
+A health-check bypass is an alternative for monitoring:
+
+- create an Access policy that allows ``GET /api/health`` without login;
+- leave every other path protected;
+- accept that the version and prepared-model metadata in the health response become public;
+- verify the bypass with a plain ``curl`` from the monitoring host.
+
+Do not bypass the whole site merely to make health checks work.
+
+Live upgrade runbook
+--------------------
+
+1. Run ``scripts/check_deployed_portal.py`` and record the current version and artifact states.
+2. Install the published release into the service environment:
+   ``python -m pip install --pre 'fable-pyculator[web]==0.1.0a5'``.
+3. Restart the service or systemd unit.
+4. Re-run the checker with ``--expect-version 0.1.0a5``.
+5. Log in through Access and run one prepared-model scenario.
+6. Record the deployment URL, version, commit/tag, workflow runs, and any limitations.
+
 Security boundaries
 -------------------
 
