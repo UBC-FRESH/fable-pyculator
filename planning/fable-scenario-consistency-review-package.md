@@ -91,6 +91,32 @@ The goal is not to declare one “correct” scenario. It is to distinguish:
 | LIVE-DENS-001 | warning | low | high density + no livestock growth | Plausible or inconsistent? |
 | IRR-CROP-001 | warning | low | high irrigation + no crop growth | Plausible or inconsistent? |
 
+## Measured audit (provisional)
+
+The rule engine is implemented. Two modes were run against the 201-sample exact dataset and the
+10-control reduced domain:
+
+| Mode | Exact samples valid | Reduced domain valid | Reduced domain invalid |
+|---|---:|---:|---:|
+| exploratory (proposed rules warn only) | 201 / 201 | 725,760 / 725,760 | 0 |
+| draft-enforced (proposed hard rules block) | 134 / 201 | 466,560 / 725,760 (64.3%) | 259,200 |
+
+In exploratory mode, 142 of 201 samples carry at least one proposed warning and 535,680 of the
+725,760 reduced-domain combinations are warning-only. No rule is active yet.
+
+Most frequent domain-level triggers (overlapping; do not sum):
+
+- `TRADE-FIX-001`: 226,800
+- `NARRATIVE-SSP-001`: 207,360
+- `CUSTOM-IMPORT-001`: 181,440
+- `CUSTOM-DIET-001`: 103,680
+- `LAND-AFFOR-001`: 80,640
+- `LIVE-DENS-001`: 60,480
+
+So the proposed hard rules would remove about **35.7%** of the reduced domain if approved as written.
+Most of that reduction comes from custom-table requirements and trade/narrative rules. The final
+count depends entirely on expert decisions.
+
 ## Example scenarios for discussion
 
 These are review examples, not approved scenarios.
@@ -202,7 +228,10 @@ When the CSV is complete:
 - Hard structural rules: 6
 - Soft warnings: 12
 - Expert decisions recorded: 0
-- Rule engine: not implemented
-- Valid-domain count after rules: not yet computed
+- Rule engine: implemented (`src/fable_pyculator/scenario_rules.py`)
+- Audit script: `scripts/evaluate_scenario_rules.py`
+- Exploratory domain: 725,760 valid, 535,680 warning-only
+- Draft-enforced domain: 466,560 valid (64.3%), 259,200 invalid
+- Rule-engine hashes and full counts: `tmp/fable-rules-audit/`
 
 Do not treat any rule as active until it is marked `approved` in the registry.

@@ -79,9 +79,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Prepared a compact expert-review package for the FABLE scenario consistency rules, including a
   fillable CSV worksheet and concrete example scenarios; awaiting Hisham/FABLE expert decisions before
   implementing the rule engine or choosing the next optimizer representation.
-- Phase 35 is active on `feature/p35-scenario-rule-engine`: implementing a status-aware rule engine,
-  auditing the 201 exact samples, and enumerating the 10-control valid domain under proposed rules.
-  Parent #249 and child issues #250-#252 are mapped.
+- Phase 35 is implemented on `feature/p35-scenario-rule-engine`: the status-aware rule engine,
+  dataset audit, and 10-control domain enumeration are complete. Proposed rules warn in exploratory
+  mode (725,760 valid, 535,680 warning-only); if draft-enforced, 466,560 remain valid (64.3%).
+  Parent #249 and child issues #250-#252 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2808,8 +2809,8 @@ affect the exact sample dataset and the 10-control reduced domain.
 
 Tasks:
 
-- [ ] P35.1 Implement a status-aware scenario rule engine and tests. Child issue: #250.
-- [ ] P35.2 Audit the exact dataset and enumerate the reduced valid domain. Child issue: #251.
+- [x] P35.1 Implement a status-aware scenario rule engine and tests. Child issue: #250.
+- [x] P35.2 Audit the exact dataset and enumerate the reduced valid domain. Child issue: #251.
 - [ ] P35.3 Document findings, open the PR, and close Phase 35. Child issue: #252.
 
 Scope:
@@ -2841,11 +2842,30 @@ Acceptance boundary:
 - The dataset audit and reduced-domain counts are reproducible.
 - The review package reports the measured impact.
 
+Implementation evidence:
+
+- Added `src/fable_pyculator/scenario_rules.py`: typed rule loading, condition evaluation, per-key
+  custom-table checks, approved/proposed/rejected semantics, and domain enumeration.
+- Added `scripts/evaluate_scenario_rules.py` and focused tests.
+- Updated the expert review package with measured counts.
+
+Audit evidence:
+
+- 201 exact samples: exploratory 201 valid / 0 invalid; draft-enforced 134 valid / 67 invalid.
+- 10-control domain: 725,760 total; exploratory 725,760 valid / 535,680 warning-only;
+  draft-enforced 466,560 valid (64.3%) / 259,200 invalid / 276,480 warning-only.
+- Top domain triggers: trade-fix 226,800; narrative SSP 207,360; custom import 181,440; custom diet
+  103,680; land-affor 80,640; live-density 60,480 (overlapping).
+
 Verification evidence:
 
-- Pending Phase 35 execution.
+- `.venv/bin/python -m pytest -q` passed with `211` tests and `16` skips.
+- `.venv/bin/python -m ruff check .` passed.
+- Sphinx warning-as-error build and Read the Docs theme check passed.
+- `scripts/evaluate_scenario_rules.py` produced `tmp/fable-rules-audit/exploratory.json` and
+  `draft_enforced.json`.
 
 Closeout evidence:
 
-- Pending.
+- Pending phase PR, CI, and review.
 
