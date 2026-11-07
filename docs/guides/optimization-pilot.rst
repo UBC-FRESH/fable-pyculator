@@ -242,14 +242,79 @@ Rule filtering improved GHG **ranking** from −0.50 to +0.50, but the absolute 
 did not produce a usable surrogate. Applying the rules changes which region the GA explores but does
 not fix the underlying approximation problem.
 
+Phase 37 exact narrow-domain optimization
+-----------------------------------------
+
+Phase 37 dropped the surrogate and evaluated a small policy domain exactly. The varied controls were
+`land_scen` (3 values), `diet_scen` (7), `fixtrade_scen` (2), and `livedens_scen` (3), for 126
+combinations. All other controls stayed at baseline.
+
+Under draft-enforced provisional rules, the 18 `diet_scen=MyDiet` combinations were rejected by
+`CUSTOM-DIET-001`; the remaining **108 combinations were run through the exact 2024 Pyculator** with
+zero errors. Runtime was **926.5 s** (15.4 min) with 24 workers.
+
+Land is invariant in this domain (896,559 ha), so the exact tradeoff is food versus GHG. The exact
+front has 13 unique objective triples (41 rows before collapsing duplicate `livedens` outcomes).
+
+Key exact points:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Case
+     - Land
+     - Diet
+     - Fix trade
+     - Live density
+     - Food (kcal)
+     - GHG (MtCO2e)
+   * - Max food
+     - NoDefor2030
+     - FatDiet
+     - No
+     - NoGrowth
+     - 3300.67
+     - 242.43
+   * - Weighted goal
+     - NoDefor2030
+     - FatDiet
+     - Yes
+     - NoGrowth
+     - 3288.73
+     - 121.23
+   * - Min GHG
+     - NoExpansion
+     - EATLancetAverage
+     - Yes
+     - HighGrowth
+     - 1869.64
+     - 59.56
+
+The most important exact result is the trade-fix comparison. Holding `land_scen=NoDefor2030`,
+`diet_scen=FatDiet`, and `livedens_scen=NoGrowth` fixed, changing `fixtrade_scen` from `No` to `Yes`
+moves food from 3300.67 to 3288.73 kcal (**−0.36%**) and GHG from 242.43 to 121.23 MtCO2e
+(**−50.0%**). This is an exact result, not a surrogate prediction.
+
+The exact best-GHG point trades away 43.4% of food to cut GHG by 75.4% relative to the max-food
+point. Of the 108 valid scenarios, 60 carry at least one provisional warning: 36
+`LIVE-DENS-001` and 36 `NARRATIVE-SSP-001` hits.
+
+The surrogate had predicted 62.6 MtCO2e for a similar high-food trade-fix candidate, while the
+exact value is 121.23 MtCO2e. The exact run confirms the candidate direction but also confirms that
+the surrogate's absolute GHG prediction is unusable.
+
+This result is **limited to the four varied controls**, with all other controls at baseline. It is
+not a full FABLE optimization and the provisional rules are not expert-approved.
+
 Next step
 ---------
 
-Do not scale this surrogate further without a structural change. The useful paths are:
+Do not scale the surrogate further without a structural change. The useful paths are now:
 
-1. Build a reduced exact evaluator for the objective slice (best fidelity).
-2. Add physics-informed features and out-of-distribution rejection, not just more random samples.
-3. Optimize a narrower policy question with fewer interacting controls.
+1. Run an exact local sensitivity around the Phase 37 weighted-goal point for the remaining controls.
+2. Expand the exact narrow domain only when a specific policy question requires it, such as adding
+   `affor_scen`, `scen_exports`, or `crop_scen`.
+3. Build a compiled/vectorized exact evaluator only if broader exact search is required.
 4. Keep exact top-K replay as a hard gate regardless.
 
 The detailed scenario-consistency rule surface and the extensible coefficient/switch architecture are
@@ -273,3 +338,12 @@ Commands
      --version 2024 \
      --selections-file tmp/fable-optimization/replay/candidate_1.selections.json \
      --output tmp/fable-optimization/replay/candidate_1.json
+
+   .venv/bin/python scripts/filter_optimization_dataset.py \
+     --dataset tmp/fable-optimization-p33/dataset/dataset.json \
+     --output tmp/fable-optimization-p36/dataset-provisional.json \
+     --rejected-output tmp/fable-optimization-p36/rejected.json
+
+   .venv/bin/python scripts/fable_exact_optimization.py \
+     --version 2024 --workers 24 \
+     --output-dir tmp/fable-exact-optimization

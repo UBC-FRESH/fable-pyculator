@@ -24,7 +24,7 @@ for _candidate in Path(__file__).resolve().parents:
         sys.path.insert(0, str(_candidate / "src"))
         break
 
-__all__ = ["main", "pareto_front", "weighted_ranking"]
+__all__ = ["main", "pareto_front", "unique_objective_points", "weighted_ranking"]
 
 OBJECTIVES = ("food_total_kcal_feas", "ghg_total_co2e", "land_total_area")
 # Food is maximized; GHG and land are minimized.
@@ -178,6 +178,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if valid:
         front = pareto_front(valid)
+        unique_front = unique_objective_points(front)
         ranked = weighted_ranking(valid)
         report = {
             "version": args.version,
@@ -192,7 +193,8 @@ def main(argv: list[str] | None = None) -> int:
             "weights": DEFAULT_WEIGHTS,
             "valid_count": len(valid),
             "pareto_count": len(front),
-            "pareto": front,
+            "pareto_unique_count": len(unique_front),
+            "pareto": unique_front,
             "weighted_top": ranked[:20],
             "best": {
                 "food": max(valid, key=lambda row: _value(row, "food_total_kcal_feas")),
@@ -238,6 +240,20 @@ def pareto_front(samples: list[dict[str, Any]]) -> list[dict[str, Any]]:
         front,
         key=lambda row: (-_value(row, "food_total_kcal_feas"), _value(row, "ghg_total_co2e")),
     )
+
+
+def unique_objective_points(samples: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Collapse samples that share the same rounded objective triple."""
+
+    seen: set[tuple[float, ...]] = set()
+    unique: list[dict[str, Any]] = []
+    for sample in samples:
+        key = tuple(round(_value(sample, name), 6) for name in OBJECTIVES)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(sample)
+    return unique
 
 
 def _dominates(left: dict[str, Any], right: dict[str, Any], objectives: list[str]) -> bool:

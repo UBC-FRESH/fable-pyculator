@@ -42,6 +42,19 @@ def test_pareto_front_maximizes_food_and_minimizes_ghg_and_land() -> None:
     assert [row["sample_id"] for row in front] == ["a", "b"]
 
 
+def test_unique_objective_points_collapses_duplicate_triples() -> None:
+    module = _load_module()
+    samples = [
+        _sample("a", 100.0, 50.0, 100.0),
+        _sample("b", 100.0, 50.0, 100.0),
+        _sample("c", 90.0, 40.0, 100.0),
+    ]
+
+    unique = module.unique_objective_points(samples)
+
+    assert [row["sample_id"] for row in unique] == ["a", "c"]
+
+
 def test_weighted_ranking_prefers_higher_food_and_lower_ghg() -> None:
     module = _load_module()
     samples = [
