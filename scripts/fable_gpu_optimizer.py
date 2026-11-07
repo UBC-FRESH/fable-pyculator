@@ -33,7 +33,13 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("need at least four exact samples to train the pilot surrogate")
     objective_names = tuple(samples[0]["objectives"])
     objectives = _parse_objectives(args.objective, objective_names)
-    X, Y, baseline = _encode(dataset, samples, controls, objectives)
+    variable_names = dataset.get("variable_controls")
+    if variable_names:
+        controls = [control for control in controls if control["name"] in set(variable_names)]
+    baseline_selections = dataset.get("baseline_selections") or {
+        control["name"]: control["default"] for control in controls
+    }
+    X, Y, baseline = _encode(dataset, samples, controls, objectives, baseline_selections)
     device = args.device if args.device != "auto" else ("cuda" if torch.cuda.is_available() else "cpu")
     result = _run(
         controls=controls,
@@ -41,12 +47,15 @@ def main(argv: list[str] | None = None) -> int:
         X=X,
         Y=Y,
         baseline=baseline,
+        baseline_selections=baseline_selections,
         population=args.population,
         generations=args.generations,
         epochs=args.epochs,
         top_k=args.top_k,
         seed=args.seed,
         device=device,
+        ensemble_size=args.ensemble_size,
+        uncertainty_penalty=args.uncertainty_penalty,
     )
     result.update(
         {
@@ -71,6 +80,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--epochs", type=int, default=800)
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("--ensemble-size", type=int, default=5)
+    parser.add_argument("--uncertainty-penalty", type=float, default=0.5)
     parser.add_argument("--device", default="auto", help="auto, cuda, cuda:0, or cpu")
     parser.add_argument(
         "--objective",
@@ -108,6 +119,7 @@ def _encode(
     samples: list[dict[str, Any]],
     controls: list[dict[str, Any]],
     objectives: list[dict[str, Any]],
+    baseline_selections: dict[str, Any],
 ) -> tuple[np.ndarray, np.ndarray, list[int]]:
     index = {
         control["name"]: {str(option): position for position, option in enumerate(control["options"])}
@@ -125,7 +137,10 @@ def _encode(
         [[float(sample["objectives"][objective["name"]]) for objective in objectives] for sample in samples],
         dtype=np.float64,
     )
-    baseline = [index[control["name"]][str(control["default"])] for control in controls]
+    baseline = [
+        index[control["name"]][str(baseline_selections.get(control["name"], control["default"]))]
+        for control in controls
+    ]
     return X, Y, baseline
 
 
@@ -136,12 +151,15 @@ def _run(
     X: np.ndarray,
     Y: np.ndarray,
     baseline: list[int],
+    baseline_selections: dict[str, Any],
     population: int,
     generations: int,
     epochs: int,
     top_k: int,
     seed: int,
     device: str,
+    ensemble_size: int,
+    uncertainty_penalty: float,
 ) -> dict[str, Any]:
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -168,14 +186,6 @@ def _run(
 
     x_tensor = torch.as_tensor(X, dtype=torch.long, device=device)
     y_tensor = torch.as_tensor(Y_norm, dtype=torch.float32, device=device)
-    model = nn.Sequential(
-        nn.Linear(one_hot_size, 128),
-        nn.SiLU(),
-        nn.Linear(128, 128),
-        nn.SiLU(),
-        nn.Linear(128, len(objectives)),
-    ).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     order = torch.randperm(len(X), device=device)
     split = max(1, int(len(X) * 0.8))
     train_idx = order[:split]
@@ -188,18 +198,38 @@ def _run(
             one_hot[rows, offset + batch[:, column]] = 1.0
         return one_hot
 
-    for _ in range(epochs):
-        optimizer.zero_grad()
-        prediction = model(encode_batch(x_tensor))
-        loss = torch.mean((prediction - y_tensor) ** 2)
-        loss.backward()
-        optimizer.step()
-    with torch.no_grad():
-        predicted = model(encode_batch(x_tensor)).cpu().numpy()
+    models: list[nn.Module] = []
+    for member in range(max(1, ensemble_size)):
+        torch.manual_seed(seed + member)
+        model = nn.Sequential(
+            nn.Linear(one_hot_size, 128),
+            nn.SiLU(),
+            nn.Linear(128, 128),
+            nn.SiLU(),
+            nn.Linear(128, len(objectives)),
+        ).to(device)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        for _ in range(epochs):
+            optimizer.zero_grad()
+            prediction = model(encode_batch(x_tensor))
+            loss = torch.mean((prediction - y_tensor) ** 2)
+            loss.backward()
+            optimizer.step()
+        model.eval()
+        models.append(model)
+
+    def predict_batch(batch: torch.Tensor) -> tuple[np.ndarray, np.ndarray]:
+        with torch.no_grad():
+            predictions = np.stack([model(encode_batch(batch)).cpu().numpy() for model in models])
+        return predictions.mean(axis=0), predictions.std(axis=0)
+
+    predicted, predicted_std = predict_batch(x_tensor)
     metrics = {
         "train_mse": float(np.mean((predicted[train_idx.cpu().numpy()] - Y_norm[train_idx.cpu().numpy()]) ** 2)),
         "validation_mse": float(np.mean((predicted[val_idx.cpu().numpy()] - Y_norm[val_idx.cpu().numpy()]) ** 2)),
         "rank_correlation": _mean_rank_correlation(predicted, Y_norm),
+        "ensemble_size": len(models),
+        "mean_ensemble_std": float(np.mean(predicted_std)),
         "objective_names": [objective["name"] for objective in objectives],
         "aspirations_normalized": aspirations.tolist(),
     }
@@ -218,9 +248,7 @@ def _run(
     best_loss = math.inf
 
     def loss_for(batch: torch.Tensor) -> torch.Tensor:
-        with torch.no_grad():
-            prediction = model(encode_batch(batch)).cpu().numpy()
-        normalized = prediction
+        normalized, spread = predict_batch(batch)
         deviations = []
         for index, objective in enumerate(objectives):
             if objective["direction"] == "max":
@@ -234,6 +262,7 @@ def _run(
                 tie_break = deviation
             deviations.append(deviation + 0.001 * tie_break)
         scalar = np.sum(np.stack(deviations, axis=1) * weights, axis=1)
+        scalar = scalar + uncertainty_penalty * np.sum(spread * weights, axis=1)
         return torch.as_tensor(scalar, dtype=torch.float32, device=device)
 
     for generation in range(generations):
@@ -262,8 +291,7 @@ def _run(
     order = torch.argsort(final_losses)
     top: list[dict[str, Any]] = []
     seen: set[tuple[int, ...]] = set()
-    with torch.no_grad():
-        predictions = model(encode_batch(population_tensor)).cpu().numpy()
+    predictions, prediction_std = predict_batch(population_tensor)
 
     def normalized_to_raw(values: np.ndarray) -> list[float]:
         return (values * y_span + y_min).tolist()
@@ -273,14 +301,17 @@ def _run(
         if genome in seen:
             continue
         seen.add(genome)
-        selections = {control["name"]: control["options"][option] for control, option in zip(controls, genome)}
+        selections = dict(baseline_selections)
+        selections.update({control["name"]: control["options"][option] for control, option in zip(controls, genome)})
         raw = normalized_to_raw(predictions[index])
+        raw_std = (prediction_std[index] * y_span).tolist()
         top.append(
             {
                 "selection_indices": list(genome),
                 "selections": selections,
                 "surrogate_goal": float(final_losses[index].item()),
                 "surrogate_objectives": {objective["name"]: value for objective, value in zip(objectives, raw)},
+                "surrogate_std": {objective["name"]: value for objective, value in zip(objectives, raw_std)},
             }
         )
         if len(top) >= top_k:

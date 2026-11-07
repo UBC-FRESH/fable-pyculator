@@ -69,6 +69,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   extrapolates badly and is not suitable for optimization decisions. PR #237 merged as `cefc895`;
   the negative result and the next-step conditions are recorded. Parent #233 and P32.3 #236 are
   closed.
+- Phase 33 is implemented on `feature/p33-optimization-scaling`: the 10-control screen, 201 exact
+  samples, 5-member ensemble, and exact replay all completed. Food scale improved to 0.8% error, but
+  GHG local ranking remained wrong (−0.5 rank correlation) and the exact best candidate was ranked
+  last. Parent #238 and child issues #239-#242 are mapped; PR #243 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2617,4 +2621,80 @@ Closeout evidence:
 - Parent #233 and P32.3 #236 are closed with the negative-result pilot evidence.
 - Do not scale this surrogate without a reduced decision space, more exact samples, and uncertainty
   handling.
+
+## Phase 33: FABLE Optimization Scaling
+
+GitHub parent issue: #238.
+
+Branch: `feature/p33-optimization-scaling`.
+
+Status: pr-open.
+
+Pull request: #243.
+
+Goal: scale the surrogate-assisted optimization pilot from a plumbing test to a defensible
+reduced-space experiment: screen control effects, freeze 8–12 variables, collect 200–400 exact
+samples, add ensemble uncertainty, and exact-replay the best candidates.
+
+Tasks:
+
+- [x] P33.1 Screen control sensitivity and freeze the reduced decision space. Child issue: #239.
+- [x] P33.2 Collect a larger exact sample set over the reduced controls. Child issue: #240.
+- [x] P33.3 Add ensemble uncertainty and rerun the GPU surrogate. Child issue: #241.
+- [ ] P33.4 Exact replay, compare, document, and close Phase 33. Child issue: #242.
+
+Scope:
+
+- Exact one-at-a-time control screening.
+- Reduced decision space with fixed baseline for excluded controls.
+- Larger exact sample collection.
+- Ensemble surrogate and uncertainty-aware GPU GA.
+- Exact top-K replay and comparison.
+
+Out of scope:
+
+- Claiming exact optimization over the full FABLE state space.
+- Continuous scenario-definition variables in this phase.
+- Production UI integration.
+
+Architecture notes:
+
+- Exact Pyculator remains the oracle and final authority.
+- The reduced space must be explicit and reproducible.
+- Ensemble spread is an uncertainty signal, not a correctness proof.
+- A negative result is acceptable if it is measured and documented.
+
+Acceptance boundary:
+
+- The reduced control set is frozen from exact one-at-a-time effects.
+- At least 200 exact samples complete or the shortfall is documented.
+- The ensemble GA reports uncertainty and exact top-K replay.
+- The phase records whether to continue, change approach, or stop.
+
+Implementation evidence:
+
+- Added exact one-at-a-time screening and a reduced-control sample mode.
+- Added `scripts/fable_optimization_screen.py` and a 10-control reduced space.
+- Added 5-member ensemble uncertainty scoring to `scripts/fable_gpu_optimizer.py`.
+- Added the draft scenario-consistency rule surface and extensible coefficient/switch architecture in
+  `planning/fable-scenario-consistency-rules.md` and `.yaml`.
+
+Pilot evidence:
+
+- Screen: 25/25 exact runs, 10 controls selected.
+- Reduced sample: 201/201 exact runs, 24 workers, ~23.8 min wall; mean exact runtime ~177 s.
+- Ensemble: 5 members, 512 population, 400 generations, CUDA; training rank correlation 0.95.
+- Exact top-five: food mean relative error 0.8%, GHG 23.6%; food rank correlation −0.60, GHG −0.50.
+- The exact best GHG candidate was ranked last by the surrogate; random validation did not cover the
+  high-food/high-GHG extrapolation region.
+
+Verification evidence:
+
+- Full regression suite and docs build to be rerun after the Phase 33 commits.
+- Exact screen, sample, ensemble, and exact replay artifacts are present under
+  `tmp/fable-optimization-p33/`.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

@@ -126,19 +126,86 @@ The surrogate quality does **not** support optimization claims:
 
 This is exactly why the final exact replay is mandatory.
 
+Phase 33 scaling result
+-----------------------
+
+Phase 33 reran the experiment with a reduced decision space and a larger exact sample:
+
+- one-at-a-time screen over all 24 controls;
+- 10 controls selected: `land_scen`, `diet_scen`, `fixtrade_scen`, `livedens_scen`,
+  `scen_exports`, `crop_scen`, `scen_imports`, `affor_scen`, `gwp_scen`, `live_scen`;
+- 201 exact samples (baseline plus 200 random reduced-space samples);
+- 24 workers, about 24 minutes wall time;
+- 5-member MLP ensemble, 512 population, 400 generations, CUDA.
+
+Ensemble fit looked good in random validation:
+
+- training rank correlation: 0.95;
+- validation MSE: about `7.6e-06`.
+
+Exact replay of the top five:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 8 16 16 16 16
+
+   * - Rank
+     - Exact food
+     - Exact GHG
+     - Surrogate food
+     - Surrogate GHG
+   * - 1
+     - 3,297.0
+     - 97.40
+     - 3,338.8
+     - 78.40
+   * - 2
+     - 3,297.0
+     - 105.60
+     - 3,337.9
+     - 75.24
+   * - 3
+     - 3,297.0
+     - 118.21
+     - 3,320.1
+     - 77.74
+   * - 4
+     - 3,303.5
+     - 96.67
+     - 3,304.5
+     - 77.26
+   * - 5
+     - 3,297.0
+     - 94.16
+     - 3,317.9
+     - 79.64
+
+Exact-vs-surrogate error for the top five:
+
+- food mean relative error: **0.8%**;
+- GHG mean relative error: **23.6%**;
+- food rank correlation: **-0.60**;
+- GHG rank correlation: **-0.50**;
+- land is effectively constant.
+
+The larger sample fixed the global food scale well but still failed on the local GHG ranking. The
+exact best candidate was ranked last by the surrogate. Random validation did not cover the
+high-food, high-GHG extrapolation region reached by the GA. Ensemble spread (roughly 8–16 MtCO2e)
+also understated the actual errors.
+
 Next step
 ---------
 
-Do not scale the current surrogate. First:
+Do not scale this surrogate further without a structural change. The useful paths are:
 
-1. Reduce the decision vector to the 8–12 controls with measurable effects.
-2. Use a space-filling design with at least 200–500 exact samples.
-3. Use an ensemble or uncertainty-aware surrogate and reject out-of-distribution candidates.
-4. Keep exact top-K replay as a hard gate.
-5. Compare against a reduced exact evaluator before investing in a production UI.
+1. Build a reduced exact evaluator for the objective slice (best fidelity).
+2. Add physics-informed features and out-of-distribution rejection, not just more random samples.
+3. Optimize a narrower policy question with fewer interacting controls.
+4. Keep exact top-K replay as a hard gate regardless.
 
-If those steps do not produce useful exact regret, the better path is a reduced exact evaluator or a
-narrower policy optimization problem, not a larger black-box surrogate.
+The detailed scenario-consistency rule surface and the extensible coefficient/switch architecture are
+in `planning/fable-scenario-consistency-rules.md` and
+`planning/fable-scenario-consistency-rules.yaml`.
 
 Commands
 --------

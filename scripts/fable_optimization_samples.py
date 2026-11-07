@@ -51,18 +51,62 @@ def main(argv: list[str] | None = None) -> int:
         for control in spec.selection_controls
     ]
     baseline = {control["name"]: control["default"] for control in controls}
-    scenarios: list[dict[str, object]] = [{"sample_id": "baseline", "selections": baseline}]
-    seen = {json.dumps(baseline, sort_keys=True)}
+    selected_names = [control["name"] for control in controls]
+    if args.controls_file is not None:
+        payload = json.loads(args.controls_file.read_text(encoding="utf-8"))
+        selected_names = payload.get("controls", payload) if isinstance(payload, dict) else payload
+        if not isinstance(selected_names, list) or not all(isinstance(name, str) for name in selected_names):
+            raise ValueError("controls file must contain a JSON array of control names")
+        known = {control["name"] for control in controls}
+        unknown = sorted(set(selected_names) - known)
+        if unknown:
+            raise ValueError(f"unknown controls: {', '.join(unknown)}")
+    selected_controls = [control for control in controls if control["name"] in set(selected_names)]
     rng = random.Random(args.seed)
-    attempts = 0
-    while len(scenarios) < args.count + 1 and attempts < args.count * 100:
-        attempts += 1
-        selections = {control["name"]: rng.choice(control["options"]) for control in controls}
-        key = json.dumps(selections, sort_keys=True)
-        if key in seen:
-            continue
-        seen.add(key)
-        scenarios.append({"sample_id": f"sample_{len(scenarios):03d}", "selections": selections})
+    scenarios: list[dict[str, object]] = [
+        {
+            "sample_id": "baseline",
+            "sample_kind": "baseline",
+            "selections": baseline,
+        }
+    ]
+    seen = {json.dumps(baseline, sort_keys=True)}
+    if args.design == "one-at-a-time":
+        for control in selected_controls:
+            alternatives = [option for option in control["options"] if option != control["default"]]
+            if not alternatives:
+                continue
+            variant = rng.choice(alternatives)
+            selections = dict(baseline)
+            selections[control["name"]] = variant
+            scenarios.append(
+                {
+                    "sample_id": f"screen_{control['name']}",
+                    "sample_kind": "one-at-a-time",
+                    "control_name": control["name"],
+                    "baseline_value": control["default"],
+                    "variant_value": variant,
+                    "selections": selections,
+                }
+            )
+    else:
+        attempts = 0
+        while len(scenarios) < args.count + 1 and attempts < args.count * 100:
+            attempts += 1
+            selections = dict(baseline)
+            for control in selected_controls:
+                selections[control["name"]] = rng.choice(control["options"])
+            key = json.dumps(selections, sort_keys=True)
+            if key in seen:
+                continue
+            seen.add(key)
+            scenarios.append(
+                {
+                    "sample_id": f"sample_{len(scenarios):03d}",
+                    "sample_kind": "random",
+                    "selections": selections,
+                }
+            )
 
     for scenario in scenarios:
         path = selections_dir / f"{scenario['sample_id']}.json"
@@ -101,6 +145,9 @@ def main(argv: list[str] | None = None) -> int:
             }
         payload = json.loads(output_path.read_text(encoding="utf-8"))
         payload["sample_id"] = sample_id
+        for key, value in scenario.items():
+            if key not in {"sample_id", "selections"}:
+                payload[key] = value
         return payload
 
     samples: list[dict[str, object]] = []
@@ -116,7 +163,10 @@ def main(argv: list[str] | None = None) -> int:
         "version": args.version,
         "workbook": str(paths.workbook),
         "generated_model": str(paths.generated_model),
+        "design": args.design,
         "controls": controls,
+        "variable_controls": selected_names,
+        "baseline_selections": baseline,
         "samples": samples,
     }
     dataset_path = output_dir / "dataset.json"
@@ -134,6 +184,18 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--workers", type=int, default=16, help="Concurrent exact model workers.")
     parser.add_argument("--seed", type=int, default=7, help="Sampling seed.")
     parser.add_argument("--timeout", type=float, default=900.0, help="Per-sample timeout in seconds.")
+    parser.add_argument(
+        "--design",
+        choices=("random", "one-at-a-time"),
+        default="random",
+        help="Random space-filling samples or one non-default variant per control.",
+    )
+    parser.add_argument(
+        "--controls-file",
+        type=Path,
+        default=None,
+        help="Optional JSON array of control names to vary; others stay at baseline.",
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,
