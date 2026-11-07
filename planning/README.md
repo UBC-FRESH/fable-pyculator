@@ -16,3 +16,9 @@ Do not store original FABLE-C workbook binaries, generated Python models, raw ex
 private transcripts, or full validation reports here. Keep those under ignored `tmp/` paths unless
 the maintainer explicitly approves a small sanitized tracked artifact.
 
+Current review drafts:
+
+- `fable-scenario-consistency-rules.md`: proposed FABLE switch-consistency rules and the extensible
+  coefficient/switch architecture; expert review required.
+- `fable-scenario-consistency-rules.yaml`: machine-readable draft rule registry.
+
