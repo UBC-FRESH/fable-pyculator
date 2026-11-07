@@ -87,11 +87,11 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   survive draft-enforced filtering. The filtered ensemble improved GHG rank correlation to +0.50 but
   worsened absolute GHG error to 46.5%, so the surrogate remains unusable. PR #257 merged as
   `d7d446d`; parent #254 and children #255-#256 are closed.
-- Phase 37 is implemented on `feature/p37-narrow-exact-optimization`: the exact fallback over
-  `land_scen`, `diet_scen`, `fixtrade_scen`, and `livedens_scen` ran 108 valid combinations with zero
-  errors in 926.5 s. The exact weighted-goal point is NoDefor2030 / FatDiet / fixtrade Yes / NoGrowth
-  at 3,288.73 kcal and 121.23 MtCO2e; fixing trade (`fixtrade Yes`) cuts GHG by 50.0% for a 0.36%
-  food loss. Parent #258 and children #259-#260 are mapped; PR #261 and closeout remain.
+- Phase 37 is closed: the exact fallback over `land_scen`, `diet_scen`, `fixtrade_scen`, and
+  `livedens_scen` ran 108 valid combinations with zero errors in 926.5 s. The exact weighted-goal
+  point is NoDefor2030 / FatDiet / fixtrade Yes / NoGrowth at 3,288.73 kcal and 121.23 MtCO2e;
+  fixing trade (`fixtrade Yes`) cuts GHG by 50.0% for a 0.36% food loss. PR #261 merged as
+  `bc3f0f7`; parent #258 and children #259-#260 are closed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2953,9 +2953,9 @@ GitHub parent issue: #258.
 
 Branch: `feature/p37-narrow-exact-optimization`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #261.
+Pull request: #261 (merged as `bc3f0f7`).
 
 Goal: run every scenario in a narrow 4-control policy domain through the exact Pyculator and compute
 the exact Pareto and weighted-goal front. This is the exact fallback after the surrogate failed.

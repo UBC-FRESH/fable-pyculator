@@ -63,7 +63,8 @@ This file records completed project work in chronological order.
   `land_scen`, `diet_scen`, `fixtrade_scen`, and `livedens_scen`: 126 combinations, 18 rule-rejected,
   108 exact valid scenarios, zero errors, 926.5 s. The exact weighted-goal point is NoDefor2030 /
   FatDiet / fixtrade Yes / NoGrowth at 3,288.73 kcal and 121.23 MtCO2e; enabling trade-fix cuts GHG
-  by 50.0% for a 0.36% food loss in the narrow domain.
+  by 50.0% for a 0.36% food loss in the narrow domain. PR #261 merged as `bc3f0f7`; parent #258 and
+  children #259-#260 are closed.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
