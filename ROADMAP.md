@@ -105,7 +105,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   land/diet/trade interactions plus a combined exact frontier (169 points, 160 unique selections,
   15 unique Pareto objectives). Balanced pick is the Phase 38 candidate at 3,301.11 kcal / 108.95
   MtCO2e; food-first at GHG ≤ 110 picks the same point, and GHG-first at food ≥ 3,000 picks
-  3,290.23 kcal / 108.84 MtCO2e. Parent #269 and children #270-#271 are mapped; PR and closeout
+  3,290.23 kcal / 108.84 MtCO2e. Parent #269 and children #270-#271 are mapped; PR #272 and closeout
   remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
@@ -3162,7 +3162,9 @@ GitHub parent issue: #269.
 
 Branch: `feature/p40-exact-decision-frontier`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #272.
 
 Goal: fill key exact interaction gaps around the Phase 38 candidate and combine all exact points into
 a decision frontier with balanced, food-first, and GHG-first picks.
