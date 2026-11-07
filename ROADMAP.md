@@ -61,11 +61,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   `42348922051` passed, tag `v0.1.0a5` triggered PyPI workflow `42349225029`, and a clean PyPI
   install of the wheel and web extra imported `0.1.0a5`. The GitHub prerelease is
   https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a5 with the wheel and sdist attached.
-- Phase 31 is partially complete: service-token-aware verification tooling and the Cloudflare Access
-  upgrade runbook are merged via PR #232 (`bd7cd0c`), with post-merge Test/Docs Pages passing.
-  P31.3 remains open because the live deployment at `fable-pyculator.01101.dev` redirects every
-  path, including `/api/health`, to Cloudflare Access; an Access service token or approved health
-  bypass plus the host update path are still required. Parent #228 remains open.
+- Phase 31 is closed: service-token-aware verification tooling and the Cloudflare Access upgrade
+  runbook merged via PR #232 (`bd7cd0c`), with post-merge Test/Docs Pages passing. The user confirmed
+  that `fable-pyculator.01101.dev` serves the local `8768` process, which reports `0.1.0a5` with all
+  three models prepared; parent #228 and P31.3 #231 are closed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2461,7 +2460,7 @@ GitHub parent issue: #228.
 
 Branch: `feature/p31-live-deployment`.
 
-Status: pr-open (P31.1/P31.2 merged; P31.3 blocked on external access).
+Status: complete.
 
 Pull request: #232 (merged as `bd7cd0c`).
 
@@ -2472,7 +2471,7 @@ Tasks:
 
 - [x] P31.1 Add Cloudflare Access-aware deployment verification tooling. Child issue: #229.
 - [x] P31.2 Document Cloudflare Access, health policy, and upgrade runbook. Child issue: #230.
-- [ ] P31.3 Verify and upgrade the live deployment to 0.1.0a5. Child issue: #231.
+- [x] P31.3 Verify and upgrade the live deployment to 0.1.0a5. Child issue: #231.
 
 Scope:
 
@@ -2523,6 +2522,7 @@ Closeout evidence:
 
 - P31.1 and P31.2 are complete and were merged in PR #232 (`bd7cd0c`); post-merge Test workflow
   `42350786820` and Docs Pages workflow `42350786800` passed.
-- P31.3 remains blocked on a Cloudflare Access service token or approved health bypass, plus the
-  host update path for installing `0.1.0a5`.
+- The user confirmed that `fable-pyculator.01101.dev` serves the local `8768` process. Local health
+  reports `0.1.0a5` with all three models prepared; checksum states are 2021 verified, 2024 verified,
+  and 2020 unknown (no tracked checksum). Parent #228 and P31.3 #231 are closed.
 
