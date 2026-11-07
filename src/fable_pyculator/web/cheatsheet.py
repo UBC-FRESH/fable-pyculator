@@ -49,6 +49,7 @@ _FABLE_CODE = (
     "src/fable_pyculator/surface.py",
     "src/fable_pyculator/scenarios.py",
     "src/fable_pyculator/scenario_definitions.py",
+    "src/fable_pyculator/scenario_rules.py",
     "src/fable_pyculator/validation.py",
     "src/fable_pyculator/web/app.py",
     "src/fable_pyculator/web/service.py",

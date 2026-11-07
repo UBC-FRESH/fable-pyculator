@@ -50,6 +50,11 @@ This file records completed project work in chronological order.
 - Prepared the FABLE scenario-consistency expert review package: 18 proposed rules, a fillable
   decision CSV, priority questions, and concrete example scenarios, plus the extensible
   coefficient/switch architecture. No rule is active until expert review marks it approved.
+- Added a status-aware scenario rule engine (`scenario_rules.py` and
+  `scripts/evaluate_scenario_rules.py`). Exploratory mode treats proposed rules as warnings: all 201
+  samples valid and 725,760 reduced-domain combinations valid, with 535,680 warning-only. Draft
+  enforcement leaves 466,560 valid (64.3%) and 259,200 invalid. Counts and rule/spec hashes are in
+  `tmp/fable-rules-audit/`.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

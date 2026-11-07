@@ -19,6 +19,7 @@ rules:
       in: [MyDiet]
     require:
       table: scenarios_definition_diettarget
+      key_value: MyDiet
       non_null_columns: [target]
     message: "MyDiet requires populated DietTarget values."
     review_question: "Is DietTarget the authoritative custom diet table, and are there additional required columns?"
@@ -33,6 +34,7 @@ rules:
       in: [MyFoodLossScen]
     require:
       table: scenarios_definition_foodlosstarget
+      key_value: MyFoodLossScen
       non_null_columns: [Target]
     message: "MyFoodLossScen requires populated FoodLossTarget values."
     review_question: "Which FoodLossTarget columns are mandatory for an exact run?"
@@ -47,6 +49,7 @@ rules:
       in: [MyImportScen]
     require:
       table: scenarios_definition_impscentarget
+      key_value: MyImportScen
       non_null_columns: [ImportShare_2050]
     message: "MyImportScen requires populated ImpScenTarget values."
     review_question: "Does ImportDef also require explicit values, or are its defaults valid?"
@@ -61,6 +64,7 @@ rules:
       in: [MyExportScen, MyExportScen2, MyExportScen3]
     require:
       table: scenarios_definition_expscentarget
+      key_value: MyExportScen
       non_null_columns: [shift_2050]
     message: "Custom export scenarios require populated ExpScenTarget values."
     review_question: "Is shift_2050 or Exports_cur the authoritative custom input, and what distinguishes MyExportScen, MyExportScen2, and MyExportScen3?"
@@ -75,6 +79,7 @@ rules:
       in: [MyPHLossScen]
     require:
       table: scenarios_definition_phloss_target
+      key_value: MyPHLossScen
       non_null_columns: [RelTarget2050]
     message: "MyPHLossScen requires populated PHLoss_target values."
     review_question: "Is PhLossTarget_def also required?"
@@ -89,6 +94,7 @@ rules:
       in: [Custom]
     require:
       table: scenarios_definition_price_def
+      key_value: Custom
       non_null_columns: [Custom]
     message: "Custom prices require populated Price_Def custom CPI values."
     review_question: "Which price columns are authoritative for the exact model?"

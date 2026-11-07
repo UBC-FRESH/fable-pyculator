@@ -53,6 +53,12 @@ Scenario-Definition Patches
 .. automodule:: fable_pyculator.scenario_definitions
    :members:
 
+Scenario Consistency Rules
+--------------------------
+
+.. automodule:: fable_pyculator.scenario_rules
+   :members:
+
 Scenario Bundles
 ----------------
 
