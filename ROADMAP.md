@@ -75,7 +75,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   negative result and the consistency-rule draft are recorded. Parent #238 and P33.4 #242 are closed.
 - Phase 34 is implemented on `feature/p34-reduced-exact-evaluator`: the exact objective slice is
   validated but only 1.35× faster than the full model, so output-ref slicing is not enough for a
-  useful optimizer. Parent #244 and child issues #245-#247 are mapped; PR and closeout remain.
+  useful optimizer. Parent #244 and child issues #245-#247 are mapped; PR #248 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2715,7 +2715,9 @@ GitHub parent issue: #244.
 
 Branch: `feature/p34-reduced-exact-evaluator`.
 
-Status: active.
+Status: pr-open.
+
+Pull request: #248.
 
 Goal: build and validate an exact evaluator that computes only the objective/headline slice, then
 benchmark whether it is fast enough to replace or augment the surrogate in the optimization loop.
