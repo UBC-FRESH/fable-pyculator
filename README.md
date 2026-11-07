@@ -89,8 +89,10 @@ Open `http://127.0.0.1:8766`. The portal offers:
 
 Preparation needs the source workbook under the ignored
 `tmp/private-workbooks/<version>_Open_FABLECalculator.xlsx` path and either the decompressed or
-tracked compressed generated model. The portal decompresses the approved archive when needed and
-caches workbook discovery and saved runs under ignored `runtime/portal/` paths. Default headline
+tracked compressed generated model. The portal decompresses the approved archive when needed,
+verifies working models against the tracked checksum sidecars, and re-materializes a stale working
+model before preparation. It caches workbook discovery and saved runs under ignored `runtime/portal/`
+paths. Default headline
 curation is version-tolerant: 2020/2021 expose FOOD, LAND, GHG, and WATER; the 2024 Canada workbook
 exposes FOOD, LAND, and GHG because it has no `TotalResultsWF` water-footprint table. The published
 2024 `LAND[TOTAL]` formula contains `#REF!`; the portal can display a clearly labelled component sum
@@ -429,13 +431,12 @@ The Sphinx guide expands this into a full workflow under
 `docs/guides/2020-notebook-workflow.rst`, with validation boundaries recorded in
 `docs/guides/validation-scope.rst`.
 
-`fable-pyculator` is pre-release. The current alpha line is `0.1.0a4`; alpha releases must not be
+`fable-pyculator` is pre-release. The current alpha line is `0.1.0a5`; alpha releases must not be
 described as stable public API compatibility, full editable scenario-definition widgets, production
 readiness, or arbitrary country-calculator support. Generated-model equivalence claims are limited
-to the exact 2020 and 2021 public FABLE-C validation evidence recorded in the docs. Work after the
-`0.1.0a4` release adds the current FABLE matrix workflow automation surface plus a conservative
-scenario-definition patch surface that produces generated-model input overrides without mutating
-source workbooks.
+to the exact 2020, 2021, and 2024 evidence recorded in the docs. The `0.1.0a5` release adds the
+optional web portal, approved-artifact checksum verification, authenticated deployment staging, and
+the GitHub issue-filing assistant workflow on top of the existing notebook and FreshForge surfaces.
 
 The public API is intentionally small while the FABLE-specific conventions are being discovered from
 real country calculators.

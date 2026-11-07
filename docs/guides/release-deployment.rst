@@ -8,17 +8,21 @@ all been checked.
 Current Alpha Target
 --------------------
 
-The current alpha target is ``0.1.0a4`` with Git tag ``v0.1.0a4``.
+The current alpha target is ``0.1.0a5`` with Git tag ``v0.1.0a5``.
 
 This alpha may claim an early FABLE-C notebook wrapper that can discover the public 2020/2021
 ``SCENARIOS selection`` controls, inspect ``SCENARIOS definition`` tables, render canonical output
 tables with output-column flavour filtering, render curated FOOD/LAND/GHG/WATER headline frames, run
-a locally restored Modelwright-generated 2020 model from ignored ``tmp/`` artifacts, restore a
-validated compressed 2021 generated model from ``examples/fable_2021/``, plan and assemble
-FreshForge/Modelwright 2021 rebuild workflows, run selection-control scenario bundles against an
-existing matching generated model, compare output-ref strategy boundaries, orchestrate
-strategy-boundary and scenario-bundle matrices through FreshForge, and package opt-in benchmark
-evidence from restored local artifacts.
+a locally restored Modelwright-generated 2020 model from ignored ``tmp/`` artifacts, restore
+validated compressed 2021 and 2024 generated models, plan and assemble FreshForge/Modelwright
+rebuild workflows, run selection-control scenario bundles against an existing matching generated
+model, compare output-ref strategy boundaries, orchestrate strategy-boundary and scenario-bundle
+matrices through FreshForge, package opt-in benchmark evidence from restored local artifacts, and
+serve the optional FastAPI portal with approved-artifact checksum verification, authenticated
+staging, persistent assistant chats, and the GitHub issue-filing workflow.
+
+The 2024 artifact is reproducible from the repaired workbook with Modelwright ``0.1.0a9`` or newer;
+the tracked archive and a fresh regeneration are byte-identical.
 
 It must not claim stable public API compatibility, full editable scenario-definition widgets,
 production readiness, arbitrary country-calculator support, or generated-model equivalence beyond
@@ -81,7 +85,7 @@ least:
 
 .. code-block:: bash
 
-   python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ fable-pyculator==0.1.0a4
+   python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ fable-pyculator==0.1.0a5
    python -c "import fable_pyculator; print(fable_pyculator.__version__)"
 
 Real PyPI Publication
@@ -94,7 +98,7 @@ Expected sequence:
 1. Confirm ``CHANGE_LOG.md`` and release notes describe the actual alpha boundary.
 2. Confirm local and CI release artifact checks pass.
 3. Confirm TestPyPI rehearsal passes or document the exact blocker.
-4. Create the annotated tag, for example ``v0.1.0a4``.
+4. Create the annotated tag, for example ``v0.1.0a5``.
 5. Run the ``Release`` workflow or push the tag, then approve the protected PyPI environment.
 6. Verify the package page, wheel install, import, docs deployment, and GitHub release notes.
 
@@ -116,8 +120,12 @@ Private Data Rules
 Release artifacts must not include source workbooks, decompressed generated Python clones, raw
 validation reports, local logs, credentials, or ignored ``tmp/`` material.
 
-The only approved generated-model exception in the public repository is the compressed 2021 artifact:
+The approved generated-model exceptions in the public repository are the compressed 2021 and 2024
+artifacts and their uncompressed checksum sidecars:
 
 .. code-block:: text
 
    examples/fable_2021/generated_fable_2021_model.py.xz
+   examples/fable_2021/generated_fable_2021_model.py.sha256
+   examples/fable_2024/generated_fable_2024_model.py.xz
+   examples/fable_2024/generated_fable_2024_model.py.sha256

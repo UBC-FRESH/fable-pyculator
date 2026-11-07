@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import Any
 
 FABLE_PYCULATOR_PROVIDER_ID = "fable_pyculator"
-FABLE_PYCULATOR_PROVIDER_VERSION = "0.1.0a4"
+FABLE_PYCULATOR_PROVIDER_VERSION = "0.1.0a5"
 
 
 @dataclass(frozen=True)

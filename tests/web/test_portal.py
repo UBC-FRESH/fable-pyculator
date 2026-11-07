@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -19,7 +20,11 @@ from fable_pyculator.spec import (
 from fable_pyculator.web import service
 from fable_pyculator.web import app as portal_app
 from fable_pyculator.web.app import create_app, is_loopback, validate_bind
-from fable_pyculator.web.artifacts import artifact_paths, materialize_generated_model
+from fable_pyculator.web.artifacts import (
+    artifact_paths,
+    materialize_generated_model,
+    model_checksum_status,
+)
 from fable_pyculator.web.service import PortalConfig
 from fable_pyculator.web.service import _repair_known_output_table
 from fable_pyculator.web.spec_io import spec_from_payload, spec_summary, spec_to_payload
@@ -197,6 +202,61 @@ def test_materialize_generated_model_from_approved_archive(tmp_path: Path) -> No
     assert paths.generated_model.read_text(encoding="utf-8") == "# generated model\n"
     second = materialize_generated_model(tmp_path, "2024")
     assert second["materialized"] is False
+
+
+def test_model_checksum_status_verifies_and_detects_mismatch(tmp_path: Path) -> None:
+    paths = artifact_paths(tmp_path, "2024")
+    paths.generated_model.parent.mkdir(parents=True, exist_ok=True)
+    paths.checksum.parent.mkdir(parents=True, exist_ok=True)
+    paths.generated_model.write_text("# approved model\n", encoding="utf-8")
+    digest = hashlib.sha256(paths.generated_model.read_bytes()).hexdigest()
+    paths.checksum.write_text(f"{digest}  generated_fable_2024_model.py\n", encoding="utf-8")
+
+    verified = model_checksum_status(tmp_path, "2024")
+    assert verified["state"] == "verified"
+    assert verified["working_checksum"] == digest
+
+    paths.generated_model.write_text("# stale model\n", encoding="utf-8")
+    mismatch = model_checksum_status(tmp_path, "2024")
+    assert mismatch["state"] == "mismatch"
+    assert mismatch["approved_checksum"] == digest
+
+
+def test_materialize_rejects_checksum_mismatch(tmp_path: Path) -> None:
+    import lzma
+
+    paths = artifact_paths(tmp_path, "2024")
+    paths.compressed_model.parent.mkdir(parents=True, exist_ok=True)
+    with lzma.open(paths.compressed_model, "wb") as handle:
+        handle.write(b"# generated model\n")
+    paths.checksum.write_text(f"{'0' * 64}  generated_fable_2024_model.py\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="checksum"):
+        materialize_generated_model(tmp_path, "2024")
+    assert not paths.generated_model.exists()
+
+
+def test_prepare_rematerializes_a_stale_working_model(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import lzma
+
+    config = _config(tmp_path)
+    paths = artifact_paths(tmp_path, "2021")
+    approved = b"# approved model\n"
+    paths.compressed_model.parent.mkdir(parents=True, exist_ok=True)
+    with lzma.open(paths.compressed_model, "wb") as handle:
+        handle.write(approved)
+    paths.checksum.write_text(
+        f"{hashlib.sha256(approved).hexdigest()}  generated_fable_2021_model.py\n",
+        encoding="utf-8",
+    )
+    paths.generated_model.write_text("# stale model\n", encoding="utf-8")
+    monkeypatch.setattr(service, "build_notebook_spec", lambda *_args, **_kwargs: _spec())
+    monkeypatch.setattr(service, "load_generated_model", lambda *_args, **_kwargs: object())
+
+    result = service.PortalState(config).prepare("2021", lambda *_args: None)
+
+    assert paths.generated_model.read_bytes() == approved
+    assert result["artifact"]["model_checksum"]["state"] == "verified"
 
 
 def test_portal_prepare_run_and_compare(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

@@ -54,6 +54,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 29 is closed: PR #221 was squash-merged as `a6534d9`; a fresh Modelwright `0.1.0a9`
   regeneration from the repaired 2024 workbook reproduces the tracked archive exactly, and
   post-merge Test/Docs Pages workflows passed. Parent #215 and P29.5 #220 are closed.
+- Phase 30 is implemented on `feature/p30-release-deployment`: approved-artifact checksums,
+  the `0.1.0a5` release candidate, authenticated proxy-prefix staging, and the public-host handoff
+  are complete. Parent #222 and child issues #223-#226 are mapped; PR #227 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -2358,4 +2361,83 @@ Closeout evidence:
 - PR #221 squash-merged to `main` as `a6534d9`.
 - Post-merge Test workflow `42347244877` and Docs Pages workflow `42347245017` passed.
 - Parent issue #215 and child issue #220 are closed; P29.1-P29.4 are closed with closeout comments.
+
+## Phase 30: Release and Deployment Hardening
+
+GitHub parent issue: #222.
+
+Branch: `feature/p30-release-deployment`.
+
+Status: pr-open.
+
+Pull request: #227.
+
+Goal: harden the portal release and deployment path after the 2024 artifact provenance work:
+verify working models against approved checksums, prepare a `0.1.0a5` release candidate, run
+authenticated staging with a proxy prefix, and document the host handoff.
+
+Tasks:
+
+- [x] P30.1 Add approved-artifact checksum verification and stale-model handling. Child issue: #223.
+- [x] P30.2 Prepare and verify the v0.1.0a5 release candidate. Child issue: #224.
+- [x] P30.3 Run authenticated staging with proxy prefix and deployment smoke tests. Child issue: #225.
+- [ ] P30.4 Document host handoff, review evidence, open the PR, and close Phase 30. Child issue: #226.
+
+Scope:
+
+- Approved-artifact checksum verification and stale-model handling.
+- Release candidate versioning, metadata, docs, and artifact checks.
+- Authenticated staging through `scripts/run_portal.sh`.
+- Deployment handoff inputs for the maintainer.
+- Phase PR, CI, and closeout.
+
+Out of scope:
+
+- Provisioning a public host, DNS, TLS, or credentials without maintainer-supplied details.
+- Creating a release tag or publishing to PyPI without separate approval.
+- New portal features unrelated to deployment hardening.
+
+Architecture notes:
+
+- The tracked archive remains authoritative; working models must match its checksum or be explicitly re-materialized.
+- Basic auth is a shared deployment credential; health remains public.
+- Proxy-prefix support is exercised through `FABLE_PORTAL_ROOT_PATH`.
+- Release publication remains a gated maintainer action.
+
+Acceptance boundary:
+
+- Stale working models are detected and cannot silently affect results.
+- Version 0.1.0a5 builds and passes release checks without publication.
+- Authenticated staging enforces auth while keeping health public and works under a proxy prefix.
+- The public deployment handoff is explicit and complete.
+
+Implementation evidence:
+
+- Added tracked uncompressed checksum sidecars for the 2021 and 2024 archives, portal checksum
+  state in artifact summaries, a model-verification pill and re-materialize action on the Artifacts
+  page, and pre-preparation stale-model detection with automatic re-materialization from the
+  approved archive.
+- Bumped the package to `0.1.0a5`, updated provider/version assertions, release notes, README, and
+  the release/deployment guide, and kept `modelwright>=0.1.0a9`.
+- Verified the local authenticated staging path with `FABLE_PORTAL_ROOT_PATH=/fable`: health returned
+  `200` without auth, API/static routes returned `401` without auth and `200` with auth, and the SPA
+  and one proxied 2024 run completed.
+- Added the public deployment handoff checklist covering hostname/DNS, TLS, proxy prefix,
+  credentials, service/runtime paths, assistant ownership, monitoring, firewall, rollback, and the
+  approving maintainer.
+
+Verification evidence:
+
+- `.venv/bin/python -m pytest -q` passed with `202` tests and `15` skips.
+- `.venv/bin/python -m ruff check .` passed.
+- Sphinx warning-as-error build and Read the Docs theme check passed.
+- `scripts/check_release_artifacts.sh` passed and installed `fable-pyculator-0.1.0a5`.
+- Artifact API reports `2021 verified`, `2024 verified`, `2020 unknown` (no tracked 2020 checksum).
+- Authenticated staging proxy smoke: health `200`, unauth API `401`, auth API `200`, prefixed root
+  and static `200`; 2024 run `food 2,720.9 → 1,984.5`, `GHG 59.99 → 95.61 MtCO2e`,
+  `land 896,559.0`.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and merge.
 
