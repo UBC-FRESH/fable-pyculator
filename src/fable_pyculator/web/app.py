@@ -217,6 +217,14 @@ def create_app(config: PortalConfig) -> FastAPI:
     def scenario_bundles() -> list[dict[str, Any]]:
         return state.bundles()
 
+    @app.get("/api/optimization/frontiers")
+    def optimization_frontiers() -> list[dict[str, Any]]:
+        return state.optimization_frontiers()
+
+    @app.get("/api/optimization/frontiers/{version}")
+    def optimization_frontier(version: str) -> dict[str, Any]:
+        return state.optimization_frontier(version)
+
     @app.get("/api/chats")
     def chats(
         include_archived: bool = Query(default=False),

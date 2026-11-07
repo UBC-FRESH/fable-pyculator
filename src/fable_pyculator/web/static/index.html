@@ -5,7 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
     <title>FABLE Pyculator</title>
-    <link rel="stylesheet" href="static/styles.css?v=p28j">
+    <link rel="stylesheet" href="static/styles.css?v=p41a">
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./static/vendor/three/three.module.js",
+          "three/addons/": "./static/vendor/three/"
+        }
+      }
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -25,6 +33,7 @@
         <button class="nav-tab" type="button" data-page="workbench">Workbench</button>
         <button class="nav-tab" type="button" data-page="results">Results</button>
         <button class="nav-tab" type="button" data-page="compare">Compare</button>
+        <button class="nav-tab" type="button" data-page="optimization">Optimization</button>
         <button class="nav-tab" type="button" data-page="validation">Validation</button>
         <button class="nav-tab" type="button" data-page="artifacts">Artifacts</button>
       </nav>
@@ -226,6 +235,98 @@
         <div id="compare-output" class="section" aria-live="polite"></div>
       </section>
 
+      <section id="page-optimization" class="page" aria-labelledby="optimization-title" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Exact decision surface</p>
+            <h1 id="optimization-title">Pareto solution space</h1>
+            <p class="hint">
+              Every point is a real Pyculator run. Orbit, filter, inspect, pin, and load a point
+              into the Workbench. Axes are normalized so higher is better; the frontier is local to
+              the evaluated scenario set.
+            </p>
+          </div>
+          <span id="optimization-status" class="pill muted" role="status">loading</span>
+        </div>
+
+        <div class="optimization-grid">
+          <div class="pareto-stage">
+            <canvas id="pareto-canvas" aria-label="Interactive 3D Pareto solution cloud"></canvas>
+            <div id="pareto-axis-labels" class="pareto-axis-labels" aria-hidden="true">
+              <span id="pareto-axis-x">X: --</span>
+              <span id="pareto-axis-y">Y: --</span>
+              <span id="pareto-axis-z">Z: --</span>
+            </div>
+            <div id="pareto-legend" class="pareto-legend"></div>
+          </div>
+
+          <aside class="pareto-panel panel" aria-label="Pareto controls">
+            <div class="panel-head">
+              <div>
+                <h2>Exact frontier</h2>
+                <p id="pareto-meta" class="hint">Loading the tracked frontier…</p>
+              </div>
+              <span id="pareto-count" class="pill muted">--</span>
+            </div>
+
+            <label class="field">
+              <span>Frontier</span>
+              <select id="optimization-version"></select>
+            </label>
+
+            <div class="inline-fields three-up">
+              <label class="field"><span>X</span><select id="pareto-x"></select></label>
+              <label class="field"><span>Y</span><select id="pareto-y"></select></label>
+              <label class="field"><span>Z</span><select id="pareto-z"></select></label>
+            </div>
+            <div class="inline-fields">
+              <label class="field"><span>Colour</span><select id="pareto-colour"></select></label>
+              <label class="field"><span>Size</span><select id="pareto-size"></select></label>
+            </div>
+
+            <label class="field">
+              <span>Quality floor <output id="pareto-floor-value">all</output></span>
+              <select id="pareto-floor-dimension"></select>
+              <input id="pareto-floor" type="range" min="0" max="100" value="0" step="1">
+            </label>
+            <label class="check-field">
+              <input id="pareto-front-only" type="checkbox">
+              <span>Exact front only</span>
+            </label>
+
+            <div id="pareto-info" class="pareto-info" aria-live="polite">
+              <p class="hint">Select a point to inspect its exact objectives and selections.</p>
+            </div>
+
+            <div class="button-row">
+              <button id="pareto-pin" class="button ghost small" type="button" disabled>Pin solution</button>
+              <button id="pareto-clear-pins" class="button ghost small" type="button" disabled>Clear pins</button>
+              <button id="pareto-reset" class="button ghost small" type="button">Reset view</button>
+              <button id="pareto-download" class="button ghost small" type="button">Download JSON</button>
+            </div>
+
+            <div id="pareto-compare" class="pareto-compare"></div>
+
+            <button id="pareto-load" class="button primary" type="button" disabled>Load in Workbench</button>
+            <p class="hint boundary-note">
+              Exact local frontier, not a global optimum. Provisional scenario rules are not
+              expert-approved.
+            </p>
+          </aside>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <h2>Decision views</h2>
+              <p class="hint">Caps and floors are policy inputs. Click a view to inspect its exact point.</p>
+            </div>
+            <span id="optimization-views-count" class="pill muted">--</span>
+          </div>
+          <div id="optimization-views" class="optimization-views"></div>
+        </section>
+      </section>
+
       <section id="page-validation" class="page" aria-labelledby="validation-title" hidden>
         <div class="page-head">
           <div>
@@ -314,7 +415,7 @@
         <button id="help-close" class="icon-button" type="button" aria-label="Close help">×</button>
       </div>
       <dl class="shortcut-list">
-        <div><dt><kbd>1</kbd>–<kbd>6</kbd></dt><dd>Switch portal page</dd></div>
+        <div><dt><kbd>1</kbd>–<kbd>7</kbd></dt><dd>Switch portal page</dd></div>
         <div><dt><kbd>/</kbd></dt><dd>Focus the current search or scenario name</dd></div>
         <div><dt><kbd>a</kbd></dt><dd>Open the FABLE assistant</dd></div>
         <div><dt><kbd>r</kbd></dt><dd>Open results</dd></div>
@@ -331,6 +432,6 @@
     <noscript>
       <p class="noscript">This portal needs JavaScript to prepare models and render outputs.</p>
     </noscript>
-    <script type="module" src="static/app.js?v=p28j"></script>
+    <script type="module" src="static/app.js?v=p41a"></script>
   </body>
 </html>

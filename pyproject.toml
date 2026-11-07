@@ -99,7 +99,7 @@ fable-pyculator = "fable_pyculator.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-fable_pyculator = ["web/static/*"]
+fable_pyculator = ["web/static/*", "web/static/vendor/three/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

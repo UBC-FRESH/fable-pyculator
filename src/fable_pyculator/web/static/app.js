@@ -1,7 +1,9 @@
-import { escapeHtml, renderMarkdown } from "./markdown.js?v=p28j";
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/OrbitControls.js";
+import { escapeHtml, renderMarkdown } from "./markdown.js?v=p41a";
 
 const API = new URL("api/", document.baseURI);
-const PAGES = ["overview", "workbench", "results", "compare", "validation", "artifacts"];
+const PAGES = ["overview", "workbench", "results", "compare", "optimization", "validation", "artifacts"];
 
 const state = {
   options: null,
@@ -16,6 +18,16 @@ const state = {
   agent: { enabled: false, available: false, model: null },
   chats: [],
   ask: { session: null, busy: false, runId: null, chatId: null, title: "New chat", showArchived: false, search: "" },
+  optimization: {
+    list: null,
+    data: null,
+    chart: null,
+    mesh: null,
+    selected: null,
+    filtered: [],
+    pinned: [],
+    pending: null,
+  },
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -111,6 +123,7 @@ function showPage(page) {
   if (page === "workbench") loadWorkbench();
   if (page === "results") loadRuns();
   if (page === "compare") renderComparePicker();
+  if (page === "optimization") loadOptimization();
   if (page === "validation") loadValidation();
   if (page === "artifacts") loadArtifacts();
 }
@@ -159,6 +172,544 @@ async function refreshArtifacts() {
   renderOverview();
   renderVersionSelect();
   renderAskContext();
+}
+
+
+const OPTIMIZATION_CONTROL_LABELS = {
+  land_scen: "Land",
+  diet_scen: "Diet",
+  fixtrade_scen: "Fix trade",
+  livedens_scen: "Ruminant density",
+  live_scen: "Livestock productivity",
+  crop_scen: "Crop productivity",
+  affor_scen: "Afforestation",
+  scen_exports: "Exports",
+  scen_imports: "Imports",
+  gwp_scen: "GWP metric",
+};
+
+async function loadOptimization() {
+  const status = $("#optimization-status");
+  if (!status) return;
+  try {
+    if (!state.optimization.list) {
+      state.optimization.list = await request("optimization/frontiers");
+    }
+    const select = $("#optimization-version");
+    if (!state.optimization.list.length) {
+      status.textContent = "no frontier";
+      status.className = "pill warn";
+      $("#pareto-meta").textContent = "No tracked exact frontier artifact was found under examples/optimization/.";
+      $("#optimization-views").innerHTML = '<p class="hint">No decision views are available.</p>';
+      return;
+    }
+    const previous = select.value || state.optimization.data?.version || "";
+    select.innerHTML = state.optimization.list
+      .map((item) => `<option value="${escapeHtml(item.version)}">FABLE ${escapeHtml(item.version)} · ${escapeHtml(item.title || "exact frontier")}</option>`)
+      .join("");
+    const chosen = state.optimization.list.some((item) => item.version === previous)
+      ? previous
+      : state.optimization.list[0].version;
+    select.value = chosen;
+    if (!state.optimization.data || state.optimization.data.version !== chosen) {
+      await loadOptimizationFrontier(chosen);
+    } else {
+      drawOptimization();
+    }
+  } catch (error) {
+    status.textContent = "unavailable";
+    status.className = "pill bad";
+    $("#pareto-meta").textContent = error.message;
+  }
+}
+
+async function loadOptimizationFrontier(version) {
+  const status = $("#optimization-status");
+  status.textContent = "loading";
+  status.className = "pill muted";
+  const data = await request(`optimization/frontiers/${encodeURIComponent(version)}`);
+  if (!data.points || !data.points.length) throw new Error("the frontier artifact has no points");
+  state.optimization.data = data;
+  state.optimization.selected = null;
+  state.optimization.pinned = [];
+  state.optimization.filtered = [];
+  $("#pareto-info").innerHTML = '<p class="hint">Select a point to inspect its exact objectives and selections.</p>';
+  $("#pareto-load").disabled = true;
+  $("#pareto-pin").disabled = true;
+  $("#pareto-clear-pins").disabled = true;
+  $("#pareto-compare").innerHTML = "";
+  initOptimizationControls(data);
+  $("#pareto-meta").textContent =
+    `${data.points.length} exact points · ${data.pareto_ids.length} unique Pareto objectives · ${formatDate(data.generated_at)}`;
+  $("#pareto-count").textContent = `${data.points.length} pts`;
+  renderOptimizationViews(data);
+  ensureOptimizationChart();
+  drawOptimization();
+  status.textContent = "exact";
+  status.className = "pill good";
+}
+
+function initOptimizationControls(data) {
+  const dimensions = data.dimensions || [];
+  const dimensionOptions = dimensions
+    .map((dimension) => `<option value="${escapeHtml(dimension.key)}">${escapeHtml(dimension.label)}${dimension.unit ? ` (${escapeHtml(dimension.unit)})` : ""}</option>`)
+    .join("");
+  const fill = (id, options, preferred) => {
+    const select = $(`#${id}`);
+    if (!select) return;
+    const previous = select.value;
+    select.innerHTML = options;
+    if (preferred && Array.from(select.options).some((option) => option.value === preferred)) {
+      select.value = preferred;
+    } else if (previous && Array.from(select.options).some((option) => option.value === previous)) {
+      select.value = previous;
+    }
+  };
+  fill("pareto-x", dimensionOptions, "food_total_kcal_feas");
+  fill("pareto-y", dimensionOptions, "ghg_total_co2e");
+  fill("pareto-z", dimensionOptions, "goal");
+  fill("pareto-floor-dimension", dimensionOptions, "goal");
+  const colours = [
+    '<option value="front">Exact front</option>',
+    '<option value="origin">Phase origin</option>',
+    ...(data.controls || []).map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(OPTIMIZATION_CONTROL_LABELS[name] || name)}</option>`),
+  ].join("");
+  fill("pareto-colour", colours, "front");
+  fill(
+    "pareto-size",
+    '<option value="uniform">Uniform</option>' + dimensionOptions,
+    "uniform",
+  );
+}
+
+function optimizationDimension(data, key) {
+  return (data.dimensions || []).find((dimension) => dimension.key === key) || { key, label: key, direction: "max" };
+}
+
+function optimizationQuality(data, key, value) {
+  const bounds = data.ranges?.[key];
+  if (!Array.isArray(bounds) || bounds.length < 2) return 0.5;
+  const low = Number(bounds[0]);
+  const high = Number(bounds[1]);
+  const number = Number(value);
+  const normalized = Math.abs(high - low) <= 1e-12 ? 0.5 : Math.max(0, Math.min(1, (number - low) / (high - low)));
+  return optimizationDimension(data, key).direction === "max" ? normalized : 1 - normalized;
+}
+
+function optimizationPointQuality(data, point, key) {
+  if (key === "goal") return optimizationQuality(data, "goal", point.goal);
+  return optimizationQuality(data, key, point.objectives?.[key]);
+}
+
+function optimizationControlValue(point, name) {
+  return point.selections?.[name] ?? "—";
+}
+
+function optimizationHue(value) {
+  const text = String(value);
+  let hash = 0;
+  for (let index = 0; index < text.length; index += 1) hash = (hash * 31 + text.charCodeAt(index)) % 360;
+  return hash;
+}
+
+function optimizationSelectionSummary(point, limit = 6) {
+  const names = ["land_scen", "diet_scen", "fixtrade_scen", "livedens_scen", "live_scen", "crop_scen", "affor_scen"];
+  return names
+    .map((name) => `${OPTIMIZATION_CONTROL_LABELS[name] || name}: ${optimizationControlValue(point, name)}`)
+    .slice(0, limit)
+    .join(" · ");
+}
+
+function renderOptimizationViews(data) {
+  const container = $("#optimization-views");
+  const views = data.views || {};
+  const entries = [
+    views.balanced,
+    views.food_first,
+    views.ghg_first,
+    ...(views.food_first_views || []),
+    ...(views.ghg_first_views || []),
+  ].filter((view) => view && view.point_id);
+  if (!entries.length) {
+    container.innerHTML = '<p class="hint">No decision views are available in this artifact.</p>';
+    $("#optimization-views-count").textContent = "0";
+    return;
+  }
+  container.innerHTML = entries
+    .map((view) => {
+      const objectives = view.objectives || {};
+      return `
+        <article class="optimization-view-card" data-optimization-view="${escapeHtml(view.point_id)}" tabindex="0" role="button">
+          <h3>${escapeHtml(view.label || "Decision view")}</h3>
+          <p class="constraint">${escapeHtml(view.constraint || "")}</p>
+          <div class="view-metrics">
+            <div><span>Food</span><strong>${formatNumber(objectives.food_total_kcal_feas, 2)}</strong></div>
+            <div><span>GHG</span><strong>${formatNumber(objectives.ghg_total_co2e, 2)}</strong></div>
+          </div>
+          <p class="view-selection">${escapeHtml(optimizationSelectionSummary({ selections: view.selections || {} }, 5))}</p>
+          <button class="link-button" type="button" data-optimization-view="${escapeHtml(view.point_id)}">Inspect on the frontier</button>
+        </article>`;
+    })
+    .join("");
+  $("#optimization-views-count").textContent = `${entries.length} views`;
+  container.querySelectorAll("[data-optimization-view]").forEach((element) => {
+    element.addEventListener("click", () => selectOptimizationPoint(element.dataset.optimizationView));
+    element.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        selectOptimizationPoint(element.dataset.optimizationView);
+      }
+    });
+  });
+}
+
+function selectOptimizationPoint(pointId) {
+  const point = state.optimization.data?.points?.find((item) => item.id === pointId);
+  if (!point) return;
+  renderOptimizationInfo(point);
+  const stage = $("#page-optimization");
+  if (stage && !stage.hidden) {
+    $("#pareto-info").scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+}
+
+function ensureOptimizationChart() {
+  if (state.optimization.chart) return state.optimization.chart;
+  const canvas = $("#pareto-canvas");
+  if (!canvas) return null;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(canvas.clientWidth, Math.max(canvas.clientHeight, 1), false);
+  renderer.setClearColor(0x000000, 0);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, canvas.clientWidth / Math.max(canvas.clientHeight, 1), 0.1, 100);
+  camera.position.set(2.8, 2.2, 2.9);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.target.set(0, 0, 0);
+  controls.minDistance = 1.2;
+  controls.maxDistance = 8;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x63705d, 1.5));
+  const light = new THREE.DirectionalLight(0xffffff, 1.4);
+  light.position.set(3, 5, 4);
+  scene.add(light);
+  const box = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(3.2, 3.2, 3.2)),
+    new THREE.LineBasicMaterial({ color: 0x8fa68a, transparent: true, opacity: 0.55 }),
+  );
+  scene.add(box);
+  const axes = buildOptimizationAxes();
+  scene.add(axes);
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  canvas.addEventListener("click", (event) => {
+    const mesh = state.optimization.mesh;
+    if (!mesh) return;
+    const rect = canvas.getBoundingClientRect();
+    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObject(mesh, false);
+    if (!hits.length) return;
+    const point = mesh.userData.points?.[hits[0].instanceId];
+    if (point) renderOptimizationInfo(point);
+  });
+  const chart = { renderer, scene, camera, controls, canvas, mesh: null, axes };
+  window.addEventListener("resize", () => {
+    if (!chart.canvas.clientWidth) return;
+    renderer.setSize(chart.canvas.clientWidth, Math.max(chart.canvas.clientHeight, 1), false);
+    camera.aspect = chart.canvas.clientWidth / Math.max(chart.canvas.clientHeight, 1);
+    camera.updateProjectionMatrix();
+  });
+  state.optimization.chart = chart;
+  updateOptimizationAxes(chart, { x: "X", y: "Y", z: "Z" });
+  animateOptimization();
+  return chart;
+}
+
+function buildOptimizationAxes() {
+  const group = new THREE.Group();
+  const origin = new THREE.Vector3(0, 0, 0);
+  const end = 1.8;
+  const axes = [
+    [new THREE.Vector3(end, 0, 0), 0xc85555],
+    [new THREE.Vector3(0, end, 0), 0x5f9f54],
+    [new THREE.Vector3(0, 0, end), 0x4d7fc4],
+  ];
+  for (const [target, colour] of axes) {
+    const geometry = new THREE.BufferGeometry().setFromPoints([origin, target]);
+    const material = new THREE.LineBasicMaterial({ color: colour, transparent: true, opacity: 0.9 });
+    group.add(new THREE.Line(geometry, material));
+    const cone = new THREE.Mesh(
+      new THREE.ConeGeometry(0.07, 0.2, 10),
+      new THREE.MeshBasicMaterial({ color: colour }),
+    );
+    cone.position.copy(target);
+    cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), target.clone().sub(origin).normalize());
+    group.add(cone);
+  }
+  return group;
+}
+
+function updateOptimizationAxes(chart, labels) {
+  chart.axisLabelText = labels;
+  $("#pareto-axis-x").textContent = `X: ${labels.x || "X"}`;
+  $("#pareto-axis-y").textContent = `Y: ${labels.y || "Y"}`;
+  $("#pareto-axis-z").textContent = `Z: ${labels.z || "Z"}`;
+}
+
+function positionOptimizationAxisLabels() {
+  // Axis labels use fixed stage anchors; the 3D orientation is controlled by OrbitControls.
+}
+
+function animateOptimization() {
+  const chart = state.optimization.chart;
+  if (!chart) return;
+  chart.controls.update();
+  chart.renderer.render(chart.scene, chart.camera);
+  requestAnimationFrame(animateOptimization);
+}
+
+function drawOptimization() {
+  const chart = ensureOptimizationChart();
+  const data = state.optimization.data;
+  if (!chart || !data) return;
+  const xKey = $("#pareto-x").value;
+  const yKey = $("#pareto-y").value;
+  const zKey = $("#pareto-z").value;
+  const colourMode = $("#pareto-colour").value;
+  const sizeKey = $("#pareto-size").value;
+  const floorKey = $("#pareto-floor-dimension").value;
+  const threshold = Number($("#pareto-floor").value) / 100;
+  const frontOnly = $("#pareto-front-only").checked;
+  const filtered = data.points
+    .map((point) => ({
+      point,
+      x: optimizationPointQuality(data, point, xKey),
+      y: optimizationPointQuality(data, point, yKey),
+      z: optimizationPointQuality(data, point, zKey),
+      size: sizeKey === "uniform" ? 0.5 : optimizationPointQuality(data, point, sizeKey),
+      floor: optimizationPointQuality(data, point, floorKey),
+    }))
+    .filter((entry) => (!frontOnly || entry.point.front) && (threshold <= 0 || entry.floor >= threshold));
+  clearOptimizationMesh();
+  state.optimization.filtered = filtered.map((entry) => entry.point);
+  if (!filtered.length) {
+    $("#pareto-count").textContent = `0 / ${data.points.length}`;
+    $("#pareto-info").innerHTML = '<p class="hint">No points pass the current filters. Lower the quality floor or clear the front filter.</p>';
+    chart.renderer.render(chart.scene, chart.camera);
+    return;
+  }
+  const geometry = new THREE.SphereGeometry(0.045, 10, 8);
+  const material = new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0.08 });
+  const mesh = new THREE.InstancedMesh(geometry, material, filtered.length);
+  mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  const matrix = new THREE.Matrix4();
+  const position = new THREE.Vector3();
+  const scale = new THREE.Vector3();
+  const quaternion = new THREE.Quaternion();
+  const color = new THREE.Color();
+  filtered.forEach((entry, index) => {
+    position.set((entry.x - 0.5) * 3.2, (entry.y - 0.5) * 3.2, (entry.z - 0.5) * 3.2);
+    const size = 0.55 + entry.size * 1.25;
+    scale.set(size, size, size);
+    matrix.compose(position, quaternion, scale);
+    mesh.setMatrixAt(index, matrix);
+    if (colourMode === "front") {
+      color.set(entry.point.front ? 0x2f7d4f : 0x9fb3c8);
+    } else if (colourMode === "origin") {
+      color.setHSL(optimizationHue(entry.point.origin) / 360, 0.58, 0.48);
+    } else if ((data.controls || []).includes(colourMode)) {
+      color.setHSL(optimizationHue(optimizationControlValue(entry.point, colourMode)) / 360, 0.55, 0.5);
+    } else {
+      color.setHSL(0.58 - optimizationPointQuality(data, entry.point, colourMode) * 0.46, 0.68, 0.48);
+    }
+    mesh.setColorAt(index, color);
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  mesh.userData.points = state.optimization.filtered;
+  chart.scene.add(mesh);
+  chart.mesh = mesh;
+  state.optimization.mesh = mesh;
+  const labels = Object.fromEntries((data.dimensions || []).map((dimension) => [dimension.key, dimension.label]));
+  labels.goal = "Goal score";
+  updateOptimizationAxes(chart, { x: labels[xKey] || xKey, y: labels[yKey] || yKey, z: labels[zKey] || zKey });
+  $("#pareto-count").textContent = `${filtered.length} / ${data.points.length}`;
+  const colourLabel =
+    colourMode === "front"
+      ? "green = exact front · slate = dominated"
+      : colourMode === "origin"
+        ? `coloured by ${colourMode}`
+        : (data.controls || []).includes(colourMode)
+          ? `coloured by ${OPTIMIZATION_CONTROL_LABELS[colourMode] || colourMode}`
+          : `colour = ${labels[colourMode] || colourMode}`;
+  $("#pareto-legend").innerHTML = `<span>${escapeHtml(colourLabel)}</span><span>${filtered.length} of ${data.points.length} exact points</span>`;
+  chart.renderer.render(chart.scene, chart.camera);
+}
+
+function clearOptimizationMesh() {
+  const chart = state.optimization.chart;
+  if (chart?.mesh) {
+    chart.scene.remove(chart.mesh);
+    chart.mesh.geometry.dispose();
+    chart.mesh.material.dispose();
+    chart.mesh = null;
+  }
+  state.optimization.mesh = null;
+}
+
+function renderOptimizationInfo(point) {
+  const data = state.optimization.data;
+  if (!data) return;
+  const dimensions = data.dimensions || [];
+  const cards = dimensions
+    .map((dimension) => {
+      const value = dimension.key === "goal" ? point.goal : point.objectives?.[dimension.key];
+      return `<div class="mini-card"><span>${escapeHtml(dimension.label)}</span><strong>${formatNumber(Number(value), 4)}</strong></div>`;
+    })
+    .join("");
+  const selections = Object.entries(point.selections || {})
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([name, value]) => `<span class="chip"><b>${escapeHtml(OPTIMIZATION_CONTROL_LABELS[name] || name)}</b>${escapeHtml(value)}</span>`)
+    .join("");
+  const warnings = (point.warnings || []).length
+    ? `<p class="hint">Provisional warnings: ${(point.warnings || []).map((warning) => `<code>${escapeHtml(warning)}</code>`).join(" ")}</p>`
+    : "";
+  $("#pareto-info").innerHTML = `
+    <div class="mini-grid">${cards}</div>
+    <p class="hint">${point.front ? "Exact Pareto member" : "Dominated exact point"} · ${escapeHtml(point.origin || "exact")} · ${escapeHtml(point.id)}</p>
+    <div class="selection-list">${selections}</div>
+    ${warnings}`;
+  state.optimization.selected = point;
+  $("#pareto-load").disabled = false;
+  $("#pareto-pin").disabled = false;
+}
+
+function pinOptimizationPoint() {
+  const point = state.optimization.selected;
+  if (!point) return;
+  if (state.optimization.pinned.some((item) => item.id === point.id)) return;
+  if (state.optimization.pinned.length >= 3) state.optimization.pinned.shift();
+  state.optimization.pinned.push(point);
+  renderOptimizationCompare();
+  toast(`Pinned ${point.id}`);
+}
+
+function clearOptimizationPins() {
+  state.optimization.pinned = [];
+  renderOptimizationCompare();
+}
+
+function renderOptimizationCompare() {
+  const pinned = state.optimization.pinned || [];
+  const button = $("#pareto-clear-pins");
+  if (button) button.disabled = pinned.length === 0;
+  const container = $("#pareto-compare");
+  if (!container) return;
+  if (!pinned.length) {
+    container.innerHTML = '<p class="hint">Pin up to three points to compare exact objectives and selections.</p>';
+    return;
+  }
+  const data = state.optimization.data;
+  const dimensions = (data?.dimensions || []).filter((dimension) => dimension.key !== "land_total_area");
+  const header = pinned.map((point) => `<th>${escapeHtml(point.id)}</th>`).join("");
+  const rows = dimensions
+    .map((dimension) => {
+      const cells = pinned
+        .map((point) => {
+          const value = dimension.key === "goal" ? point.goal : point.objectives?.[dimension.key];
+          return `<td>${formatNumber(Number(value), 3)}</td>`;
+        })
+        .join("");
+      return `<tr><td>${escapeHtml(dimension.label)}</td>${cells}</tr>`;
+    })
+    .join("");
+  const controls = ["land_scen", "diet_scen", "fixtrade_scen", "live_scen", "crop_scen", "affor_scen"];
+  const controlRows = controls
+    .map((name) => `<tr><td>${escapeHtml(OPTIMIZATION_CONTROL_LABELS[name] || name)}</td>${pinned.map((point) => `<td>${escapeHtml(optimizationControlValue(point, name))}</td>`).join("")}</tr>`)
+    .join("");
+  container.innerHTML = `<table><thead><tr><th>Metric</th>${header}</tr></thead><tbody>${rows}${controlRows}</tbody></table>`;
+}
+
+function resetOptimizationView() {
+  const chart = state.optimization.chart;
+  if (!chart) return;
+  chart.camera.position.set(2.8, 2.2, 2.9);
+  chart.controls.target.set(0, 0, 0);
+  chart.controls.update();
+}
+
+function loadOptimizationPointInWorkbench() {
+  const point = state.optimization.selected;
+  const data = state.optimization.data;
+  if (!point || !data) return;
+  if (!state.artifacts.some((artifact) => artifact.version === data.version)) {
+    toast(`FABLE ${data.version} is not configured in this portal.`, "warn");
+    return;
+  }
+  state.optimization.pending = {
+    version: data.version,
+    pointId: point.id,
+    selections: point.selections,
+  };
+  state.activeVersion = data.version;
+  showPage("workbench");
+  toast(`Loading frontier point ${point.id} into the Workbench`);
+}
+
+function applyOptimizationPending() {
+  const pending = state.optimization.pending;
+  if (!pending || !state.spec) return;
+  if (String(state.activeVersion) !== String(pending.version)) return;
+  let applied = 0;
+  for (const [name, value] of Object.entries(pending.selections || {})) {
+    const element = $$("[data-control]").find((item) => item.dataset.control === name);
+    if (!element) continue;
+    if (element.type === "checkbox") element.checked = Boolean(value);
+    else element.value = String(value);
+    applied += 1;
+  }
+  const name = $("#scenario-name");
+  if (name) name.value = `Frontier ${pending.pointId}`;
+  state.optimization.pending = null;
+  toast(`Loaded ${applied} frontier selections into the Workbench`, "good");
+}
+
+function downloadOptimizationJson() {
+  const data = state.optimization.data;
+  if (!data) return;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `fable-${data.version}-pareto-frontier.json`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function bindOptimizationEvents() {
+  if (!$("#pareto-canvas")) return;
+  $("#optimization-version").addEventListener("change", () => {
+    loadOptimizationFrontier($("#optimization-version").value).catch((error) => toast(error.message, "bad"));
+  });
+  for (const id of ["pareto-x", "pareto-y", "pareto-z", "pareto-colour", "pareto-size", "pareto-floor-dimension"]) {
+    $(`#${id}`).addEventListener("change", drawOptimization);
+  }
+  $("#pareto-floor").addEventListener("input", () => {
+    const value = Number($("#pareto-floor").value) / 100;
+    $("#pareto-floor-value").textContent = value <= 0 ? "all" : `≥ ${value.toFixed(2)}`;
+    drawOptimization();
+  });
+  $("#pareto-front-only").addEventListener("change", drawOptimization);
+  $("#pareto-pin").addEventListener("click", pinOptimizationPoint);
+  $("#pareto-clear-pins").addEventListener("click", clearOptimizationPins);
+  $("#pareto-reset").addEventListener("click", resetOptimizationView);
+  $("#pareto-load").addEventListener("click", loadOptimizationPointInWorkbench);
+  $("#pareto-download").addEventListener("click", downloadOptimizationJson);
 }
 
 function renderOverview() {
@@ -310,6 +861,7 @@ async function loadSpec(version) {
     state.spec = payload.summary;
     state.prepared = true;
     renderControls();
+    applyOptimizationPending();
     $("#workbench-empty").hidden = true;
     $("#workbench-controls").hidden = false;
     $("#workbench-status").textContent = "prepared";
@@ -1430,6 +1982,7 @@ function bindEvents() {
   $$(".nav-tab").forEach((button) => {
     button.addEventListener("click", () => showPage(button.dataset.page));
   });
+  bindOptimizationEvents();
   $$("[data-go]").forEach((button) => {
     button.addEventListener("click", () => showPage(button.dataset.go));
   });

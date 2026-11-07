@@ -65,6 +65,56 @@ def test_dedupe_points_keeps_first_selection() -> None:
     assert [point["sample_id"] for point in unique] == ["a", "b"]
 
 
+def test_build_artifact_marks_front_points_and_views() -> None:
+    module = _load_module()
+    points = [
+        _point("a", 100.0, 50.0),
+        _point("b", 90.0, 40.0),
+        _point("c", 80.0, 60.0),
+    ]
+    front = module.pareto_front(points)
+    front_unique = module._unique_objectives(front)
+    ranked = module.weighted_ranking(points)
+    payload = {
+        "point_count": 3,
+        "unique_point_count": 3,
+        "pareto_count": len(front),
+        "pareto_unique_count": len(front_unique),
+        "input": [],
+        "aspirations": module.DEFAULT_ASPIRATIONS,
+        "weights": module.DEFAULT_WEIGHTS,
+        "ranges": module._ranges(points),
+        "food_first_cap_ghg": 110.0,
+        "ghg_first_floor_food": 3000.0,
+        "balanced": ranked[0],
+        "food_first": points[0],
+        "ghg_first": points[1],
+        "food_first_views": [],
+        "ghg_first_views": [],
+    }
+
+    artifact = module.build_artifact(
+        payload=payload,
+        unique_points=points,
+        front=front,
+        front_unique=front_unique,
+        ranked=ranked,
+        version="2024",
+        title="test",
+    )
+
+    assert len(artifact["points"]) == 3
+    assert sum(1 for point in artifact["points"] if point["front"]) == 2
+    assert [dimension["key"] for dimension in artifact["dimensions"]] == [
+        "food_total_kcal_feas",
+        "ghg_total_co2e",
+        "land_total_area",
+        "goal",
+    ]
+    assert artifact["views"]["balanced"]["point_id"]
+    assert artifact["views"]["food_first"]["point_id"]
+
+
 def test_help() -> None:
     import subprocess
 
