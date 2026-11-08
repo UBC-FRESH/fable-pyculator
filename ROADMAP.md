@@ -205,7 +205,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   closed. Post-merge Test and Docs Pages passed.
 - Phase 71 is implemented on `feature/p71-retention-diff-export`: the selected retention run can export
   its exact per-preset before/after/removed vectors as CSV. Parent #364 and child #365 are mapped; PR
-  and closeout remain.
+  #366 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5024,7 +5024,9 @@ GitHub parent issue: #364.
 
 Branch: `feature/p71-retention-diff-export`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #366.
 
 Goal: export the selected retention run's exact before/after vectors as CSV.
 
