@@ -209,9 +209,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 72 is closed: requirements can resolve the custom-table row from `key_switch`, and
   `CUSTOM-EXPORT-001` now checks the selected `scen_exports` value. PR #369 merged as `15b8516`;
   parent #367 and child #368 are closed. Post-merge Test and Docs Pages passed.
-- Phase 73 is implemented on `feature/p73-shared-library-backup`: shared presets, histories, and
-  timeline views can be backed up as one JSON bundle and restored through a dry-run preview with
-  merge or replace mode. Parent #370 and children #371/#372 are mapped; PR #373 and closeout remain.
+- Phase 73 is closed: shared presets, histories, and timeline views can be backed up as one JSON
+  bundle and restored through a dry-run preview with merge or replace mode. PR #373 merged as
+  `d67e064`; parent #370 and children #371/#372 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5145,9 +5145,9 @@ GitHub parent issue: #370.
 
 Branch: `feature/p73-shared-library-backup`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #373.
+Pull request: #373 (merged as `d67e064`).
 
 Goal: back up the shared Optimization library and restore it with a dry-run preview.
 
@@ -5195,8 +5195,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; preview counts and restored names matched.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #373 squash-merged as `d67e064`; parent #370 and children #371/#372 closed.
 
