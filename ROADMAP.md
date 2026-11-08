@@ -224,7 +224,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   `996745c`; parent #381 and child #382 are closed. Post-merge Test and Docs Pages passed.
 - Phase 77 is implemented on `feature/p77-rule-decision-roundtrip`: completed worksheet decisions
   can be dry-run or explicitly imported into the registry with status/severity/provenance updates.
-  Parent #384 and child #385 are mapped; PR and closeout remain.
+  Parent #384 and child #385 are mapped; PR #386 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5405,7 +5405,9 @@ GitHub parent issue: #384.
 
 Branch: `feature/p77-rule-decision-roundtrip`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #386.
 
 Goal: import completed review worksheet decisions into the YAML registry with a dry-run preview.
 
