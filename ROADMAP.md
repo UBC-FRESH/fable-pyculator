@@ -206,6 +206,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 71 is closed: the selected retention run can export its exact per-preset
   before/after/removed vectors as CSV. PR #366 merged as `a31f5f3`; parent #364 and child #365 are
   closed. Post-merge Test and Docs Pages passed.
+- Phase 72 is implemented on `feature/p72-per-value-custom-export`: requirements can resolve the
+  custom-table row from `key_switch`, and `CUSTOM-EXPORT-001` now checks the selected `scen_exports`
+  value. Parent #367 and child #368 are mapped; PR #369 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5074,4 +5077,61 @@ Verification evidence:
 Closeout evidence:
 
 - PR #366 squash-merged as `a31f5f3`; parent #364 and child #365 closed.
+
+## Phase 72: Per-Value Custom Export Rule
+
+GitHub parent issue: #367.
+
+Branch: `feature/p72-per-value-custom-export`.
+
+Status: pr-open.
+
+Pull request: #369.
+
+Goal: make `CUSTOM-EXPORT-001` check the selected custom export value instead of only `MyExportScen`.
+
+Tasks:
+
+- [x] P72.1 Resolve the selected custom export key and add regression tests. Child issue: #368.
+
+Scope:
+
+- Add a `key_switch` requirement to resolve the table row from the scenario selection.
+- Point `CUSTOM-EXPORT-001` at `scen_exports`.
+- Keep fixed `key_value` requirements working.
+- Add regression coverage for `MyExportScen2` / `MyExportScen3`.
+- Keep the rule provisional, not expert-approved.
+
+Out of scope:
+
+- Changing rule statuses.
+- New optimization runs.
+- Authentication.
+- Broad rule re-enumeration.
+
+Architecture notes:
+
+- Requirements support either a fixed `key_value` or a `key_switch` resolved from the same selections.
+- A missing or empty selected key fails closed.
+- The rule remains `proposed`; draft-enforced mode remains hypothetical.
+
+Implementation evidence:
+
+- `_requirement_fails` now resolves `key_switch` from scenario selections and fails closed if absent.
+- `CUSTOM-EXPORT-001` now uses `key_switch: scen_exports`.
+- Regression coverage confirms `MyExportScen2` fails when only the `MyExportScen` row is populated.
+- A populated `MyExportScen3` row passes the row check.
+- Fixed `key_value` behavior remains covered.
+- Registry remains 18 rules, all `proposed`.
+
+Verification evidence:
+
+- Full suite: 240 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Real-registry check: `MyExportScen2` fails, `MyExportScen`/`MyExportScen3` populated rows pass.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

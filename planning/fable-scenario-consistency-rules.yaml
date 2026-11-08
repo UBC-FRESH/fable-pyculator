@@ -64,7 +64,7 @@ rules:
       in: [MyExportScen, MyExportScen2, MyExportScen3]
     require:
       table: scenarios_definition_expscentarget
-      key_value: MyExportScen
+      key_switch: scen_exports
       non_null_columns: [shift_2050]
     message: "Custom export scenarios require populated ExpScenTarget values."
     review_question: "Is shift_2050 or Exports_cur the authoritative custom input, and what distinguishes MyExportScen, MyExportScen2, and MyExportScen3?"

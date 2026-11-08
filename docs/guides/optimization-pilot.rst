@@ -388,9 +388,9 @@ Exact local deltas:
 
 The strongest local GHG lever is livestock productivity (`live_scen=HighGrowth`): −11.46 MtCO2e
 (−9.45%) with a tiny food gain. `gwp_scen` changes are metric conventions, not mitigation.
-Custom export variants are exactly zero under this fixed-trade point. They were not rejected because
-`CUSTOM-EXPORT-001` checks the populated `MyExportScen` row for all three custom export values; that
-rule needs a per-value review before it can be treated as authoritative.
+Custom export variants are exactly zero under this fixed-trade point. `CUSTOM-EXPORT-001` now checks
+the row selected by `scen_exports` (`MyExportScen`, `MyExportScen2`, or `MyExportScen3`) instead of
+always checking `MyExportScen`; the rule remains provisional pending expert review.
 
 Two exact combined checks, added because the one-at-a-time result suggested additivity:
 
@@ -514,7 +514,8 @@ Do not scale the surrogate further without a structural change. The useful paths
 
 1. Choose the policy cap or food floor with the decision owner; the exact frontier already answers
    the main tradeoff views.
-2. Have FABLE experts review the provisional rules, especially the per-value custom-export rule.
+2. Have FABLE experts review the provisional rules, including the per-value `CUSTOM-EXPORT-001` row
+   semantics.
 3. Expand the exact domain only if the chosen policy view needs points outside the current local
    frontier.
 4. Build a compiled/vectorized exact evaluator only if broader exact search is required.

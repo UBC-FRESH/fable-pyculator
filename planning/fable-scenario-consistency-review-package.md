@@ -64,6 +64,9 @@ The goal is not to declare one “correct” scenario. It is to distinguish:
 | CUSTOM-PHLOSS-001 | error | high | `postharvestloss_scen=MyPHLossScen` | Is `PhLossTarget_def` also required? |
 | CUSTOM-PRICE-001 | error | high | `price_scen=Custom` | Which `Price_Def` columns are authoritative? |
 
+The custom-export rule resolves the row from the selected `scen_exports` value; a missing selected
+row is a hard failure in draft-enforced mode. The rule is still provisional.
+
 ### Land and spatial rules
 
 | Rule | Proposed | Confidence | Condition | Review question |
