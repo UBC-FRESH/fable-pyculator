@@ -107,8 +107,9 @@ Optimization
    all / needs review / reviewed, shows draft and reviewed counts, and can mark a selected draft as
    reviewed. Each shared preset keeps a compact self-declared history of created/updated/reviewed
    events. A read-only audit table shows all shared presets with author, status, latest event, and
-   history count, and **Export audit** downloads the full shared library including history. The
-   current axes, colour, size, filters, brushes, selected point, and reference are encoded in the
+   history count; a compact activity timeline aggregates recent events, and **Export audit** /
+   **Export audit CSV** download the shared library or event-level CSV. The current axes, colour,
+   size, filters, brushes, selected point, and reference are encoded in the
    URL; **Copy view link** shares that exact state, and **Download
    filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through

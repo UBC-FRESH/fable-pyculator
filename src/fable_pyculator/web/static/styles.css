@@ -649,3 +649,7 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .shared-audit th, .shared-audit td { padding: 0.24rem 0.3rem; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
 .shared-audit th { color: var(--muted); font-weight: 650; }
 .shared-audit td:last-child { color: var(--muted); }
+.shared-timeline { margin-top: 0.45rem; max-height: 9rem; overflow: auto; }
+.shared-timeline ol { margin: 0; padding-left: 1.1rem; }
+.shared-timeline li { margin-bottom: 0.2rem; color: var(--muted); font-size: 0.66rem; line-height: 1.35; }
+.shared-timeline b { color: var(--ink); }
