@@ -358,6 +358,7 @@ class PortalConfig:
     auth_password: str | None = None
     history_retention_days: int = 0
     history_retention_dry_run: bool = False
+    history_retention_interval_minutes: int = 0
     title: str = "FABLE Pyculator"
 
     def __post_init__(self) -> None:
@@ -372,6 +373,8 @@ class PortalConfig:
             raise ValueError("auth_user and auth_password must be configured together")
         if self.history_retention_days < 0 or self.history_retention_days > 3650:
             raise ValueError("history_retention_days must be between 0 and 3650")
+        if self.history_retention_interval_minutes < 0 or self.history_retention_interval_minutes > 10080:
+            raise ValueError("history_retention_interval_minutes must be between 0 and 10080")
 
 
 class PortalState:
@@ -387,8 +390,11 @@ class PortalState:
         self._preset_lock = threading.Lock()
         self._timeline_lock = threading.Lock()
         self._retention_lock = threading.Lock()
+        self._retention_stop = threading.Event()
+        self._retention_thread: threading.Thread | None = None
         self._cheat_sheet: CheatSheet | None = None
         self._apply_startup_retention()
+        self._start_retention_scheduler()
         self.ensure_cheat_sheet()
 
     @property
@@ -1059,9 +1065,23 @@ class PortalState:
                     last = json.loads(lines[-1])
             except (OSError, json.JSONDecodeError):
                 last = None
+        interval = self.config.history_retention_interval_minutes
+        next_run = None
+        if interval > 0 and self.config.history_retention_days > 0:
+            base = datetime.now(UTC)
+            if last and isinstance(last.get("at"), str):
+                try:
+                    base = datetime.fromisoformat(last["at"])
+                    if base.tzinfo is None:
+                        base = base.replace(tzinfo=UTC)
+                except ValueError:
+                    base = datetime.now(UTC)
+            next_run = (base + timedelta(minutes=interval)).isoformat(timespec="seconds")
         return {
             "history_retention_days": self.config.history_retention_days,
             "history_retention_dry_run": self.config.history_retention_dry_run,
+            "history_retention_interval_minutes": interval,
+            "next_run_at": next_run,
             "log": str(path),
             "last": last,
         }
@@ -1078,6 +1098,35 @@ class PortalState:
             )
         except ValueError:
             return
+
+    def _start_retention_scheduler(self) -> None:
+        days = self.config.history_retention_days
+        interval = self.config.history_retention_interval_minutes
+        if days <= 0 or interval <= 0:
+            return
+
+        def loop() -> None:
+            while not self._retention_stop.wait(interval * 60):
+                try:
+                    self.prune_optimization_history(
+                        days,
+                        dry_run=self.config.history_retention_dry_run,
+                        source="scheduled",
+                    )
+                except Exception:  # noqa: BLE001 - maintenance must not kill the portal
+                    continue
+
+        thread = threading.Thread(target=loop, name="fable-retention", daemon=True)
+        self._retention_thread = thread
+        thread.start()
+
+    def close(self) -> None:
+        """Stop the optional retention maintenance thread."""
+
+        self._retention_stop.set()
+        thread = self._retention_thread
+        if thread is not None and thread.is_alive():
+            thread.join(timeout=1.0)
 
     def _record_retention(self, result: Mapping[str, Any]) -> None:
         path = self.runtime_dir / "retention-log.jsonl"

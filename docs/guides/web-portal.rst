@@ -114,10 +114,11 @@ Optimization
    server-backed shared timeline library; shared timeline views can carry a self-declared author,
    note, and draft/reviewed status. Audit maintenance can preview or prune history older than a
    configurable day window while always keeping each preset's latest event. Startup retention can be
-   configured with `--history-retention-days` and `--history-retention-dry-run`; results are written
-   to `runtime/portal/retention-log.jsonl`. **Export audit** / **Export audit CSV** download the
-   shared library or event-level CSV. The current axes, colour, size, filters, brushes, selected
-   point, and reference are encoded in the
+   configured with `--history-retention-days`, `--history-retention-dry-run`, and
+   `--history-retention-interval-minutes`; results are written to
+   `runtime/portal/retention-log.jsonl`. **Export audit** / **Export audit CSV** download the shared
+   library or event-level CSV. The current axes, colour, size, filters, brushes, selected point, and
+   reference are encoded in the
    URL; **Copy view link** shares that exact state, and **Download
    filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through

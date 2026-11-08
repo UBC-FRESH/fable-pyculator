@@ -1810,9 +1810,14 @@ async function loadRetentionPolicy() {
     const policy = await request("optimization/retention");
     const days = Number(policy.history_retention_days || 0);
     const mode = policy.history_retention_dry_run ? "dry run" : "prune";
+    const interval = Number(policy.history_retention_interval_minutes || 0);
     target.textContent = days > 0
       ? `Startup retention: ${days} days (${mode}).`
       : "Startup retention: disabled.";
+    if (days > 0 && interval > 0) {
+      target.textContent += ` Maintenance interval: ${interval} min.`;
+      if (policy.next_run_at) target.textContent += ` Next run: ${formatDate(policy.next_run_at)}.`;
+    }
     if (policy.last?.at) {
       target.textContent += ` Last run: ${policy.last.source || "manual"} · ${policy.last.removed} removed · ${policy.last.kept} kept.`;
     }

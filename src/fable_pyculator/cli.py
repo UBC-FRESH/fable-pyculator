@@ -102,7 +102,13 @@ def _parser() -> argparse.ArgumentParser:
     web.add_argument(
         "--history-retention-dry-run",
         action="store_true",
-        help="Preview startup retention without removing history.",
+        help="Preview retention without removing history.",
+    )
+    web.add_argument(
+        "--history-retention-interval-minutes",
+        default=0,
+        type=int,
+        help="Run retention on this maintenance interval in minutes (0 disables).",
     )
     return parser
 
@@ -132,6 +138,7 @@ def _web(args: argparse.Namespace) -> int:
         auth_password=args.auth_password,
         history_retention_days=args.history_retention_days,
         history_retention_dry_run=args.history_retention_dry_run,
+        history_retention_interval_minutes=args.history_retention_interval_minutes,
     )
     try:
         run_server(
