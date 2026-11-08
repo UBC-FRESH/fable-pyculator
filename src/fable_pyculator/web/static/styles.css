@@ -653,3 +653,7 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .shared-timeline ol { margin: 0; padding-left: 1.1rem; }
 .shared-timeline li { margin-bottom: 0.2rem; color: var(--muted); font-size: 0.66rem; line-height: 1.35; }
 .shared-timeline b { color: var(--ink); }
+.timeline-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.4rem; margin-top: 0.45rem; }
+.timeline-filters .field { margin-bottom: 0.25rem; }
+.timeline-actions { margin: 0.2rem 0 0.35rem; }
+@media (max-width: 560px) { .timeline-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

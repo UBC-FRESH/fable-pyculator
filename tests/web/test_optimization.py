@@ -98,6 +98,11 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-shared-export"' in shell.text
     assert 'id="optimization-shared-export-csv"' in shell.text
     assert 'id="optimization-shared-timeline"' in shell.text
+    assert 'id="optimization-timeline-author"' in shell.text
+    assert 'id="optimization-timeline-action"' in shell.text
+    assert 'id="optimization-timeline-preset"' in shell.text
+    assert 'id="optimization-timeline-window"' in shell.text
+    assert 'id="optimization-timeline-recently-reviewed"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -140,6 +145,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "exportSharedOptimizationPresets" in script.text
     assert "renderSharedTimeline" in script.text
     assert "exportSharedAuditCsv" in script.text
+    assert "timelineFilter" in script.text
+    assert "Recently reviewed" in shell.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
