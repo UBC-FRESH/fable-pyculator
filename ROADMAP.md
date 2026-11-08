@@ -137,6 +137,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 48 is closed: the Optimization page has a local saved view library covering axes, colour,
   size, floor, filters, brushes, reference, and selection, with save/load/delete. PR #297 merged as
   `bd39a2d`; parent #295 and child #296 are closed. Post-merge Test and Docs Pages passed.
+- Phase 49 is implemented on `feature/p49-preset-export-import`: the local preset library can be
+  exported as a versioned JSON document and imported back with validation and merge-by-name.
+  Parent #298 and child #299 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3707,4 +3710,57 @@ Verification evidence:
 Closeout evidence:
 
 - PR #297 squash-merged as `bd39a2d`; parent #295 and child #296 closed.
+
+## Phase 49: Preset Library Export and Import
+
+GitHub parent issue: #298.
+
+Branch: `feature/p49-preset-export-import`.
+
+Status: implemented; PR pending.
+
+Goal: make the local Optimization preset library portable through JSON export and import.
+
+Tasks:
+
+- [x] P49.1 Add portable preset JSON export and import. Child issue: #299.
+
+Scope:
+
+- Export all saved views as one JSON document.
+- Import a JSON preset document.
+- Validate imported entries and merge by name.
+- Keep the library capped and version-aware.
+
+Out of scope:
+
+- Server-side sync or accounts.
+- New optimization runs.
+- Global-frontier claims.
+
+Architecture notes:
+
+- The export document carries a schema marker and export timestamp.
+- Import merges by preset name; existing presets are preserved unless names collide.
+- Imported state is validated before it can be applied.
+
+Implementation evidence:
+
+- Added **Export library** and **Import library** controls with a hidden JSON file input.
+- Export payload: `schema`, `schema_version`, `exported_at`, and up to 20 presets.
+- Import validates names and viewer-state objects, merges by name, and caps the library at 20.
+- Browser smoke exported one preset, cleared localStorage, and imported it back successfully.
+- Existing save/load/delete, multi-brush, reference/delta, share, CSV, and Workbench behavior remain
+  intact.
+
+Verification evidence:
+
+- Full suite: 227 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; export/import round-trip verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

@@ -79,6 +79,9 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-preset-save"' in shell.text
     assert 'id="optimization-preset-load"' in shell.text
     assert 'id="optimization-preset-delete"' in shell.text
+    assert 'id="optimization-preset-export"' in shell.text
+    assert 'id="optimization-preset-import"' in shell.text
+    assert 'id="optimization-preset-file"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -104,6 +107,9 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "loadOptimizationPresets" in script.text
     assert "applyOptimizationPreset" in script.text
     assert "localStorage" in script.text
+    assert "exportOptimizationPresets" in script.text
+    assert "importOptimizationPresets" in script.text
+    assert "normalizeImportedPreset" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
