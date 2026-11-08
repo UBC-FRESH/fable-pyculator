@@ -219,6 +219,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   added/replaced/removed/kept counts, changed metadata/state/filter keys, and bounded history
   deltas. PR #380 merged as `c3a97d3`; parent #378 and child #379 are closed. Post-merge Test and
   Docs Pages passed.
+- Phase 76 is implemented on `feature/p76-generated-review-package`: the expert review worksheet
+  and Markdown rule block are generated from the YAML registry, preserve reviewer decisions, and
+  have a `--check` drift gate. Parent #381 and child #382 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5332,4 +5335,61 @@ Verification evidence:
 Closeout evidence:
 
 - PR #380 squash-merged as `c3a97d3`; parent #378 and child #379 closed.
+
+## Phase 76: Generated Expert Review Package
+
+GitHub parent issue: #381.
+
+Branch: `feature/p76-generated-review-package`.
+
+Status: implemented; PR pending.
+
+Goal: generate the expert review worksheet and Markdown rule table from the YAML registry with a drift check.
+
+Tasks:
+
+- [x] P76.1 Generate the review CSV and Markdown rule block from the registry. Child issue: #382.
+
+Scope:
+
+- Generate the fillable CSV from the registry while preserving existing reviewer decisions.
+- Generate a marked Markdown rule block with exact conditions and requirements.
+- Add a check mode that fails when tracked artifacts are stale.
+- Add a CI-covered consistency test.
+- Keep the narrative review material and worksheet workflow.
+
+Out of scope:
+
+- Changing rule statuses.
+- New optimization runs.
+- Authentication.
+- Approving any rule.
+
+Architecture notes:
+
+- The YAML registry is the single source for rule ids, statuses, severities, conditions, and requirements.
+- Reviewer decision/reviewer/comments cells are preserved by rule id.
+- The Markdown block is delimited by explicit markers.
+- Generated output contains no timestamps, so identical registries produce identical files.
+
+Implementation evidence:
+
+- Added `scripts/build_rule_review_package.py` with write and `--check` modes.
+- CSV now includes status, exact condition, and exact requirement columns; existing decisions survive regeneration.
+- Markdown rule tables are generated from the registry with a SHA-256 and severity/status counts.
+- Generator handles fixed key, per-value key_switch, nested all/any, and coherence conditions.
+- Added pytest drift checks for synchronized and stale artifacts.
+- Registry remains 18 provisional rules; no rule status changed.
+
+Verification evidence:
+
+- Full suite: 250 passed, 16 skipped.
+- `--check` passes on the tracked package and fails on a deliberately stale temporary package.
+- Reviewer decision preservation is tested.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

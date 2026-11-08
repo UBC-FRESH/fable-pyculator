@@ -557,7 +557,9 @@ in the browser. The artifact can be regenerated with `--artifact-output` on
 
 The detailed scenario-consistency rule surface and the extensible coefficient/switch architecture are
 in `planning/fable-scenario-consistency-rules.md` and
-`planning/fable-scenario-consistency-rules.yaml`.
+`planning/fable-scenario-consistency-rules.yaml`. The expert review worksheet and Markdown rule block
+are generated from that registry by `scripts/build_rule_review_package.py`; `--check` fails when the
+tracked package drifts, while existing reviewer decisions are preserved by rule id.
 
 Commands
 --------
@@ -598,3 +600,6 @@ Commands
      tmp/fable-exact-decision/targeted \
      --output tmp/fable-exact-decision/decision.json \
      --artifact-output examples/optimization/fable_2024/frontier.json
+
+   .venv/bin/python scripts/build_rule_review_package.py
+   .venv/bin/python scripts/build_rule_review_package.py --check
