@@ -90,6 +90,9 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-shared-author"' in shell.text
     assert 'id="optimization-shared-note"' in shell.text
     assert 'id="optimization-shared-review"' in shell.text
+    assert 'id="optimization-shared-filter"' in shell.text
+    assert 'id="optimization-shared-summary"' in shell.text
+    assert 'id="optimization-shared-mark-reviewed"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -125,6 +128,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "deleteSharedOptimizationPreset" in script.text
     assert "syncSharedPresetMetadata" in script.text
     assert "review_status" in script.text
+    assert "markSharedOptimizationPresetReviewed" in script.text
+    assert "sharedFilter" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200

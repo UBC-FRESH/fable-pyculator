@@ -298,17 +298,23 @@
               <p class="hint">Visible to everyone with portal access.</p>
               <div class="inline-fields">
                 <label class="field"><span>Shared preset</span><select id="optimization-shared-preset"></select></label>
+                <label class="field"><span>Filter</span><select id="optimization-shared-filter"><option value="all">All</option><option value="draft">Needs review</option><option value="reviewed">Reviewed</option></select></label>
+              </div>
+              <p id="optimization-shared-summary" class="hint"></p>
+              <div class="inline-fields">
                 <label class="field"><span>Name</span><input id="optimization-shared-preset-name" type="text" maxlength="40" placeholder="e.g. Team view"></label>
+                <label class="field"><span>Review</span><select id="optimization-shared-review"><option value="draft">Draft</option><option value="reviewed">Reviewed</option></select></label>
               </div>
               <div class="inline-fields">
                 <label class="field"><span>Author (self-declared)</span><input id="optimization-shared-author" type="text" maxlength="40" placeholder="Optional"></label>
-                <label class="field"><span>Review</span><select id="optimization-shared-review"><option value="draft">Draft</option><option value="reviewed">Reviewed</option></select></label>
+                <label class="field"><span>Review state</span><span id="optimization-shared-review-state" class="pill muted">draft</span></label>
               </div>
               <label class="field"><span>Note</span><input id="optimization-shared-note" type="text" maxlength="200" placeholder="Optional context"></label>
               <div class="button-row">
                 <button id="optimization-shared-save" class="button ghost small" type="button">Save current</button>
                 <button id="optimization-shared-load" class="button ghost small" type="button">Load</button>
                 <button id="optimization-shared-delete" class="button ghost small" type="button">Delete</button>
+                <button id="optimization-shared-mark-reviewed" class="button ghost small" type="button" disabled>Mark reviewed</button>
               </div>
             </details>
 

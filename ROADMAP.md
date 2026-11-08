@@ -150,6 +150,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 52 is closed: shared presets can carry optional self-declared author, note, and
   draft/reviewed status, shown in the shared selector and persisted by the API. PR #309 merged as
   `17acb88`; parent #307 and child #308 are closed. Post-merge Test and Docs Pages passed.
+- Phase 53 is implemented on `feature/p53-shared-review-queue`: the shared library now filters by
+  all/needs-review/reviewed, shows draft/reviewed counts, and can mark a selected draft reviewed.
+  Parent #310 and child #311 are mapped; PR #312 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3949,4 +3952,59 @@ Verification evidence:
 Closeout evidence:
 
 - PR #309 squash-merged as `17acb88`; parent #307 and child #308 closed.
+
+## Phase 53: Shared Preset Review Queue
+
+GitHub parent issue: #310.
+
+Branch: `feature/p53-shared-review-queue`.
+
+Status: pr-open.
+
+Pull request: #312.
+
+Goal: turn shared preset review status into a lightweight review queue.
+
+Tasks:
+
+- [x] P53.1 Add shared review filters, badges, and mark-reviewed action. Child issue: #311.
+
+Scope:
+
+- Filter shared presets by all/draft/reviewed.
+- Show draft and reviewed counts.
+- Add a mark-reviewed action for the selected shared preset.
+- Keep metadata self-declared and non-authoritative.
+
+Out of scope:
+
+- Authentication or verified review.
+- Per-user permissions.
+- New optimization runs.
+
+Architecture notes:
+
+- Mark-reviewed updates the same shared preset through the existing POST endpoint.
+- Filters are local UI state and do not change stored data.
+- Review status remains self-declared.
+
+Implementation evidence:
+
+- Added an all / needs-review / reviewed filter, summary counts, and selector badges.
+- Added **Mark reviewed** for the selected draft preset.
+- Browser smoke saved one draft and one reviewed preset: summary `1 draft · 1 reviewed`; the draft
+  filter showed only the draft; marking it reviewed produced `0 draft · 2 reviewed` and an empty
+  review queue.
+- Existing shared save/load/delete, local presets, links, and viewer behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 229 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; filter/count/mark-reviewed verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 
