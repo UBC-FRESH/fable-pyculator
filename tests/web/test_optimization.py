@@ -386,6 +386,8 @@ def test_prune_shared_preset_history_preserves_latest(tmp_path: Path) -> None:
         assert preview["source"] == "manual"
         assert preview["details"][0]["preset"] == "Old history"
         assert preview["details"][0]["removed"][0]["action"] == "created"
+        assert [event["action"] for event in preview["details"][0]["before"]] == ["created", "reviewed"]
+        assert [event["action"] for event in preview["details"][0]["after"]] == ["reviewed"]
         assert len(client.get("/api/optimization/presets").json()[0]["history"]) == 2
 
         pruned = client.post("/api/optimization/presets/prune", json={"days": 30, "dry_run": False}).json()
