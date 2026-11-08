@@ -75,6 +75,10 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="pareto-delta"' in shell.text
     assert 'id="parallel-clear-brush"' in shell.text
     assert 'id="parallel-brush-label"' in shell.text
+    assert 'id="optimization-preset"' in shell.text
+    assert 'id="optimization-preset-save"' in shell.text
+    assert 'id="optimization-preset-load"' in shell.text
+    assert 'id="optimization-preset-delete"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -97,6 +101,9 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "opt_brushes" in script.text
     assert "removeOptimizationBrush" in script.text
     assert "brushes: []" in script.text
+    assert "loadOptimizationPresets" in script.text
+    assert "applyOptimizationPreset" in script.text
+    assert "localStorage" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200

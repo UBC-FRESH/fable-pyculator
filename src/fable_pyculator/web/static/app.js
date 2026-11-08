@@ -194,6 +194,7 @@ async function loadOptimization() {
   const status = $("#optimization-status");
   if (!status) return;
   try {
+    renderOptimizationPresets();
     if (!state.optimization.list) {
       state.optimization.list = await request("optimization/frontiers");
     }
@@ -858,6 +859,174 @@ function renderOptimizationDelta() {
     <div class="selection-list">${changes || '<span class="hint">No changed scenario controls in the displayed set.</span>'}</div>`;
 }
 
+
+const OPTIMIZATION_PRESETS_KEY = "fable-pyculator.optimization-presets.v1";
+
+function loadOptimizationPresets() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(OPTIMIZATION_PRESETS_KEY) || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((preset) => preset && typeof preset.name === "string" && preset.state && typeof preset.state === "object")
+      .slice(0, 20);
+  } catch {
+    return [];
+  }
+}
+
+function saveOptimizationPresets(presets) {
+  try {
+    localStorage.setItem(OPTIMIZATION_PRESETS_KEY, JSON.stringify(presets.slice(0, 20)));
+    return true;
+  } catch {
+    toast("Could not write the local preset library.", "bad");
+    return false;
+  }
+}
+
+function collectOptimizationPreset() {
+  const data = state.optimization.data;
+  if (!data) return null;
+  return {
+    version: data.version,
+    x: $("#pareto-x").value,
+    y: $("#pareto-y").value,
+    z: $("#pareto-z").value,
+    colour: $("#pareto-colour").value,
+    size: $("#pareto-size").value,
+    floor_dimension: $("#pareto-floor-dimension").value,
+    floor: Number($("#pareto-floor").value || 0),
+    front: Boolean($("#pareto-front-only")?.checked),
+    warning_free: Boolean($("#pareto-warning-free")?.checked),
+    brushes: (state.optimization.brushes || []).map((brush) => ({
+      axisKey: brush.axisKey,
+      start: brush.start,
+      end: brush.end,
+    })),
+    reference: state.optimization.reference?.id || null,
+    point: state.optimization.selected?.id || null,
+  };
+}
+
+function setOptimizationSelect(id, value) {
+  const select = $(`#${id}`);
+  if (!select || value === undefined || value === null) return;
+  if (Array.from(select.options).some((option) => option.value === String(value))) {
+    select.value = String(value);
+  }
+}
+
+function applyOptimizationPreset(preset) {
+  const data = state.optimization.data;
+  if (!data || !preset?.state) return;
+  if (preset.state.version && String(preset.state.version) !== String(data.version)) {
+    toast(`Preset belongs to FABLE ${preset.state.version}; current frontier is ${data.version}.`, "warn");
+    return;
+  }
+  const saved = preset.state;
+  setOptimizationSelect("pareto-x", saved.x);
+  setOptimizationSelect("pareto-y", saved.y);
+  setOptimizationSelect("pareto-z", saved.z);
+  setOptimizationSelect("pareto-colour", saved.colour);
+  setOptimizationSelect("pareto-size", saved.size);
+  setOptimizationSelect("pareto-floor-dimension", saved.floor_dimension);
+  const floor = Math.max(0, Math.min(100, Number(saved.floor) || 0));
+  const floorInput = $("#pareto-floor");
+  if (floorInput) floorInput.value = String(floor);
+  const floorOutput = $("#pareto-floor-value");
+  if (floorOutput) floorOutput.textContent = floor <= 0 ? "all" : `≥ ${(floor / 100).toFixed(2)}`;
+  const front = $("#pareto-front-only");
+  if (front) front.checked = Boolean(saved.front);
+  const warningFree = $("#pareto-warning-free");
+  if (warningFree) warningFree.checked = Boolean(saved.warning_free);
+  state.optimization.brushes = (Array.isArray(saved.brushes) ? saved.brushes : [])
+    .filter(
+      (brush) =>
+        brush &&
+        PARALLEL_AXES.some((axis) => axis.key === brush.axisKey) &&
+        Number.isFinite(Number(brush.start)) &&
+        Number.isFinite(Number(brush.end)),
+    )
+    .map((brush) => ({
+      axisKey: brush.axisKey,
+      start: Math.max(0, Math.min(1, Number(brush.start))),
+      end: Math.max(0, Math.min(1, Number(brush.end))),
+    }));
+  state.optimization.reference = saved.reference
+    ? data.points?.find((point) => point.id === saved.reference) || null
+    : null;
+  state.optimization.selected = null;
+  if (saved.point) {
+    const point = data.points?.find((item) => item.id === saved.point);
+    if (point) renderOptimizationInfo(point);
+  } else {
+    $("#pareto-info").innerHTML = '<p class="hint">Select a point to inspect its exact objectives and selections.</p>';
+    $("#pareto-load").disabled = true;
+    $("#pareto-pin").disabled = true;
+    $("#pareto-reference").disabled = true;
+  }
+  drawOptimization();
+  renderOptimizationDelta();
+  persistOptimizationState();
+  toast(`Loaded preset ${preset.name}`, "good");
+}
+
+function renderOptimizationPresets() {
+  const select = $("#optimization-preset");
+  const count = $("#optimization-preset-count");
+  const load = $("#optimization-preset-load");
+  const remove = $("#optimization-preset-delete");
+  if (!select) return;
+  const presets = loadOptimizationPresets();
+  const previous = select.value;
+  select.innerHTML = presets.length
+    ? presets.map((preset, index) => `<option value="${index}">${escapeHtml(preset.name)}</option>`).join("")
+    : '<option value="">No saved views</option>';
+  if (previous && presets[Number(previous)]) select.value = previous;
+  if (count) count.textContent = String(presets.length);
+  if (load) load.disabled = !presets.length;
+  if (remove) remove.disabled = !presets.length;
+}
+
+function saveOptimizationPreset() {
+  const presetState = collectOptimizationPreset();
+  if (!presetState) return;
+  const input = $("#optimization-preset-name");
+  const presets = loadOptimizationPresets();
+  const name = (input?.value || "").trim() || `View ${presets.length + 1}`;
+  const preset = { name: name.slice(0, 40), saved_at: new Date().toISOString(), state: presetState };
+  const existing = presets.findIndex((item) => item.name === preset.name);
+  if (existing >= 0) presets[existing] = preset;
+  else presets.unshift(preset);
+  if (!saveOptimizationPresets(presets)) return;
+  renderOptimizationPresets();
+  $("#optimization-preset").value = String(existing >= 0 ? existing : 0);
+  if (input) input.value = preset.name;
+  toast(`Saved view ${preset.name}`, "good");
+}
+
+function loadOptimizationPreset() {
+  const select = $("#optimization-preset");
+  const presets = loadOptimizationPresets();
+  const preset = presets[Number(select?.value)];
+  if (!preset) {
+    toast("No saved view is selected.", "warn");
+    return;
+  }
+  applyOptimizationPreset(preset);
+}
+
+function deleteOptimizationPreset() {
+  const select = $("#optimization-preset");
+  const presets = loadOptimizationPresets();
+  const index = Number(select?.value);
+  if (!presets[index]) return;
+  const [removed] = presets.splice(index, 1);
+  if (!saveOptimizationPresets(presets)) return;
+  renderOptimizationPresets();
+  toast(`Deleted view ${removed.name}`);
+}
+
 function drawOptimization() {
   const chart = ensureOptimizationChart();
   const data = state.optimization.data;
@@ -1268,6 +1437,9 @@ function bindOptimizationEvents() {
   $("#pareto-pin").addEventListener("click", pinOptimizationPoint);
   $("#pareto-reference").addEventListener("click", setOptimizationReference);
   $("#parallel-clear-brush").addEventListener("click", clearOptimizationBrush);
+  $("#optimization-preset-save").addEventListener("click", saveOptimizationPreset);
+  $("#optimization-preset-load").addEventListener("click", loadOptimizationPreset);
+  $("#optimization-preset-delete").addEventListener("click", deleteOptimizationPreset);
   $("#pareto-clear-reference").addEventListener("click", clearOptimizationReference);
   $("#pareto-clear-pins").addEventListener("click", clearOptimizationPins);
   $("#pareto-reset").addEventListener("click", resetOptimizationView);
