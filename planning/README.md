@@ -25,4 +25,6 @@ Current review drafts:
 - `fable-scenario-consistency-review-package.csv`: fillable rule-decision worksheet.
 - `../scripts/build_rule_review_package.py`: regenerates the CSV and Markdown rule block from the YAML
   registry and preserves existing reviewer decisions; `--check` fails on drift.
+- `../scripts/import_rule_review_decisions.py`: dry-runs or explicitly imports completed worksheet
+  decisions into the YAML registry and records reviewer provenance.
 

@@ -181,6 +181,8 @@ def render_csv(rules: tuple[ScenarioRule, ...], csv_path: Path) -> str:
             if isinstance(rule.require, Mapping)
             else ""
         )
+        existing = decisions.get(rule.id, {column: "" for column in DECISION_COLUMNS})
+        review = rule.review if isinstance(rule.review, Mapping) else {}
         row = {
             "rule_id": rule.id,
             "family": rule.family,
@@ -192,7 +194,8 @@ def render_csv(rules: tuple[ScenarioRule, ...], csv_path: Path) -> str:
             "message": rule.message,
             "review_question": rule.review_question,
         }
-        row.update(decisions.get(rule.id, {column: "" for column in DECISION_COLUMNS}))
+        for column in DECISION_COLUMNS:
+            row[column] = (existing.get(column) or "").strip() or str(review.get(column, "")).strip()
         writer.writerow(row)
     return buffer.getvalue()
 

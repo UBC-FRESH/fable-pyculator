@@ -130,3 +130,17 @@ _Generated from `planning/fable-scenario-consistency-rules.yaml` (SHA-256 `b6787
 - Rule-engine hashes and full counts: `tmp/fable-rules-audit/`
 
 Do not treat any rule as active until it is marked `approved` in the registry.
+
+## When the CSV is complete
+
+1. Run the importer in dry-run mode and inspect the status/severity/provenance preview:
+   `python scripts/import_rule_review_decisions.py`.
+2. Resolve any unknown rules, invalid decisions, or missing reviewers; the importer fails closed.
+3. Apply the reviewed plan with `--write`; defer and replace decisions are recorded but leave the rule
+   provisional for manual follow-up.
+4. Recompute the valid-domain estimate and review the resulting rule-package diff.
+5. Only then choose the next optimization representation: reduced exact evaluator, compiled exact
+   evaluator, or a targeted surrogate.
+
+Reviewer names and decisions are self-declared provenance, not authenticated approval. The tracked
+registry is unchanged unless the importer is run with `--write`.

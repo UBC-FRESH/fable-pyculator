@@ -3,9 +3,12 @@ from __future__ import annotations
 import csv
 import importlib.util
 import io
+import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 from fable_pyculator.scenario_rules import (
     ScenarioRule,
@@ -212,6 +215,119 @@ def _review_generator():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _run_import(*args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, "scripts/import_rule_review_decisions.py", *args],
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_rule_review_import_dry_run_write_and_round_trip(tmp_path: Path) -> None:
+    rules_path = tmp_path / "rules.yaml"
+    rules_path.write_text(
+        Path("planning/fable-scenario-consistency-rules.yaml").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    worksheet = tmp_path / "review.csv"
+    worksheet.write_text(
+        "rule_id,decision,reviewer,comments\n"
+        "CUSTOM-DIET-001,approve_error,Reviewer A,Keep as hard error\n"
+        "LAND-AFFOR-001,approve_warning,Reviewer B,Warning only\n"
+        "LIVE-DENS-001,reject,Reviewer C,Not a real conflict\n"
+        "NARRATIVE-SSP-001,defer,Reviewer D,Needs climate expert\n"
+        "AGPRAC-CROP-001,replace,Reviewer E,Rewrite for organic systems\n",
+        encoding="utf-8",
+    )
+    original = rules_path.read_text(encoding="utf-8")
+
+    dry = _run_import("--rules", str(rules_path), "--worksheet", str(worksheet), "--json")
+    assert dry.returncode == 0, dry.stderr
+    dry_payload = json.loads(dry.stdout)
+    assert dry_payload["written"] is False
+    assert len(dry_payload["changes"]) == 5
+    assert rules_path.read_text(encoding="utf-8") == original
+
+    written = _run_import(
+        "--rules",
+        str(rules_path),
+        "--worksheet",
+        str(worksheet),
+        "--write",
+        "--no-refresh",
+        "--json",
+    )
+    assert written.returncode == 0, written.stderr
+    assert json.loads(written.stdout)["written"] is True
+    updated = yaml.safe_load(rules_path.read_text(encoding="utf-8"))
+    by_id = {rule["id"]: rule for rule in updated["rules"]}
+    assert by_id["CUSTOM-DIET-001"]["status"] == "approved"
+    assert by_id["CUSTOM-DIET-001"]["severity"] == "error"
+    assert by_id["CUSTOM-DIET-001"]["review"]["reviewer"] == "Reviewer A"
+    assert by_id["LAND-AFFOR-001"]["status"] == "approved"
+    assert by_id["LAND-AFFOR-001"]["severity"] == "warning"
+    assert by_id["LIVE-DENS-001"]["status"] == "rejected"
+    assert by_id["NARRATIVE-SSP-001"]["status"] == "proposed"
+    assert by_id["NARRATIVE-SSP-001"]["review"]["decision"] == "defer"
+    assert by_id["AGPRAC-CROP-001"]["status"] == "proposed"
+    assert by_id["AGPRAC-CROP-001"]["review"]["decision"] == "replace"
+    assert rules_path.read_text(encoding="utf-8").startswith("# DRAFT rule registry")
+    decided_at = by_id["CUSTOM-DIET-001"]["review"]["decided_at"]
+
+    repeated = _run_import(
+        "--rules",
+        str(rules_path),
+        "--worksheet",
+        str(worksheet),
+        "--write",
+        "--no-refresh",
+        "--json",
+    )
+    assert repeated.returncode == 0, repeated.stderr
+    repeated_payload = json.loads(repeated.stdout)
+    assert repeated_payload["changes"] == []
+    assert repeated_payload["written"] is False
+    assert yaml.safe_load(rules_path.read_text(encoding="utf-8"))["rules"][0]["review"]["decided_at"] == decided_at
+
+    generator = _review_generator()
+    imported_rules = load_rule_registry(rules_path)
+    rendered = generator.render_csv(imported_rules, tmp_path / "new-worksheet.csv")
+    rows = {row["rule_id"]: row for row in csv.DictReader(io.StringIO(rendered))}
+    assert rows["CUSTOM-DIET-001"]["status"] == "approved"
+    assert rows["CUSTOM-DIET-001"]["decision"] == "approve_error"
+    assert rows["CUSTOM-DIET-001"]["reviewer"] == "Reviewer A"
+    assert rows["AGPRAC-CROP-001"]["decision"] == "replace"
+
+
+def test_rule_review_import_fails_closed(tmp_path: Path) -> None:
+    rules_path = tmp_path / "rules.yaml"
+    rules_path.write_text(
+        Path("planning/fable-scenario-consistency-rules.yaml").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    original = rules_path.read_text(encoding="utf-8")
+    cases = {
+        "unknown.csv": "rule_id,decision,reviewer,comments\nUNKNOWN,approve_error,Reviewer,\n",
+        "missing-reviewer.csv": "rule_id,decision,reviewer,comments\nCUSTOM-DIET-001,approve_error,,\n",
+        "invalid.csv": "rule_id,decision,reviewer,comments\nCUSTOM-DIET-001,approve,Reviewer,\n",
+    }
+    for filename, contents in cases.items():
+        worksheet = tmp_path / filename
+        worksheet.write_text(contents, encoding="utf-8")
+        result = _run_import(
+            "--rules",
+            str(rules_path),
+            "--worksheet",
+            str(worksheet),
+            "--write",
+            "--no-refresh",
+            "--json",
+        )
+        assert result.returncode == 2
+        assert json.loads(result.stdout)["errors"]
+        assert rules_path.read_text(encoding="utf-8") == original
 
 
 def test_review_package_matches_rule_registry() -> None:
