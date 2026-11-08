@@ -25,6 +25,7 @@ const state = {
     mesh: null,
     selected: null,
     reference: null,
+    brush: null,
     filtered: [],
     pinned: [],
     pending: null,
@@ -234,6 +235,7 @@ async function loadOptimizationFrontier(version) {
   state.optimization.data = data;
   state.optimization.selected = null;
   state.optimization.reference = null;
+  state.optimization.brush = null;
   state.optimization.pinned = [];
   state.optimization.filtered = [];
   $("#pareto-info").innerHTML = '<p class="hint">Select a point to inspect its exact objectives and selections.</p>';
@@ -610,13 +612,92 @@ function shortenParallelLabel(value, limit = 13) {
   return text.length > limit ? `${text.slice(0, limit - 1)}…` : text;
 }
 
+
+const PARALLEL_TOP = 54;
+const PARALLEL_PLOT_HEIGHT = 364;
+
+function parallelAxisNormalized(data, key, value) {
+  const axis = PARALLEL_AXES.find((item) => item.key === key);
+  if (!axis) return 0.5;
+  if (axis.kind === "control") {
+    const values = [...new Set((data.points || []).map((point) => optimizationControlValue(point, key)))].sort();
+    const index = values.indexOf(String(value));
+    return values.length <= 1 || index < 0 ? 0.5 : index / (values.length - 1);
+  }
+  const bounds = data.ranges?.[key] || [0, 1];
+  const low = Number(bounds[0]);
+  const high = Number(bounds[1]);
+  const number = Number(value);
+  return Math.abs(high - low) <= 1e-12 ? 0.5 : 1 - (number - low) / (high - low);
+}
+
+function parallelBrushMatches(data, point) {
+  const brush = state.optimization.brush;
+  if (!brush) return true;
+  const normalized = parallelAxisNormalized(data, brush.axisKey, parallelValue(point, brush.axisKey));
+  const low = Math.min(brush.start, brush.end);
+  const high = Math.max(brush.start, brush.end);
+  return normalized >= low - 1e-9 && normalized <= high + 1e-9;
+}
+
+function updateParallelBrushLabel() {
+  const label = $("#parallel-brush-label");
+  const clear = $("#parallel-clear-brush");
+  const brush = state.optimization.brush;
+  if (!brush) {
+    if (label) label.textContent = "";
+    if (clear) clear.disabled = true;
+    return;
+  }
+  const axis = PARALLEL_AXES.find((item) => item.key === brush.axisKey);
+  const low = Math.min(brush.start, brush.end);
+  const high = Math.max(brush.start, brush.end);
+  if (label) label.textContent = `Brush ${axis?.label || brush.axisKey}: ${(low * 100).toFixed(0)}–${(high * 100).toFixed(0)}%`;
+  if (clear) clear.disabled = false;
+}
+
+function beginParallelBrush(event, axisKey) {
+  event.preventDefault();
+  const svg = $("#parallel-chart");
+  if (!svg) return;
+  const rect = svg.getBoundingClientRect();
+  const normalize = (clientY) => {
+    const viewY = ((clientY - rect.top) * 460) / Math.max(rect.height, 1);
+    return Math.max(0, Math.min(1, (viewY - PARALLEL_TOP) / PARALLEL_PLOT_HEIGHT));
+  };
+  state.optimization.brush = { axisKey, start: normalize(event.clientY), end: normalize(event.clientY) };
+  drawParallelCoordinates();
+  const onMove = (moveEvent) => {
+    if (!state.optimization.brush) return;
+    state.optimization.brush.end = normalize(moveEvent.clientY);
+    drawParallelCoordinates();
+  };
+  const onUp = () => {
+    document.removeEventListener("pointermove", onMove);
+    const brush = state.optimization.brush;
+    if (brush && Math.abs(brush.end - brush.start) < 0.01) state.optimization.brush = null;
+    drawOptimization();
+    toast(state.optimization.brush ? "Parallel brush applied" : "Brush cleared");
+  };
+  document.addEventListener("pointermove", onMove);
+  document.addEventListener("pointerup", onUp, { once: true });
+}
+
+function clearOptimizationBrush() {
+  state.optimization.brush = null;
+  drawOptimization();
+  persistOptimizationState();
+  toast("Parallel brush cleared");
+}
+
 function drawParallelCoordinates() {
   const data = state.optimization.data;
   const svg = $("#parallel-chart");
   const count = $("#parallel-count");
   if (!data || !svg) return;
   const points = state.optimization.filtered || [];
-  if (count) count.textContent = `${points.length} points · ${PARALLEL_AXES.length} axes`;
+  if (count) count.textContent = `${points.length} / ${data.points.length} points · ${PARALLEL_AXES.length} axes`;
+  updateParallelBrushLabel();
   if (!points.length) {
     svg.innerHTML = '<text class="parallel-empty" x="500" y="230">No exact points pass the current filters.</text>';
     return;
@@ -632,24 +713,14 @@ function drawParallelCoordinates() {
   const axisValues = {};
   for (const axis of PARALLEL_AXES) {
     if (axis.kind === "control") {
-      axisValues[axis.key] = [...new Set(points.map((point) => optimizationControlValue(point, axis.key)))].sort();
+      axisValues[axis.key] = [...new Set((data.points || []).map((point) => optimizationControlValue(point, axis.key)))].sort();
     } else if (axis.key === "goal") {
       axisValues[axis.key] = data.ranges?.goal || [0, 1];
     } else {
       axisValues[axis.key] = data.ranges?.[axis.key] || [0, 1];
     }
   }
-  const yFor = (axis, value) => {
-    if (axis.kind === "control") {
-      const values = axisValues[axis.key];
-      const index = values.indexOf(String(value));
-      return top + (values.length <= 1 ? 0.5 : index / (values.length - 1)) * plotHeight;
-    }
-    const low = Number(axisValues[axis.key][0]);
-    const high = Number(axisValues[axis.key][1]);
-    const number = Number(value);
-    return top + (Math.abs(high - low) <= 1e-12 ? 0.5 : 1 - (number - low) / (high - low)) * plotHeight;
-  };
+  const yFor = (axis, value) => top + parallelAxisNormalized(data, axis.key, value) * plotHeight;
   let markup = "";
   PARALLEL_AXES.forEach((axis, index) => {
     const x = xFor(index);
@@ -679,9 +750,26 @@ function drawParallelCoordinates() {
     if (point.id === state.optimization.reference?.id) classes.push("reference");
     markup += `<polyline class="${classes.join(" ")}" points="${coordinates}" data-parallel-point="${escapeHtml(point.id)}"><title>${escapeHtml(point.id)} · ${escapeHtml(point.origin || "exact")} · Food ${formatNumber(point.objectives?.food_total_kcal_feas, 4)} · GHG ${formatNumber(point.objectives?.ghg_total_co2e, 4)} · Goal ${formatNumber(point.goal, 4)}</title></polyline>`;
   }
+  const brush = state.optimization.brush;
+  if (brush) {
+    const axisIndex = PARALLEL_AXES.findIndex((axis) => axis.key === brush.axisKey);
+    if (axisIndex >= 0) {
+      const x = xFor(axisIndex);
+      const low = Math.min(brush.start, brush.end);
+      const high = Math.max(brush.start, brush.end);
+      markup += `<rect class="parallel-brush" x="${x - 13}" y="${top + low * plotHeight}" width="26" height="${Math.max(2, (high - low) * plotHeight)}"></rect>`;
+    }
+  }
+  PARALLEL_AXES.forEach((axis, index) => {
+    const x = xFor(index);
+    markup += `<rect class="parallel-brush-hit" x="${x - 13}" y="${top}" width="26" height="${plotHeight}" data-parallel-axis="${escapeHtml(axis.key)}"></rect>`;
+  });
   svg.innerHTML = markup;
   svg.querySelectorAll("[data-parallel-point]").forEach((line) => {
     line.addEventListener("click", () => selectOptimizationPoint(line.dataset.parallelPoint));
+  });
+  svg.querySelectorAll("[data-parallel-axis]").forEach((element) => {
+    element.addEventListener("pointerdown", (event) => beginParallelBrush(event, element.dataset.parallelAxis));
   });
 }
 
@@ -759,6 +847,7 @@ function drawOptimization() {
   const threshold = Number($("#pareto-floor").value) / 100;
   const frontOnly = $("#pareto-front-only").checked;
   const warningFree = $("#pareto-warning-free")?.checked;
+  const brush = state.optimization.brush;
   const filtered = data.points
     .map((point) => ({
       point,
@@ -772,7 +861,8 @@ function drawOptimization() {
       (entry) =>
         (!frontOnly || entry.point.front) &&
         (!warningFree || !(entry.point.warnings || []).length) &&
-        (threshold <= 0 || entry.floor >= threshold),
+        (threshold <= 0 || entry.floor >= threshold) &&
+        (!brush || parallelBrushMatches(data, entry.point)),
     );
   clearOptimizationMesh();
   state.optimization.filtered = filtered.map((entry) => entry.point);
@@ -986,6 +1076,12 @@ function persistOptimizationState() {
   else params.delete("opt_point");
   if (state.optimization.reference?.id) params.set("opt_reference", state.optimization.reference.id);
   else params.delete("opt_reference");
+  if (state.optimization.brush) {
+    const brush = state.optimization.brush;
+    params.set("opt_brush", `${brush.axisKey}:${Math.min(brush.start, brush.end).toFixed(4)}:${Math.max(brush.start, brush.end).toFixed(4)}`);
+  } else {
+    params.delete("opt_brush");
+  }
   const search = params.toString();
   history.replaceState(null, "", `${search ? `?${search}` : ""}${location.hash || "#optimization"}`);
 }
@@ -1018,6 +1114,21 @@ function restoreOptimizationState() {
   if (front) front.checked = params.get("opt_front") === "1";
   const warningFree = $("#pareto-warning-free");
   if (warningFree) warningFree.checked = params.get("opt_nowarn") === "1";
+  const brushParam = params.get("opt_brush");
+  if (brushParam) {
+    const [axisKey, startText, endText] = brushParam.split(":");
+    if (PARALLEL_AXES.some((axis) => axis.key === axisKey)) {
+      const start = Number(startText);
+      const end = Number(endText);
+      if (Number.isFinite(start) && Number.isFinite(end)) {
+        state.optimization.brush = {
+          axisKey,
+          start: Math.max(0, Math.min(1, start)),
+          end: Math.max(0, Math.min(1, end)),
+        };
+      }
+    }
+  }
   const pointId = params.get("opt_point");
   if (pointId) {
     const point = data.points?.find((item) => item.id === pointId);
@@ -1122,6 +1233,7 @@ function bindOptimizationEvents() {
   $("#pareto-warning-free").addEventListener("change", drawOptimization);
   $("#pareto-pin").addEventListener("click", pinOptimizationPoint);
   $("#pareto-reference").addEventListener("click", setOptimizationReference);
+  $("#parallel-clear-brush").addEventListener("click", clearOptimizationBrush);
   $("#pareto-clear-reference").addEventListener("click", clearOptimizationReference);
   $("#pareto-clear-pins").addEventListener("click", clearOptimizationPins);
   $("#pareto-reset").addEventListener("click", resetOptimizationView);

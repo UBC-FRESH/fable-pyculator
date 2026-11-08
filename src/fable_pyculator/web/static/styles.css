@@ -624,3 +624,6 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .pareto-delta .selection-list { max-height: 6.5rem; }
 .parallel-line.reference { stroke: #1f6feb; stroke-width: 2.4; stroke-dasharray: 5 3; opacity: 0.95; }
 .parallel-line.reference.selected { stroke: #c58b16; }
+.parallel-brush { fill: rgba(31, 111, 235, 0.12); stroke: #1f6feb; stroke-width: 1; pointer-events: none; }
+.parallel-brush-hit { fill: transparent; cursor: ns-resize; touch-action: none; }
+.parallel-brush-label { margin-right: 0.2rem; }

@@ -127,6 +127,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   through objective and selection deltas, and marked in both the 3D and parallel views. The reference
   is shareable in the URL. PR #288 merged as `59866c5`; parent #286 and child #287 are closed.
   Post-merge Test and Docs Pages passed.
+- Phase 46 is implemented on `feature/p46-parallel-brush`: dragging a range on a parallel-coordinates
+  axis now filters both the parallel and 3D views, with a visible brush band, clear action, and
+  `opt_brush` URL state. Parent #289 and child #290 are mapped; PR #291 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3528,4 +3531,58 @@ Verification evidence:
 Closeout evidence:
 
 - PR #288 squash-merged as `59866c5`; parent #286 and child #287 closed.
+
+## Phase 46: Parallel Axis Brushing
+
+GitHub parent issue: #289.
+
+Branch: `feature/p46-parallel-brush`.
+
+Status: pr-open.
+
+Pull request: #291.
+
+Goal: add brush-to-filter on the parallel-coordinates axes, synchronized with the 3D exact viewer.
+
+Tasks:
+
+- [x] P46.1 Add parallel axis brushing and shareable brush state. Child issue: #290.
+
+Scope:
+
+- Drag a vertical range on any parallel axis.
+- Filter both the parallel view and 3D view.
+- Show a brush band and clear action.
+- Encode the brush in URL state.
+
+Out of scope:
+
+- New optimization runs.
+- Multiple simultaneous brush ranges.
+- Surrogate or global-frontier claims.
+
+Architecture notes:
+
+- Brushes use normalized axis positions so categorical and numeric axes share the same interaction.
+- The brush consumes the same exact points as the quality-floor, warning, and front filters.
+- Clearing the brush restores the other filters.
+
+Implementation evidence:
+
+- Added pointer-drag brushing on all 9 parallel axes.
+- Browser smoke: a diet brush from 25% to 60% reduced both views to 39 of 160 points.
+- Added visible brush band, `Brush Diet: 25-60%` label, and **Clear brush** action.
+- Added `opt_brush` URL state; clearing the brush removes it.
+- Existing reference/delta, hover, share, CSV, pin/compare, and Workbench prefill remain intact.
+
+Verification evidence:
+
+- Full suite: 227 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; brush and clear behavior verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

@@ -345,7 +345,11 @@
                 Same exact points, same filters. Click a line to select it in the 3D view.
               </p>
             </div>
-            <span id="parallel-count" class="pill muted">--</span>
+            <div class="button-row">
+              <span id="parallel-brush-label" class="hint"></span>
+              <button id="parallel-clear-brush" class="button ghost small" type="button" disabled>Clear brush</button>
+              <span id="parallel-count" class="pill muted">--</span>
+            </div>
           </div>
           <div class="panel parallel-panel">
             <svg id="parallel-chart" viewBox="0 0 1000 460" role="img" aria-label="Parallel coordinates of exact Pareto points"></svg>
