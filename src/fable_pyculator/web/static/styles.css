@@ -644,3 +644,8 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .preset-history ol { margin: 0; padding-left: 1.1rem; }
 .preset-history li { margin-bottom: 0.2rem; color: var(--muted); font-size: 0.68rem; line-height: 1.35; }
 .preset-history b { color: var(--ink); }
+.shared-audit { margin-top: 0.5rem; max-height: 12rem; overflow: auto; }
+.shared-audit table { width: 100%; border-collapse: collapse; font-size: 0.66rem; }
+.shared-audit th, .shared-audit td { padding: 0.24rem 0.3rem; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.shared-audit th { color: var(--muted); font-weight: 650; }
+.shared-audit td:last-child { color: var(--muted); }

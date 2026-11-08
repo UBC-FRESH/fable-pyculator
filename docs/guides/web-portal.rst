@@ -106,8 +106,10 @@ Optimization
    draft/reviewed status; these are labels, not authenticated approval. The shared panel filters by
    all / needs review / reviewed, shows draft and reviewed counts, and can mark a selected draft as
    reviewed. Each shared preset keeps a compact self-declared history of created/updated/reviewed
-   events. The current axes, colour, size, filters, brushes, selected point, and reference are
-   encoded in the URL; **Copy view link** shares that exact state, and **Download
+   events. A read-only audit table shows all shared presets with author, status, latest event, and
+   history count, and **Export audit** downloads the full shared library including history. The
+   current axes, colour, size, filters, brushes, selected point, and reference are encoded in the
+   URL; **Copy view link** shares that exact state, and **Download
    filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through
    ``/api/optimization/frontiers``; it never runs an optimizer or a surrogate in the browser.
