@@ -537,8 +537,9 @@ reference point with exact objective deltas and changed selections; the referenc
 views. Complete viewer states, including multiple brushes and the reference, can be saved as local
 presets in the **Saved views** panel, and the preset library can be exported/imported as JSON or
 shared as a named preset link carrying the full viewer state. A server-backed **Shared library** stores
-named views for everyone with portal access. The view state is shareable through URL query
-parameters, and the currently filtered exact points can be downloaded as CSV.
+named views for everyone with portal access, with optional self-declared author, note, and
+draft/reviewed metadata. The view state is shareable through URL query parameters, and the currently
+filtered exact points can be downloaded as CSV.
 
 This is the same interaction pattern as the urban-forest lab and WS4 Pareto explorer. The FABLE
 viewer is read-only over exact points: it does not run the optimizer, a surrogate, or a hidden model

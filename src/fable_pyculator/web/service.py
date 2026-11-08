@@ -74,6 +74,9 @@ def _clean_optimization_preset(
     name: Any,
     state: Any,
     saved_at: Any = None,
+    author: Any = None,
+    note: Any = None,
+    review_status: Any = None,
 ) -> dict[str, Any]:
     """Validate and normalize one shared Optimization preset."""
 
@@ -121,7 +124,19 @@ def _clean_optimization_preset(
     timestamp = saved_at if isinstance(saved_at, str) and len(saved_at) <= 40 else None
     if timestamp is None:
         timestamp = datetime.now(UTC).isoformat(timespec="seconds")
-    return {"name": clean_name, "saved_at": timestamp, "state": clean_state}
+    clean_author = author.strip()[:40] if isinstance(author, str) else ""
+    clean_note = note.strip()[:200] if isinstance(note, str) else ""
+    status = str(review_status or "draft").strip().lower()
+    if status not in {"draft", "reviewed"}:
+        raise ValueError("preset review_status must be draft or reviewed")
+    return {
+        "name": clean_name,
+        "saved_at": timestamp,
+        "author": clean_author,
+        "note": clean_note,
+        "review_status": status,
+        "state": clean_state,
+    }
 
 
 class PortalError(RuntimeError):
@@ -765,10 +780,21 @@ class PortalState:
         name: str,
         state: Mapping[str, Any],
         saved_at: str | None = None,
+        *,
+        author: str | None = None,
+        note: str | None = None,
+        review_status: str | None = None,
     ) -> dict[str, Any]:
         """Create or replace one shared Optimization preset."""
 
-        preset = _clean_optimization_preset(name, state, saved_at)
+        preset = _clean_optimization_preset(
+            name,
+            state,
+            saved_at,
+            author=author,
+            note=note,
+            review_status=review_status,
+        )
         with self._preset_lock:
             presets = [item for item in self._load_shared_presets() if item["name"] != preset["name"]]
             presets.insert(0, preset)
@@ -801,7 +827,16 @@ class PortalState:
             if not isinstance(item, Mapping):
                 continue
             try:
-                presets.append(_clean_optimization_preset(item.get("name"), item.get("state"), item.get("saved_at")))
+                presets.append(
+                    _clean_optimization_preset(
+                        item.get("name"),
+                        item.get("state"),
+                        item.get("saved_at"),
+                        author=item.get("author"),
+                        note=item.get("note"),
+                        review_status=item.get("review_status"),
+                    )
+                )
             except ValueError:
                 continue
         return presets[:20]

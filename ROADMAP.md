@@ -147,6 +147,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 51 is closed: a server-backed Shared library persists named Optimization views under the
   runtime directory, with list/save/delete APIs and UI controls. PR #306 merged as `9bd4d1f`; parent
   #304 and child #305 are closed. Post-merge Test and Docs Pages passed.
+- Phase 52 is implemented on `feature/p52-preset-review-metadata`: shared presets can carry optional
+  self-declared author, note, and draft/reviewed status, shown in the shared selector and persisted by
+  the API. Parent #307 and child #308 are mapped; PR #309 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3889,4 +3892,60 @@ Verification evidence:
 Closeout evidence:
 
 - PR #306 squash-merged as `9bd4d1f`; parent #304 and child #305 closed.
+
+## Phase 52: Shared Preset Review Metadata
+
+GitHub parent issue: #307.
+
+Branch: `feature/p52-preset-review-metadata`.
+
+Status: pr-open.
+
+Pull request: #309.
+
+Goal: add lightweight review metadata to shared Optimization presets.
+
+Tasks:
+
+- [x] P52.1 Add author, notes, and draft/reviewed metadata. Child issue: #308.
+
+Scope:
+
+- Optional author and note fields.
+- Draft/reviewed status.
+- Show metadata in the shared preset selector.
+- Validate and persist metadata.
+
+Out of scope:
+
+- Authentication or verified ownership.
+- Per-user permissions.
+- New optimization runs.
+
+Architecture notes:
+
+- Author and reviewed status are self-declared, not authenticated.
+- Metadata is stored alongside the exact viewer state.
+- Existing shared presets without metadata remain valid.
+
+Implementation evidence:
+
+- Extended the shared preset schema with `author`, `note`, and `review_status`.
+- Backend defaults old/missing metadata to an empty author/note and `draft`.
+- Invalid review values are rejected with HTTP 400.
+- Shared selector labels include the author and `reviewed` marker.
+- Browser smoke saved `Reviewed view · Hisham · reviewed` with note `Ready for review`; the API
+  returned the metadata and it survived reload.
+- Existing local/shared preset operations and viewer interactions remain intact.
+
+Verification evidence:
+
+- Full suite: 229 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; metadata round-trip and reload persistence verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

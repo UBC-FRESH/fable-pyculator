@@ -1145,7 +1145,11 @@ function renderSharedOptimizationPresets(selectedName = "") {
   if (!select) return;
   const presets = state.optimization.sharedPresets || [];
   select.innerHTML = presets.length
-    ? presets.map((preset, index) => `<option value="${index}">${escapeHtml(preset.name)}</option>`).join("")
+    ? presets.map((preset, index) => {
+        const author = preset.author ? ` · ${preset.author}` : "";
+        const reviewed = preset.review_status === "reviewed" ? " · reviewed" : "";
+        return `<option value="${index}">${escapeHtml(preset.name + author + reviewed)}</option>`;
+      }).join("")
     : '<option value="">No shared views</option>';
   if (selectedName) {
     const index = presets.findIndex((preset) => preset.name === selectedName);
@@ -1162,10 +1166,19 @@ async function saveSharedOptimizationPreset() {
   const input = $("#optimization-shared-preset-name");
   const presets = state.optimization.sharedPresets || [];
   const name = (input?.value || "").trim() || `Shared View ${presets.length + 1}`;
+  const author = ($("#optimization-shared-author")?.value || "").trim().slice(0, 40);
+  const note = ($("#optimization-shared-note")?.value || "").trim().slice(0, 200);
+  const reviewStatus = $("#optimization-shared-review")?.value === "reviewed" ? "reviewed" : "draft";
   try {
     await request("optimization/presets", {
       method: "POST",
-      body: JSON.stringify({ name: name.slice(0, 40), state: presetState }),
+      body: JSON.stringify({
+        name: name.slice(0, 40),
+        state: presetState,
+        author,
+        note,
+        review_status: reviewStatus,
+      }),
     });
     await loadSharedOptimizationPresets();
     renderSharedOptimizationPresets(name.slice(0, 40));
@@ -1197,6 +1210,19 @@ async function deleteSharedOptimizationPreset() {
   } catch (error) {
     toast(`Could not delete shared view: ${error.message}`, "bad");
   }
+}
+
+
+function syncSharedPresetMetadata() {
+  const select = $("#optimization-shared-preset");
+  const preset = state.optimization.sharedPresets?.[Number(select?.value)];
+  if (!preset) return;
+  const author = $("#optimization-shared-author");
+  const note = $("#optimization-shared-note");
+  const review = $("#optimization-shared-review");
+  if (author) author.value = preset.author || "";
+  if (note) note.value = preset.note || "";
+  if (review) review.value = preset.review_status === "reviewed" ? "reviewed" : "draft";
 }
 
 function drawOptimization() {
@@ -1646,6 +1672,7 @@ function bindOptimizationEvents() {
   $("#optimization-preset-import").addEventListener("click", () => $("#optimization-preset-file").click());
   $("#optimization-preset-file").addEventListener("change", importOptimizationPresets);
   $("#optimization-shared-save").addEventListener("click", saveSharedOptimizationPreset);
+  $("#optimization-shared-preset").addEventListener("change", syncSharedPresetMetadata);
   $("#optimization-shared-load").addEventListener("click", loadSharedOptimizationPreset);
   $("#optimization-shared-delete").addEventListener("click", deleteSharedOptimizationPreset);
   $("#pareto-clear-reference").addEventListener("click", clearOptimizationReference);
