@@ -11,6 +11,10 @@ This file records completed project work in chronological order.
   PR #392 merged as `35a3f2e`; post-merge Test, Docs Pages, and release-artifacts checks passed.
 - Added exact JSON and flattened CSV export for the selected snapshot-vs-current diff.
   PR #395 merged as `4a80ae5`; post-merge Test and Docs Pages passed.
+- Published `fable-pyculator 0.1.0a6` with OIDC trusted publishing: TestPyPI run `42515188099`
+  passed, tag `v0.1.0a6` triggered PyPI run `42515378564`, and clean TestPyPI/PyPI installs imported
+  `0.1.0a6`. Created GitHub prerelease https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a6
+  with the workflow-built wheel and sdist.
 
 ## 2026-11-07
 

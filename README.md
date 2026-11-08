@@ -433,11 +433,10 @@ The Sphinx guide expands this into a full workflow under
 `docs/guides/2020-notebook-workflow.rst`, with validation boundaries recorded in
 `docs/guides/validation-scope.rst`.
 
-`fable-pyculator` is pre-release. The current repository release candidate is `0.1.0a6`; the latest
-published PyPI alpha remains `0.1.0a5` until publication. Alpha releases must not be described as
-stable public API compatibility, full editable scenario-definition widgets, production readiness, or
-arbitrary country-calculator support. Generated-model equivalence claims are limited to the exact
-2020, 2021, and 2024 evidence recorded in the docs. The `0.1.0a6` candidate adds the exact decision
+`fable-pyculator` is pre-release. The current alpha line is `0.1.0a6`; alpha releases must not be
+described as stable public API compatibility, full editable scenario-definition widgets, production
+readiness, or arbitrary country-calculator support. Generated-model equivalence claims are limited
+to the exact 2020, 2021, and 2024 evidence recorded in the docs. The `0.1.0a6` release adds the exact decision
 viewer, shared presets and review timelines, retention and diff exports, previewed shared-library
 backup/restore, bounded snapshots with policy and diff, and the generated rule-review round-trip on
 top of the existing notebook, FreshForge, and portal surfaces.
