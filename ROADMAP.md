@@ -4195,7 +4195,9 @@ GitHub parent issue: #322.
 
 Branch: `feature/p57-timeline-filters`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #324.
 
 Goal: make the shared review timeline filterable by author, action, preset, and date window.
 
