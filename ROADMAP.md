@@ -4670,7 +4670,9 @@ GitHub parent issue: #346.
 
 Branch: `feature/p65-scheduled-retention`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #348.
 
 Goal: run the configured retention policy on a background maintenance interval.
 
