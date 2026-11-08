@@ -158,7 +158,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   #314 are closed. Post-merge Test and Docs Pages passed.
 - Phase 55 is implemented on `feature/p55-shared-review-audit`: a read-only shared audit table and
   JSON export now cover all shared presets, metadata, latest events, and full history. Parent #316
-  and child #317 are mapped; PR and closeout remain.
+  and child #317 are mapped; PR #318 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4079,7 +4079,9 @@ GitHub parent issue: #316.
 
 Branch: `feature/p55-shared-review-audit`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #318.
 
 Goal: add an audit table and JSON export for the shared preset library.
 
