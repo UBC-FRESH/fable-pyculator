@@ -228,10 +228,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 78 is closed: snapshot policy is visible in the shared panel and snapshots can be deleted with
   a two-step confirmation. PR #389 merged as `5e8cfb8`; parent #387 and child #388 are closed.
   Post-merge Test and Docs Pages passed.
-- Phase 79 is implemented on `feature/p79-release-candidate-a6`: the local package and provider report
-  `0.1.0a6`, release docs distinguish the candidate from published `0.1.0a5`, and the clean-install
-  artifact check passed. Parent #390 and child #391 are mapped; PR #392 and closeout remain. No tag or
-  publication was created.
+- Phase 79 is closed: the local package and provider report `0.1.0a6`, release docs distinguish the
+  candidate from published `0.1.0a5`, and the clean-install artifact check passed. PR #392 merged as
+  `35a3f2e`; parent #390 and child #391 are closed. No tag or publication was created.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5537,9 +5536,9 @@ GitHub parent issue: #390.
 
 Branch: `feature/p79-release-candidate-a6`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #392.
+Pull request: #392 (merged as `35a3f2e`).
 
 Goal: prepare and verify a local 0.1.0a6 release candidate without tagging or publishing.
 
@@ -5584,8 +5583,10 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - `scripts/check_release_artifacts.sh` passed with a clean wheel install.
+- Post-merge Test, Docs Pages, and release-artifacts checks passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #392 squash-merged as `35a3f2e`; parent #390 and child #391 closed. No tag or publication.
+
 
