@@ -115,6 +115,9 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-shared-timeline-save"' in shell.text
     assert 'id="optimization-shared-timeline-load"' in shell.text
     assert 'id="optimization-shared-timeline-delete"' in shell.text
+    assert 'id="optimization-shared-timeline-author"' in shell.text
+    assert 'id="optimization-shared-timeline-note"' in shell.text
+    assert 'id="optimization-shared-timeline-review"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -170,6 +173,7 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "loadSharedTimelineViews" in script.text
     assert "saveSharedTimelineView" in script.text
     assert "optimization/timeline-views" in script.text
+    assert "syncSharedTimelineMetadata" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
@@ -222,6 +226,11 @@ def test_shared_optimization_preset_api_round_trip(tmp_path: Path) -> None:
         invalid = client.post("/api/optimization/presets", json={"name": "Bad", "state": {}})
         assert invalid.status_code == 400
         invalid_review = client.post(
+            "/api/optimization/timeline-views",
+            json={**_timeline_view_payload("Bad review"), "review_status": "approved"},
+        )
+        assert invalid_review.status_code == 400
+        invalid_review = client.post(
             "/api/optimization/presets",
             json={**_preset_payload("Bad review"), "review_status": "approved"},
         )
@@ -266,6 +275,9 @@ def test_shared_preset_history_records_review(tmp_path: Path) -> None:
 def _timeline_view_payload(name: str) -> dict[str, object]:
     return {
         "name": name,
+        "author": "Hisham",
+        "note": "Team timeline",
+        "review_status": "reviewed",
         "filter": {"author": "Hisham", "action": "reviewed", "preset": "Team view", "window": "7d"},
     }
 
@@ -279,6 +291,9 @@ def test_shared_timeline_view_api_round_trip(tmp_path: Path) -> None:
         listing = client.get("/api/optimization/timeline-views").json()
         assert listing[0]["filter"]["window"] == "7d"
         assert listing[0]["filter"]["action"] == "reviewed"
+        assert listing[0]["author"] == "Hisham"
+        assert listing[0]["note"] == "Team timeline"
+        assert listing[0]["review_status"] == "reviewed"
 
         invalid = client.post(
             "/api/optimization/timeline-views",

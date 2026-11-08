@@ -177,6 +177,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 61 is closed: a server-backed shared timeline library persists filter views under the runtime
   directory with list/save/delete APIs and UI controls. PR #336 merged as `502a4f2`; parent #334 and
   child #335 are closed. Post-merge Test and Docs Pages passed.
+- Phase 62 is implemented on `feature/p62-timeline-view-metadata`: shared timeline views can carry
+  optional self-declared author, note, and draft/reviewed status. Parent #337 and child #338 are
+  mapped; PR #339 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4479,4 +4482,60 @@ Verification evidence:
 Closeout evidence:
 
 - PR #336 squash-merged as `502a4f2`; parent #334 and child #335 closed.
+
+## Phase 62: Shared Timeline View Metadata
+
+GitHub parent issue: #337.
+
+Branch: `feature/p62-timeline-view-metadata`.
+
+Status: pr-open.
+
+Pull request: #339.
+
+Goal: add lightweight metadata to shared timeline views.
+
+Tasks:
+
+- [x] P62.1 Add author, note, and review status to shared timeline views. Child issue: #338.
+
+Scope:
+
+- Optional author and note fields.
+- Draft/reviewed status.
+- Show metadata in shared timeline selector labels.
+- Validate and persist metadata.
+
+Out of scope:
+
+- Authentication or verified ownership.
+- Per-user permissions.
+- New optimization runs.
+
+Architecture notes:
+
+- Metadata is self-declared, not authenticated.
+- Existing shared timeline views without metadata remain valid.
+- Viewer and shared preset behavior remains unchanged.
+
+Implementation evidence:
+
+- Extended shared timeline views with `author`, `note`, and `review_status`.
+- Backend defaults old views to empty metadata and `draft`; invalid review values are rejected.
+- Selector labels show `Name · Author · reviewed`.
+- Browser smoke saved `Team meta · Hisham · reviewed` with note `Team filter`; API round-trip verified.
+- API tests cover metadata round-trip and invalid review rejection.
+- Existing shared/local timeline views, links/export, audit views, presets, and viewer behavior remain
+  intact.
+
+Verification evidence:
+
+- Full suite: 232 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; metadata round-trip verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

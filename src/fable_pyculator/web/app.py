@@ -64,6 +64,9 @@ class TimelineViewRequest(BaseModel):
     name: str = Field(min_length=1, max_length=40)
     filter: dict[str, Any] = Field(default_factory=dict)
     saved_at: str | None = Field(default=None, max_length=40)
+    author: str | None = Field(default=None, max_length=40)
+    note: str | None = Field(default=None, max_length=200)
+    review_status: str | None = Field(default=None, max_length=20)
 
 
 class ChatCreateRequest(BaseModel):
@@ -273,7 +276,14 @@ def create_app(config: PortalConfig) -> FastAPI:
     @app.post("/api/optimization/timeline-views")
     def save_timeline_view(request: TimelineViewRequest) -> dict[str, Any]:
         try:
-            return state.save_timeline_view(request.name, request.filter, request.saved_at)
+            return state.save_timeline_view(
+                request.name,
+                request.filter,
+                request.saved_at,
+                author=request.author,
+                note=request.note,
+                review_status=request.review_status,
+            )
         except ValueError as error:
             raise PortalError(str(error), status_code=400) from error
 

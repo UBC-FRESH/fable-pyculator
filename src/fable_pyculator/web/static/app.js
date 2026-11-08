@@ -1709,7 +1709,11 @@ function renderSharedTimelineViews(selectedName = "") {
   if (!select) return;
   const views = state.optimization.sharedTimelineViews || [];
   select.innerHTML = views.length
-    ? views.map((view, index) => `<option value="${index}">${escapeHtml(view.name)}</option>`).join("")
+    ? views.map((view, index) => {
+        const author = view.author ? ` · ${view.author}` : "";
+        const reviewed = view.review_status === "reviewed" ? " · reviewed" : "";
+        return `<option value="${index}">${escapeHtml(view.name + author + reviewed)}</option>`;
+      }).join("")
     : '<option value="">No shared timeline views</option>';
   if (selectedName) {
     const index = views.findIndex((view) => view.name === selectedName);
@@ -1729,6 +1733,9 @@ async function saveSharedTimelineView() {
       body: JSON.stringify({
         name: name.slice(0, 40),
         filter: { ...state.optimization.timelineFilter },
+        author: ($("#optimization-shared-timeline-author")?.value || "").trim().slice(0, 40),
+        note: ($("#optimization-shared-timeline-note")?.value || "").trim().slice(0, 200),
+        review_status: $("#optimization-shared-timeline-review")?.value === "reviewed" ? "reviewed" : "draft",
       }),
     });
     await loadSharedTimelineViews();
@@ -1738,6 +1745,18 @@ async function saveSharedTimelineView() {
   } catch (error) {
     toast(`Could not save shared timeline view: ${error.message}`, "bad");
   }
+}
+
+function syncSharedTimelineMetadata() {
+  const select = $("#optimization-shared-timeline-view");
+  const view = select?.value === "" ? null : state.optimization.sharedTimelineViews?.[Number(select?.value)];
+  if (!view) return;
+  const author = $("#optimization-shared-timeline-author");
+  const note = $("#optimization-shared-timeline-note");
+  const review = $("#optimization-shared-timeline-review");
+  if (author) author.value = view.author || "";
+  if (note) note.value = view.note || "";
+  if (review) review.value = view.review_status === "reviewed" ? "reviewed" : "draft";
 }
 
 function loadSharedTimelineView() {
@@ -2245,6 +2264,7 @@ function bindOptimizationEvents() {
   $("#optimization-timeline-preset-export").addEventListener("click", exportTimelinePresets);
   $("#optimization-timeline-preset-import").addEventListener("click", () => $("#optimization-timeline-preset-file").click());
   $("#optimization-timeline-preset-file").addEventListener("change", importTimelinePresets);
+  $("#optimization-shared-timeline-view").addEventListener("change", syncSharedTimelineMetadata);
   $("#optimization-shared-timeline-save").addEventListener("click", saveSharedTimelineView);
   $("#optimization-shared-timeline-load").addEventListener("click", loadSharedTimelineView);
   $("#optimization-shared-timeline-delete").addEventListener("click", deleteSharedTimelineView);
