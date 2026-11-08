@@ -356,6 +356,8 @@ class PortalConfig:
     agent_timeout: float = 600.0
     auth_user: str | None = None
     auth_password: str | None = None
+    history_retention_days: int = 0
+    history_retention_dry_run: bool = False
     title: str = "FABLE Pyculator"
 
     def __post_init__(self) -> None:
@@ -368,6 +370,8 @@ class PortalConfig:
         self.versions = tuple(dict.fromkeys(str(version) for version in self.versions))
         if bool(self.auth_user) != bool(self.auth_password):
             raise ValueError("auth_user and auth_password must be configured together")
+        if self.history_retention_days < 0 or self.history_retention_days > 3650:
+            raise ValueError("history_retention_days must be between 0 and 3650")
 
 
 class PortalState:
@@ -382,7 +386,9 @@ class PortalState:
         self._compute_lock = threading.RLock()
         self._preset_lock = threading.Lock()
         self._timeline_lock = threading.Lock()
+        self._retention_lock = threading.Lock()
         self._cheat_sheet: CheatSheet | None = None
+        self._apply_startup_retention()
         self.ensure_cheat_sheet()
 
     @property
@@ -982,7 +988,13 @@ class PortalState:
         temporary.write_text(json.dumps(views, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         temporary.replace(path)
 
-    def prune_optimization_history(self, days: int = 90, dry_run: bool = False) -> dict[str, Any]:
+    def prune_optimization_history(
+        self,
+        days: int = 90,
+        dry_run: bool = False,
+        *,
+        source: str = "manual",
+    ) -> dict[str, Any]:
         """Remove history events older than the retention window, keeping each latest event."""
 
         if not isinstance(days, int) or days < 1 or days > 3650:
@@ -1022,14 +1034,57 @@ class PortalState:
                 updated.append(preset)
             if not dry_run and touched:
                 self._write_shared_presets(updated)
-        return {
+        result = {
             "days": days,
             "dry_run": bool(dry_run),
             "removed": removed,
             "kept": kept,
             "presets_touched": touched,
             "presets_total": len(presets),
+            "source": source,
+            "at": datetime.now(UTC).isoformat(timespec="seconds"),
         }
+        self._record_retention(result)
+        return result
+
+    def retention_status(self) -> dict[str, Any]:
+        """Return the startup retention policy and the last recorded result."""
+
+        path = self.runtime_dir / "retention-log.jsonl"
+        last: dict[str, Any] | None = None
+        if path.is_file():
+            try:
+                lines = path.read_text(encoding="utf-8").splitlines()
+                if lines:
+                    last = json.loads(lines[-1])
+            except (OSError, json.JSONDecodeError):
+                last = None
+        return {
+            "history_retention_days": self.config.history_retention_days,
+            "history_retention_dry_run": self.config.history_retention_dry_run,
+            "log": str(path),
+            "last": last,
+        }
+
+    def _apply_startup_retention(self) -> None:
+        days = self.config.history_retention_days
+        if days <= 0:
+            return
+        try:
+            self.prune_optimization_history(
+                days,
+                dry_run=self.config.history_retention_dry_run,
+                source="startup",
+            )
+        except ValueError:
+            return
+
+    def _record_retention(self, result: Mapping[str, Any]) -> None:
+        path = self.runtime_dir / "retention-log.jsonl"
+        with self._retention_lock:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("a", encoding="utf-8") as target:
+                target.write(json.dumps(dict(result), sort_keys=True) + "\n")
 
     def _load_shared_presets(self) -> list[dict[str, Any]]:
         path = self.runtime_dir / "optimization-presets.json"

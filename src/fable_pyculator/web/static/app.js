@@ -206,6 +206,7 @@ async function loadOptimization() {
     }
     await loadSharedOptimizationPresets();
     await loadSharedTimelineViews();
+    await loadRetentionPolicy();
     const select = $("#optimization-version");
     if (!state.optimization.list.length) {
       status.textContent = "no frontier";
@@ -1798,6 +1799,25 @@ async function pruneOptimizationHistory(dryRun) {
     if (!dryRun) await loadSharedOptimizationPresets();
   } catch (error) {
     toast(`Could not prune history: ${error.message}`, "bad");
+  }
+}
+
+
+async function loadRetentionPolicy() {
+  const target = $("#optimization-retention-policy");
+  if (!target) return;
+  try {
+    const policy = await request("optimization/retention");
+    const days = Number(policy.history_retention_days || 0);
+    const mode = policy.history_retention_dry_run ? "dry run" : "prune";
+    target.textContent = days > 0
+      ? `Startup retention: ${days} days (${mode}).`
+      : "Startup retention: disabled.";
+    if (policy.last?.at) {
+      target.textContent += ` Last run: ${policy.last.source || "manual"} · ${policy.last.removed} removed · ${policy.last.kept} kept.`;
+    }
+  } catch {
+    target.textContent = "Startup retention: unavailable.";
   }
 }
 

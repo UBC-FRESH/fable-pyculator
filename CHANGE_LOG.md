@@ -148,6 +148,8 @@ This file records completed project work in chronological order.
 - Added a previewable shared-history retention policy that prunes old events while preserving each
   preset's latest event.
   PR #342 merged as `89abc93`; post-merge Test and Docs Pages passed.
+- Added opt-in startup retention via CLI/config, a JSONL retention audit log, and a policy/last-run
+  read endpoint and UI hint.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
