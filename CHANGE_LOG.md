@@ -129,6 +129,7 @@ This file records completed project work in chronological order.
 - Added a read-only shared preset audit table and JSON audit export with metadata and full history.
   PR #318 merged as `94881a5`; post-merge Test and Docs Pages passed.
 - Added a cross-preset shared review activity timeline and event-level audit CSV export.
+  PR #321 merged as `0050ecb`; post-merge Test and Docs Pages passed.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

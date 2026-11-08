@@ -159,9 +159,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 55 is closed: a read-only shared audit table and JSON export cover all shared presets,
   metadata, latest events, and full history. PR #318 merged as `94881a5`; parent #316 and child #317
   are closed. Post-merge Test and Docs Pages passed.
-- Phase 56 is implemented on `feature/p56-activity-timeline`: the shared library now has a compact
-  cross-preset review activity timeline and event-level audit CSV export. Parent #319 and child #320
-  are mapped; PR #321 and closeout remain.
+- Phase 56 is closed: the shared library has a compact cross-preset review activity timeline and
+  event-level audit CSV export. PR #321 merged as `0050ecb`; parent #319 and child #320 are closed.
+  Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4137,9 +4137,9 @@ GitHub parent issue: #319.
 
 Branch: `feature/p56-activity-timeline`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #321.
+Pull request: #321 (merged as `0050ecb`).
 
 Goal: add a cross-preset review activity timeline and CSV audit export.
 
@@ -4180,8 +4180,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; timeline and CSV audit verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #321 squash-merged as `0050ecb`; parent #319 and child #320 closed.
 
