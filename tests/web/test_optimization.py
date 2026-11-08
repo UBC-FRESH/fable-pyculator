@@ -103,6 +103,7 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-timeline-preset"' in shell.text
     assert 'id="optimization-timeline-window"' in shell.text
     assert 'id="optimization-timeline-recently-reviewed"' in shell.text
+    assert 'id="optimization-review-workload"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -147,6 +148,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "exportSharedAuditCsv" in script.text
     assert "timelineFilter" in script.text
     assert "Recently reviewed" in shell.text
+    assert "renderReviewWorkload" in script.text
+    assert "data-workload-author" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200

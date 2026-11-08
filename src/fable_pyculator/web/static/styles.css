@@ -657,3 +657,10 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .timeline-filters .field { margin-bottom: 0.25rem; }
 .timeline-actions { margin: 0.2rem 0 0.35rem; }
 @media (max-width: 560px) { .timeline-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.review-workload { margin-top: 0.45rem; max-height: 9rem; overflow: auto; }
+.review-workload table { width: 100%; border-collapse: collapse; font-size: 0.65rem; }
+.review-workload th, .review-workload td { padding: 0.22rem 0.28rem; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.review-workload th:first-child, .review-workload td:first-child { text-align: left; }
+.review-workload th { color: var(--muted); font-weight: 650; }
+.review-workload tr[data-workload-author] { cursor: pointer; }
+.review-workload tr[data-workload-author]:hover { background: var(--panel-soft); }
