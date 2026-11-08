@@ -215,9 +215,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 74 is closed: shared-library snapshots can be written manually or on an opt-in interval,
   retained newest-N, listed, downloaded, and restored through the existing preview. PR #377 merged as
   `8de03ba`; parent #374 and children #375/#376 are closed. Post-merge Test and Docs Pages passed.
-- Phase 75 is implemented on `feature/p75-snapshot-diff`: snapshots can be diffed against the current
-  library with exact added/replaced/removed/kept counts, changed metadata/state/filter keys, and
-  bounded history deltas. Parent #378 and child #379 are mapped; PR #380 and closeout remain.
+- Phase 75 is closed: snapshots can be diffed against the current library with exact
+  added/replaced/removed/kept counts, changed metadata/state/filter keys, and bounded history
+  deltas. PR #380 merged as `c3a97d3`; parent #378 and child #379 are closed. Post-merge Test and
+  Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5277,9 +5278,9 @@ GitHub parent issue: #378.
 
 Branch: `feature/p75-snapshot-diff`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #380.
+Pull request: #380 (merged as `c3a97d3`).
 
 Goal: show exact differences between a stored snapshot and the current shared library.
 
@@ -5326,8 +5327,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke: no page errors.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #380 squash-merged as `c3a97d3`; parent #378 and child #379 closed.
 
