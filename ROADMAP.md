@@ -200,9 +200,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 69 is closed: retention run details include exact before/after history vectors per affected
   preset and the dashboard renders the diff. PR #360 merged as `d10b289`; parent #358 and child #359
   are closed. Post-merge Test and Docs Pages passed.
-- Phase 70 is implemented on `feature/p70-confirm-prune`: Prune history now previews first and requires
-  a second Confirm prune click; changing days resets the preview. Parent #361 and child #362 are
-  mapped; PR #363 and closeout remain.
+- Phase 70 is closed: Prune history now previews first and requires a second Confirm prune click;
+  changing days resets the preview. PR #363 merged as `32423b3`; parent #361 and child #362 are
+  closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4964,9 +4964,9 @@ GitHub parent issue: #361.
 
 Branch: `feature/p70-confirm-prune`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #363.
+Pull request: #363 (merged as `32423b3`).
 
 Goal: require a dry-run preview before committing retention pruning.
 
@@ -5009,8 +5009,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; confirm flow verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #363 squash-merged as `32423b3`; parent #361 and child #362 closed.
 
