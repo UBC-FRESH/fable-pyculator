@@ -186,9 +186,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 64 is closed: the portal can apply a configurable startup retention policy (or dry run),
   writes a JSONL retention log, and exposes the policy/last result through the API and UI. PR #345
   merged as `b0d70ba`; parent #343 and child #344 are closed. Post-merge Test and Docs Pages passed.
-- Phase 65 is implemented on `feature/p65-scheduled-retention`: opt-in interval-scheduled retention
-  now runs in a daemon loop, logs source=scheduled, and exposes interval/next-run status. Parent #346
-  and child #347 are mapped; PR and closeout remain.
+- Phase 65 is closed: opt-in interval-scheduled retention runs in a daemon loop, logs
+  source=scheduled, and exposes interval/next-run status. PR #348 merged as `b7ddf9b`; parent #346 and
+  child #347 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4670,9 +4670,9 @@ GitHub parent issue: #346.
 
 Branch: `feature/p65-scheduled-retention`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #348.
+Pull request: #348 (merged as `b7ddf9b`).
 
 Goal: run the configured retention policy on a background maintenance interval.
 
@@ -4715,8 +4715,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #348 squash-merged as `b7ddf9b`; parent #346 and child #347 closed.
 
