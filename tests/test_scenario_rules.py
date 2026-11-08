@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import csv
+import importlib.util
+import io
+import subprocess
+import sys
 from pathlib import Path
 
 from fable_pyculator.scenario_rules import (
@@ -198,6 +203,70 @@ def test_enumerate_domain_counts_valid_and_invalid(tmp_path: Path) -> None:
     assert result["total"] == 4
     assert result["invalid"] == 2
     assert result["valid"] == 2
+
+
+def _review_generator():
+    path = Path("scripts/build_rule_review_package.py").resolve()
+    spec = importlib.util.spec_from_file_location("build_rule_review_package", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_review_package_matches_rule_registry() -> None:
+    result = subprocess.run(
+        [sys.executable, "scripts/build_rule_review_package.py", "--check"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_review_check_detects_drift(tmp_path: Path) -> None:
+    markdown = tmp_path / "review.md"
+    markdown.write_text(
+        "## Rule table\n\nstale\n\n## Current status\n\nstale\n",
+        encoding="utf-8",
+    )
+    worksheet = tmp_path / "review.csv"
+    worksheet.write_text("stale\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/build_rule_review_package.py",
+            "--check",
+            "--markdown",
+            str(markdown),
+            "--csv",
+            str(worksheet),
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "out of date" in result.stdout
+
+
+def test_review_worksheet_preserves_decisions(tmp_path: Path) -> None:
+    generator = _review_generator()
+    rules = load_rule_registry(Path("planning/fable-scenario-consistency-rules.yaml"))
+    worksheet = tmp_path / "review.csv"
+    worksheet.write_text(
+        "rule_id,decision,reviewer,comments\nCUSTOM-DIET-001,approve_error,Reviewer,Keep this rule\n",
+        encoding="utf-8",
+    )
+
+    rendered = generator.render_csv(rules, worksheet)
+    rows = list(csv.DictReader(io.StringIO(rendered)))
+    row = next(item for item in rows if item["rule_id"] == "CUSTOM-DIET-001")
+
+    assert row["decision"] == "approve_error"
+    assert row["reviewer"] == "Reviewer"
+    assert row["comments"] == "Keep this rule"
+    assert generator.format_condition({"switch": "x", "in": ["a", "b"]}) == "x in {a, b}"
 
 
 def test_real_rule_registry_loads() -> None:

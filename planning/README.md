@@ -23,4 +23,6 @@ Current review drafts:
 - `fable-scenario-consistency-rules.yaml`: machine-readable draft rule registry.
 - `fable-scenario-consistency-review-package.md`: compact review guide for Hisham/FABLE experts.
 - `fable-scenario-consistency-review-package.csv`: fillable rule-decision worksheet.
+- `../scripts/build_rule_review_package.py`: regenerates the CSV and Markdown rule block from the YAML
+  registry and preserves existing reviewer decisions; `--check` fails on drift.
 
