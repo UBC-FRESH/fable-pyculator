@@ -225,6 +225,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 77 is closed: completed worksheet decisions can be dry-run or explicitly imported into the
   registry with status/severity/provenance updates. PR #386 merged as `f3dc487`; parent #384 and
   child #385 are closed. Post-merge Test and Docs Pages passed.
+- Phase 78 is implemented on `feature/p78-snapshot-cleanup`: snapshot policy is visible in the shared
+  panel and snapshots can be deleted with a two-step confirmation. Parent #387 and child #388 are
+  mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5463,4 +5466,61 @@ Verification evidence:
 Closeout evidence:
 
 - PR #386 squash-merged as `f3dc487`; parent #384 and child #385 closed.
+
+## Phase 78: Snapshot Cleanup and Policy Visibility
+
+GitHub parent issue: #387.
+
+Branch: `feature/p78-snapshot-cleanup`.
+
+Status: implemented; PR pending.
+
+Goal: expose snapshot retention policy and add confirmed snapshot deletion in the portal.
+
+Tasks:
+
+- [x] P78.1 Add snapshot policy API and confirmed delete controls. Child issue: #388.
+
+Scope:
+
+- Add a read-only snapshot policy endpoint.
+- Show scheduled interval, retained newest count, and stored count.
+- Add two-step Delete / Confirm delete controls to the inventory.
+- Reload inventory and policy after create/delete.
+- Preserve existing download, diff, restore, and schedule behavior.
+
+Out of scope:
+
+- Authentication.
+- Changing snapshot scheduling semantics.
+- New optimization runs.
+- Bulk deletion.
+
+Architecture notes:
+
+- Policy values come from the existing PortalConfig fields.
+- Delete already exists in the API; this phase adds the confirmed UI path.
+- The two-step control resets on reload or when another row is armed.
+- Snapshot contents remain immutable.
+
+Implementation evidence:
+
+- Added `GET /api/optimization/snapshots/policy` with interval, keep, scheduled, count, and directory.
+- Shared panel reports scheduled interval, newest-retained count, and stored count.
+- Snapshot rows add two-step Delete / Confirm delete with the existing danger style.
+- Inventory and policy reload after create or delete; the armed target resets on reload.
+- Existing download, diff, restore, scheduler, and retention behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 252 passed, 16 skipped.
+- API test checks policy keep/interval/count before and after deletion.
+- Browser smoke created a snapshot, verified policy counts, armed deletion, confirmed deletion, and cleaned up.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke: no page errors.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

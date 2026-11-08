@@ -301,6 +301,10 @@ def create_app(config: PortalConfig) -> FastAPI:
         except (OSError, ValueError) as error:
             raise PortalError(str(error), status_code=400) from error
 
+    @app.get("/api/optimization/snapshots/policy")
+    def optimization_snapshot_policy() -> dict[str, Any]:
+        return state.library_snapshot_policy()
+
     @app.get("/api/optimization/snapshots/{name}/diff")
     def diff_optimization_snapshot(name: str, mode: str = Query(default="merge")) -> dict[str, Any]:
         try:

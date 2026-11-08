@@ -1390,17 +1390,38 @@ function formatSnapshotBytes(value) {
 async function loadLibrarySnapshots() {
   const container = $("#optimization-shared-snapshots");
   if (!container) return;
+  state.optimization.snapshotDeleteArmed = null;
   try {
     const snapshots = await request("optimization/snapshots?limit=20");
     state.optimization.librarySnapshots = Array.isArray(snapshots) ? snapshots : [];
   } catch {
     state.optimization.librarySnapshots = [];
   }
+  try {
+    state.optimization.snapshotPolicy = await request("optimization/snapshots/policy");
+  } catch {
+    state.optimization.snapshotPolicy = null;
+  }
   if (state.optimization.snapshotDiffName && !state.optimization.librarySnapshots.some((snapshot) => snapshot.name === state.optimization.snapshotDiffName)) {
     state.optimization.snapshotDiffName = null;
     renderLibrarySnapshotDiff(null);
   }
+  renderLibrarySnapshotPolicy();
   renderLibrarySnapshots();
+}
+
+function renderLibrarySnapshotPolicy() {
+  const target = $("#optimization-shared-snapshot-policy");
+  if (!target) return;
+  const policy = state.optimization.snapshotPolicy;
+  if (!policy) {
+    target.textContent = "Snapshot policy unavailable.";
+    return;
+  }
+  const schedule = policy.scheduled
+    ? `Scheduled every ${Number(policy.interval_minutes || 0)} min`
+    : "Scheduled snapshots disabled";
+  target.textContent = `${schedule} · retaining newest ${Number(policy.keep || 0)} · ${Number(policy.count || 0)} stored`;
 }
 
 function renderLibrarySnapshots() {
@@ -1414,7 +1435,8 @@ function renderLibrarySnapshots() {
   const rows = snapshots
     .map((snapshot) => {
       const name = escapeHtml(snapshot.name || "");
-      return `<tr><td>${escapeHtml(formatDate(snapshot.at))}</td><td>${escapeHtml(snapshot.source || "manual")}</td><td>${Number(snapshot.presets || 0)}</td><td>${Number(snapshot.timeline_views || 0)}</td><td>${escapeHtml(formatSnapshotBytes(snapshot.bytes))}</td><td><button class="button ghost small" type="button" data-snapshot-diff="${name}">Diff</button> <button class="button ghost small" type="button" data-snapshot-download="${name}">Download</button> <button class="button ghost small" type="button" data-snapshot-restore="${name}">Restore</button></td></tr>`;
+      const armed = state.optimization.snapshotDeleteArmed === snapshot.name;
+      return `<tr><td>${escapeHtml(formatDate(snapshot.at))}</td><td>${escapeHtml(snapshot.source || "manual")}</td><td>${Number(snapshot.presets || 0)}</td><td>${Number(snapshot.timeline_views || 0)}</td><td>${escapeHtml(formatSnapshotBytes(snapshot.bytes))}</td><td><button class="button ghost small" type="button" data-snapshot-diff="${name}">Diff</button> <button class="button ghost small" type="button" data-snapshot-download="${name}">Download</button> <button class="button ghost small" type="button" data-snapshot-restore="${name}">Restore</button> <button class="button ghost small${armed ? " danger" : ""}" type="button" data-snapshot-delete="${name}">${armed ? "Confirm delete" : "Delete"}</button></td></tr>`;
     })
     .join("");
   container.innerHTML = `<table><thead><tr><th>At</th><th>Source</th><th>Presets</th><th>Views</th><th>Size</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`;
@@ -1426,6 +1448,9 @@ function renderLibrarySnapshots() {
   });
   container.querySelectorAll("[data-snapshot-restore]").forEach((button) => {
     button.addEventListener("click", () => prepareLibrarySnapshotRestore(button.dataset.snapshotRestore));
+  });
+  container.querySelectorAll("[data-snapshot-delete]").forEach((button) => {
+    button.addEventListener("click", () => deleteLibrarySnapshot(button.dataset.snapshotDelete));
   });
 }
 
@@ -1475,6 +1500,24 @@ async function showLibrarySnapshotDiff(name) {
     renderLibrarySnapshotDiff(diff);
   } catch (error) {
     toast(`Could not diff the snapshot: ${error.message}`, "bad");
+  }
+}
+
+async function deleteLibrarySnapshot(name) {
+  if (!name) return;
+  if (state.optimization.snapshotDeleteArmed !== name) {
+    state.optimization.snapshotDeleteArmed = name;
+    renderLibrarySnapshots();
+    toast(`Click Confirm delete to remove ${name}`, "warn");
+    return;
+  }
+  try {
+    await request(`optimization/snapshots/${encodeURIComponent(name)}`, { method: "DELETE" });
+    state.optimization.snapshotDeleteArmed = null;
+    await loadLibrarySnapshots();
+    toast(`Deleted library snapshot ${name}`, "good");
+  } catch (error) {
+    toast(`Could not delete the snapshot: ${error.message}`, "bad");
   }
 }
 
