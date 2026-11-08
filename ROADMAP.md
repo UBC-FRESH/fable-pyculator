@@ -162,6 +162,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 56 is closed: the shared library has a compact cross-preset review activity timeline and
   event-level audit CSV export. PR #321 merged as `0050ecb`; parent #319 and child #320 are closed.
   Post-merge Test and Docs Pages passed.
+- Phase 57 is implemented on `feature/p57-timeline-filters`: the review timeline now filters by
+  author/action/preset/date window and has Recently reviewed and Reset shortcuts. Parent #322 and
+  child #323 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4185,4 +4188,57 @@ Verification evidence:
 Closeout evidence:
 
 - PR #321 squash-merged as `0050ecb`; parent #319 and child #320 closed.
+
+## Phase 57: Review Timeline Filters
+
+GitHub parent issue: #322.
+
+Branch: `feature/p57-timeline-filters`.
+
+Status: implemented; PR pending.
+
+Goal: make the shared review timeline filterable by author, action, preset, and date window.
+
+Tasks:
+
+- [x] P57.1 Add timeline author/action/preset/window filters. Child issue: #323.
+
+Scope:
+
+- Add author, action, preset, and time-window filters.
+- Add a Recently reviewed shortcut.
+- Keep the timeline read-only and self-declared.
+- Preserve the audit table and exports.
+
+Out of scope:
+
+- Authentication or verified reviewer identity.
+- New optimization runs.
+- Global-frontier claims.
+
+Architecture notes:
+
+- Filters are local UI state.
+- The timeline still reads server-owned preset history.
+- Event authors remain self-declared.
+
+Implementation evidence:
+
+- Added author, action, preset, and date-window filters.
+- Added Recently reviewed (action=reviewed, 7-day window) and Reset filters shortcuts.
+- Browser smoke: author filter reduced 2 events to 1; action filter and reset worked; recently reviewed
+  produced 0 events with the expected filter values.
+- Existing audit table/CSV/JSON exports, review queue/history, presets, links, and viewer behavior remain
+  intact.
+
+Verification evidence:
+
+- Full suite: 230 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; timeline filters and shortcuts verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

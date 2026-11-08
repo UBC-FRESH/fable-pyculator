@@ -324,6 +324,17 @@
               <div id="optimization-shared-audit" class="shared-audit">
                 <p class="hint">No shared presets loaded.</p>
               </div>
+              <div class="timeline-filters">
+                <label class="field"><span>Author</span><select id="optimization-timeline-author"><option value="">All authors</option></select></label>
+                <label class="field"><span>Action</span><select id="optimization-timeline-action"><option value="">All actions</option><option value="created">Created</option><option value="updated">Updated</option><option value="reviewed">Reviewed</option></select></label>
+                <label class="field"><span>Preset</span><select id="optimization-timeline-preset"><option value="">All presets</option></select></label>
+                <label class="field"><span>Window</span><select id="optimization-timeline-window"><option value="all">All time</option><option value="24h">Last 24h</option><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option></select></label>
+              </div>
+              <div class="button-row timeline-actions">
+                <button id="optimization-timeline-recently-reviewed" class="button ghost small" type="button">Recently reviewed</button>
+                <button id="optimization-timeline-reset" class="button ghost small" type="button">Reset filters</button>
+                <span id="optimization-timeline-count" class="pill muted">0 events</span>
+              </div>
               <div id="optimization-shared-timeline" class="shared-timeline">
                 <p class="hint">No review activity.</p>
               </div>

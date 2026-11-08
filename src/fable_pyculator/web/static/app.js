@@ -28,6 +28,7 @@ const state = {
     brushes: [],
     sharedPresets: [],
     sharedFilter: "all",
+    timelineFilter: { author: "", action: "", preset: "", window: "all" },
     filtered: [],
     pinned: [],
     pending: null,
@@ -1372,9 +1373,40 @@ function sharedAuditEvents(presets) {
 function renderSharedTimeline(presets) {
   const container = $("#optimization-shared-timeline");
   if (!container) return;
-  const events = sharedAuditEvents(presets).slice(0, 20);
+  const filter = state.optimization.timelineFilter;
+  const allEvents = sharedAuditEvents(presets);
+  const authors = [...new Set(allEvents.map((event) => event.author).filter(Boolean))].sort();
+  const presetNames = presets.map((preset) => preset.name).sort();
+  const authorSelect = $("#optimization-timeline-author");
+  const presetSelect = $("#optimization-timeline-preset");
+  if (authorSelect) {
+    authorSelect.innerHTML = '<option value="">All authors</option>' +
+      authors.map((author) => `<option value="${escapeHtml(author)}">${escapeHtml(author)}</option>`).join("");
+    authorSelect.value = authors.includes(filter.author) ? filter.author : "";
+  }
+  if (presetSelect) {
+    presetSelect.innerHTML = '<option value="">All presets</option>' +
+      presetNames.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
+    presetSelect.value = presetNames.includes(filter.preset) ? filter.preset : "";
+  }
+  if (!authors.includes(filter.author)) filter.author = "";
+  if (!presetNames.includes(filter.preset)) filter.preset = "";
+  const windowMs = { "24h": 24 * 60 * 60 * 1000, "7d": 7 * 24 * 60 * 60 * 1000, "30d": 30 * 24 * 60 * 60 * 1000 };
+  const now = Date.now();
+  const events = allEvents
+    .filter((event) => !filter.author || event.author === filter.author)
+    .filter((event) => !filter.action || event.action === filter.action)
+    .filter((event) => !filter.preset || event.preset === filter.preset)
+    .filter((event) => {
+      if (filter.window === "all") return true;
+      const timestamp = Date.parse(event.at);
+      return Number.isFinite(timestamp) && now - timestamp <= windowMs[filter.window];
+    })
+    .slice(0, 20);
+  const count = $("#optimization-timeline-count");
+  if (count) count.textContent = `${events.length} event${events.length === 1 ? "" : "s"}`;
   if (!events.length) {
-    container.innerHTML = '<p class="hint">No review activity.</p>';
+    container.innerHTML = '<p class="hint">No review activity matches these filters.</p>';
     return;
   }
   const rows = events
@@ -1865,6 +1897,33 @@ function bindOptimizationEvents() {
   $("#optimization-shared-mark-reviewed").addEventListener("click", markSharedOptimizationPresetReviewed);
   $("#optimization-shared-export").addEventListener("click", exportSharedOptimizationPresets);
   $("#optimization-shared-export-csv").addEventListener("click", exportSharedAuditCsv);
+  for (const [id, key] of [
+    ["optimization-timeline-author", "author"],
+    ["optimization-timeline-action", "action"],
+    ["optimization-timeline-preset", "preset"],
+    ["optimization-timeline-window", "window"],
+  ]) {
+    $(`#${id}`).addEventListener("change", () => {
+      state.optimization.timelineFilter[key] = $(`#${id}`).value;
+      renderSharedTimeline(state.optimization.sharedPresets || []);
+    });
+  }
+  $("#optimization-timeline-recently-reviewed").addEventListener("click", () => {
+    state.optimization.timelineFilter = { author: "", action: "reviewed", preset: "", window: "7d" };
+    $("#optimization-timeline-author").value = "";
+    $("#optimization-timeline-action").value = "reviewed";
+    $("#optimization-timeline-preset").value = "";
+    $("#optimization-timeline-window").value = "7d";
+    renderSharedTimeline(state.optimization.sharedPresets || []);
+  });
+  $("#optimization-timeline-reset").addEventListener("click", () => {
+    state.optimization.timelineFilter = { author: "", action: "", preset: "", window: "all" };
+    $("#optimization-timeline-author").value = "";
+    $("#optimization-timeline-action").value = "";
+    $("#optimization-timeline-preset").value = "";
+    $("#optimization-timeline-window").value = "all";
+    renderSharedTimeline(state.optimization.sharedPresets || []);
+  });
   $("#optimization-shared-load").addEventListener("click", loadSharedOptimizationPreset);
   $("#optimization-shared-delete").addEventListener("click", deleteSharedOptimizationPreset);
   $("#pareto-clear-reference").addEventListener("click", clearOptimizationReference);
