@@ -171,9 +171,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 59 is closed: named local timeline filter views save and restore author/action/preset/window
   combinations. PR #330 merged as `eda3171`; parent #328 and child #329 are closed. Post-merge Test
   and Docs Pages passed.
-- Phase 60 is implemented on `feature/p60-shareable-timeline-links`: timeline filters can be copied
-  as URL state and the saved timeline library can be exported/imported as JSON. Parent #331 and child
-  #332 are mapped; PR #333 and closeout remain.
+- Phase 60 is closed: timeline filters can be copied as URL state and the saved timeline library can
+  be exported/imported as JSON. PR #333 merged as `aebfc7e`; parent #331 and child #332 are closed.
+  Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4370,9 +4370,9 @@ GitHub parent issue: #331.
 
 Branch: `feature/p60-shareable-timeline-links`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #333.
+Pull request: #333 (merged as `aebfc7e`).
 
 Goal: make saved timeline filter views shareable and portable.
 
@@ -4415,8 +4415,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; link and JSON round-trip verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #333 squash-merged as `aebfc7e`; parent #331 and child #332 closed.
 
