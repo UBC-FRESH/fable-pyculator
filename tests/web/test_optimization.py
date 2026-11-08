@@ -87,6 +87,9 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-shared-save"' in shell.text
     assert 'id="optimization-shared-load"' in shell.text
     assert 'id="optimization-shared-delete"' in shell.text
+    assert 'id="optimization-shared-author"' in shell.text
+    assert 'id="optimization-shared-note"' in shell.text
+    assert 'id="optimization-shared-review"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -120,6 +123,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "loadSharedOptimizationPresets" in script.text
     assert "saveSharedOptimizationPreset" in script.text
     assert "deleteSharedOptimizationPreset" in script.text
+    assert "syncSharedPresetMetadata" in script.text
+    assert "review_status" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
@@ -129,6 +134,9 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
 def _preset_payload(name: str) -> dict[str, object]:
     return {
         "name": name,
+        "author": "Reviewer",
+        "note": "Team view",
+        "review_status": "reviewed",
         "state": {
             "version": "2024",
             "x": "food_total_kcal_feas",
@@ -157,6 +165,9 @@ def test_shared_optimization_preset_api_round_trip(tmp_path: Path) -> None:
         listing = client.get("/api/optimization/presets").json()
         assert len(listing) == 1
         assert listing[0]["state"]["brushes"][0]["axisKey"] == "diet_scen"
+        assert listing[0]["author"] == "Reviewer"
+        assert listing[0]["note"] == "Team view"
+        assert listing[0]["review_status"] == "reviewed"
 
         replaced = client.post("/api/optimization/presets", json=_preset_payload("Shared view"))
         assert replaced.status_code == 200
@@ -164,6 +175,11 @@ def test_shared_optimization_preset_api_round_trip(tmp_path: Path) -> None:
 
         invalid = client.post("/api/optimization/presets", json={"name": "Bad", "state": {}})
         assert invalid.status_code == 400
+        invalid_review = client.post(
+            "/api/optimization/presets",
+            json={**_preset_payload("Bad review"), "review_status": "approved"},
+        )
+        assert invalid_review.status_code == 400
 
         deleted = client.delete("/api/optimization/presets/Shared view")
         assert deleted.status_code == 200

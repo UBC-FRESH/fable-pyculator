@@ -117,6 +117,8 @@ This file records completed project work in chronological order.
 - Added a server-backed shared Optimization preset library under `runtime/portal/`, with validated
   list/save/delete APIs and UI controls visible to everyone with portal access.
   PR #306 merged as `9bd4d1f`; post-merge Test and Docs Pages passed.
+- Added self-declared author, note, and draft/reviewed metadata to shared Optimization presets, shown
+  in the shared selector and persisted by the API.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
