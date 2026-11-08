@@ -93,7 +93,9 @@ Optimization
    land, and the weighted-goal score to X/Y/Z, supports colour, size, quality-floor filtering, an
    exact-front-only toggle, a provisional-warning filter, hover values, selected-point highlighting,
    and actual axis ranges. It also lets you inspect, pin, compare, and load a frontier point into the
-   Workbench. The viewer reads ``examples/optimization/fable_2024/frontier.json`` through
+   Workbench. The current axes, colour, size, filters, and selected point are encoded in the URL;
+   **Copy view link** shares that exact state, and **Download filtered CSV** exports the visible exact
+   points. The viewer reads ``examples/optimization/fable_2024/frontier.json`` through
    ``/api/optimization/frontiers``; it never runs an optimizer or a surrogate in the browser.
 
    .. image:: /_static/optimization-frontier.png

@@ -115,6 +115,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   actual axis ranges, categorical legends, and a hide-provisional-warning filter (91 of 160 points
   remain). PR #279 merged as `a661259`; parent #277 and child #278 are closed. Post-merge Test and
   Docs Pages passed.
+- Phase 43 is implemented on `feature/p43-pareto-share-export`: the Optimization view now encodes
+  axes, colour, size, floor, filters, and selected point in the URL; supports copy-link; and exports
+  the currently filtered exact points as CSV. Parent #280 and child #281 are mapped; PR #282 and closeout
+  remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3348,4 +3352,58 @@ Verification evidence:
 Closeout evidence:
 
 - PR #279 squash-merged as `a661259`; parent #277 and child #278 closed.
+
+## Phase 43: Shareable Pareto State and Filtered Export
+
+GitHub parent issue: #280.
+
+Branch: `feature/p43-pareto-share-export`.
+
+Status: pr-open.
+
+Pull request: #282.
+
+Goal: make exact Pareto views shareable and exportable without changing the frontier data.
+
+Tasks:
+
+- [x] P43.1 Add URL state, copy-link, and filtered CSV export. Child issue: #281.
+
+Scope:
+
+- Encode version, axes, colour, size, floor, filters, and selected point in the URL.
+- Add a copy-link action.
+- Add filtered CSV export.
+- Browser-smoke and document the workflow.
+
+Out of scope:
+
+- New optimization runs.
+- Global-frontier claims.
+- Rule approval.
+
+Architecture notes:
+
+- The query string holds viewer state; the hash remains the portal page selector.
+- CSV rows are the currently visible exact points, not a recomputation.
+- The frontier remains local and provisional.
+
+Implementation evidence:
+
+- URL state round-trip restored X/Y/Z, colour, size, floor, exact-front, warning filter, and point
+  `p012`.
+- Copy-link copied the full state URL to the clipboard in the browser smoke.
+- Filtered CSV export produced 13 rows with 13 visible points under the tested filters.
+- Existing hover, pin/compare, and Workbench prefill remain intact.
+
+Verification evidence:
+
+- Full suite: 227 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 
