@@ -221,7 +221,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   Docs Pages passed.
 - Phase 76 is implemented on `feature/p76-generated-review-package`: the expert review worksheet
   and Markdown rule block are generated from the YAML registry, preserve reviewer decisions, and
-  have a `--check` drift gate. Parent #381 and child #382 are mapped; PR and closeout remain.
+  have a `--check` drift gate. Parent #381 and child #382 are mapped; PR #383 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5342,7 +5342,9 @@ GitHub parent issue: #381.
 
 Branch: `feature/p76-generated-review-package`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #383.
 
 Goal: generate the expert review worksheet and Markdown rule table from the YAML registry with a drift check.
 
