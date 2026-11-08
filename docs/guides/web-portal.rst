@@ -90,8 +90,9 @@ Compare
 
 Optimization
    Explore the tracked exact Pareto frontier for the optimization pilot. The page maps food, GHG,
-   land, and the weighted-goal score to X/Y/Z, supports colour, size, quality-floor filtering, and an
-   exact-front-only toggle, and lets you inspect, pin, compare, and load a frontier point into the
+   land, and the weighted-goal score to X/Y/Z, supports colour, size, quality-floor filtering, an
+   exact-front-only toggle, a provisional-warning filter, hover values, selected-point highlighting,
+   and actual axis ranges. It also lets you inspect, pin, compare, and load a frontier point into the
    Workbench. The viewer reads ``examples/optimization/fable_2024/frontier.json`` through
    ``/api/optimization/frontiers``; it never runs an optimizer or a surrogate in the browser.
 

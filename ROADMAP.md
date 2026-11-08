@@ -111,6 +111,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   X/Y/Z/colour/size mapping, quality-floor and exact-front filters, pinning, comparison, and
   Workbench prefill. PR #276 merged as `1beceee`; parent #273 and children #274-#275 are closed.
   Post-merge Test and Docs Pages passed.
+- Phase 42 is implemented on `feature/p42-pareto-viewer-polish`: the Optimization page now has hover
+  values, selected-point highlighting, actual axis ranges, categorical legends, and a
+  hide-provisional-warning filter (91 of 160 points remain). Parent #277 and child #278 are mapped;
+  PR #279 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3287,4 +3291,60 @@ Verification evidence:
 Closeout evidence:
 
 - PR #276 squash-merged as `1beceee`; parent #273 and children #274-#275 closed.
+
+## Phase 42: Pareto Viewer Interaction Polish
+
+GitHub parent issue: #277.
+
+Branch: `feature/p42-pareto-viewer-polish`.
+
+Status: pr-open.
+
+Pull request: #279.
+
+Goal: polish the exact Pareto viewer interactions without changing the exact frontier data.
+
+Tasks:
+
+- [x] P42.1 Add hover, selection marker, real axis ranges, and warning filtering. Child issue: #278.
+
+Scope:
+
+- Hover tooltip with exact objectives and point id.
+- Highlight the selected point in the 3D scene.
+- Show actual value ranges for the selected X/Y/Z dimensions.
+- Add categorical colour legends.
+- Add a hide-provisional-warning filter.
+
+Out of scope:
+
+- New optimization runs.
+- Surrogate or global-frontier claims.
+- Changing the tracked frontier artifact.
+
+Architecture notes:
+
+- The viewer remains read-only over exact points.
+- Provisional warnings are display metadata; hiding them is not approval.
+- Three.js interaction work stays bounded to the current 160-point scene.
+
+Implementation evidence:
+
+- Added a hover tooltip with exact food, GHG, and goal values; verified hovering `p080`.
+- Added a persistent wireframe marker for the selected point.
+- Added actual range text for the selected X/Y/Z dimensions.
+- Added a categorical colour legend for front membership, phase origin, and control values.
+- Added a hide-provisional-warning filter; 91 of 160 points remain visible.
+- Existing exact-front filter, pin/compare, and Workbench prefill remain intact.
+
+Verification evidence:
+
+- Full suite: 227 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; warning filter and Workbench prefill verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

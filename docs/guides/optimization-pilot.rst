@@ -526,8 +526,10 @@ Portal viewer
 The portal now has an **Optimization** page that reads
 `examples/optimization/fable_2024/frontier.json` through `/api/optimization/frontiers`. It maps food,
 GHG, land, and the weighted-goal score to X/Y/Z, supports colour and size mapping, quality-floor
-filtering, and an exact-front-only toggle. A point can be selected, pinned with up to two other
-points for comparison, and loaded into the Workbench as a scenario prefill.
+filtering, an exact-front-only toggle, and a hide-provisional-warning filter. Hover shows exact
+values, the selected point is highlighted, and the panel shows the actual range of each mapped
+dimension. A point can be selected, pinned with up to two other points for comparison, and loaded
+into the Workbench as a scenario prefill.
 
 This is the same interaction pattern as the urban-forest lab and WS4 Pareto explorer. The FABLE
 viewer is read-only over exact points: it does not run the optimizer, a surrogate, or a hidden model
