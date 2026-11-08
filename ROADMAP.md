@@ -232,7 +232,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   candidate from published `0.1.0a5`, and the clean-install artifact check passed. PR #392 merged as
   `35a3f2e`; parent #390 and child #391 are closed. No tag or publication was created.
 - Phase 80 is implemented on `feature/p80-snapshot-diff-export`: the selected snapshot diff can be
-  downloaded as exact JSON or a flattened review CSV. Parent #393 and child #394 are mapped; PR and
+  downloaded as exact JSON or a flattened review CSV. Parent #393 and child #394 are mapped; PR #395 and
   closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
@@ -5598,7 +5598,9 @@ GitHub parent issue: #393.
 
 Branch: `feature/p80-snapshot-diff-export`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #395.
 
 Goal: export the selected snapshot diff as JSON or CSV for offline review.
 
