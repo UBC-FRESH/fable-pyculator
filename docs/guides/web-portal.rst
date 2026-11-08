@@ -109,9 +109,10 @@ Optimization
    events. A read-only audit table shows all shared presets with author, status, latest event, and
    history count; a compact activity timeline aggregates recent events with author/action/preset/date
    filters and a Recently reviewed shortcut; a per-author workload table summarizes created/updated/
-   reviewed counts and links author rows to the timeline filter. **Export audit** / **Export audit
-   CSV** download the shared library or event-level CSV. The current axes, colour, size, filters,
-   brushes, selected point, and reference are encoded in the
+   reviewed counts and links author rows to the timeline filter. Timeline filter combinations can be
+   saved as named local views and recalled later. **Export audit** / **Export audit CSV** download
+   the shared library or event-level CSV. The current axes, colour, size, filters, brushes, selected
+   point, and reference are encoded in the
    URL; **Copy view link** shares that exact state, and **Download
    filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through
