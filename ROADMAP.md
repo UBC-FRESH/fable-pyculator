@@ -203,9 +203,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 70 is closed: Prune history now previews first and requires a second Confirm prune click;
   changing days resets the preview. PR #363 merged as `32423b3`; parent #361 and child #362 are
   closed. Post-merge Test and Docs Pages passed.
-- Phase 71 is implemented on `feature/p71-retention-diff-export`: the selected retention run can export
-  its exact per-preset before/after/removed vectors as CSV. Parent #364 and child #365 are mapped; PR
-  #366 and closeout remain.
+- Phase 71 is closed: the selected retention run can export its exact per-preset
+  before/after/removed vectors as CSV. PR #366 merged as `a31f5f3`; parent #364 and child #365 are
+  closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5024,9 +5024,9 @@ GitHub parent issue: #364.
 
 Branch: `feature/p71-retention-diff-export`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #366.
+Pull request: #366 (merged as `a31f5f3`).
 
 Goal: export the selected retention run's exact before/after vectors as CSV.
 
@@ -5069,8 +5069,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; downloaded CSV matched the rendered diff.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #366 squash-merged as `a31f5f3`; parent #364 and child #365 closed.
 
