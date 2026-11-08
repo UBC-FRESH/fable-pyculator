@@ -227,7 +227,7 @@ def _rule_triggers(
         condition = rule.condition
         if condition is not None and not _matches_condition(condition, selections):
             return False
-        return _requirement_fails(rule.require, table_status)
+        return _requirement_fails(rule.require, table_status, selections)
     if rule.condition is not None:
         return _matches_condition(rule.condition, selections)
     return False
@@ -262,6 +262,7 @@ def _matches_value(value: Any, expected: Any) -> bool:
 def _requirement_fails(
     require: Mapping[str, Any],
     table_status: Mapping[str, Any] | None,
+    selections: Mapping[str, Any] | None = None,
 ) -> bool:
     if table_status is None:
         return True
@@ -272,6 +273,13 @@ def _requirement_fails(
     if not isinstance(entry, Mapping):
         return True
     key_value = require.get("key_value")
+    key_switch = require.get("key_switch")
+    if key_switch is not None:
+        if not isinstance(key_switch, str) or not isinstance(selections, Mapping):
+            return True
+        key_value = selections.get(key_switch)
+        if key_value is None or str(key_value) == "":
+            return True
     if key_value is not None:
         rows = entry.get("rows") or {}
         columns = rows.get(str(key_value)) if isinstance(rows, Mapping) else None

@@ -63,6 +63,9 @@ the matching scenario-definition values are populated or explicitly overridden.
 | CUSTOM-PHLOSS-001 | `postharvestloss_scen = MyPHLossScen` | `PHLoss_target` / `PhLossTarget_def` custom values present | error | high |
 | CUSTOM-PRICE-001 | `price_scen = Custom` | `Price_Def` custom CPI values present | error | high |
 
+Requirements may use a fixed `key_value` or a `key_switch` that resolves the selected row (for
+example, the `scen_exports` value). A missing or empty selected key fails closed.
+
 Expert question: are there additional custom switches whose table is not populated automatically by
 the workbook, or whose default fallback is legitimate?
 
