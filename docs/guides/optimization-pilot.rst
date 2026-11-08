@@ -543,7 +543,8 @@ draft/reviewed metadata. The shared panel has a needs-review queue, draft/review
 mark-reviewed action, and a compact created/updated/reviewed history per preset. A read-only audit
 table, filterable activity timeline, per-author workload summary, local/shared saved timeline filter
 views with URL/JSON sharing, shared timeline metadata, JSON/CSV audit exports, a portable full-library
-JSON backup with previewed merge/replace restore, and previewable plus startup-configurable,
+JSON backup with previewed merge/replace restore, bounded manual/scheduled library snapshots with a
+snapshot inventory, download, and previewed restore, and previewable plus startup-configurable,
 interval-scheduled history retention with a recent-run dashboard, before/after
 run diffs, a confirm-before-prune flow, diff CSV export, and run CSV export cover the full shared
 library. The view state is shareable through URL query parameters, and the currently filtered exact

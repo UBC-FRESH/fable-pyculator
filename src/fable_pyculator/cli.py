@@ -110,6 +110,18 @@ def _parser() -> argparse.ArgumentParser:
         type=int,
         help="Run retention on this maintenance interval in minutes (0 disables).",
     )
+    web.add_argument(
+        "--library-snapshot-interval-minutes",
+        default=0,
+        type=int,
+        help="Write shared-library snapshots on this interval in minutes (0 disables).",
+    )
+    web.add_argument(
+        "--library-snapshot-keep",
+        default=10,
+        type=int,
+        help="Keep this many newest shared-library snapshots.",
+    )
     return parser
 
 
@@ -139,6 +151,8 @@ def _web(args: argparse.Namespace) -> int:
         history_retention_days=args.history_retention_days,
         history_retention_dry_run=args.history_retention_dry_run,
         history_retention_interval_minutes=args.history_retention_interval_minutes,
+        library_snapshot_interval_minutes=args.library_snapshot_interval_minutes,
+        library_snapshot_keep=args.library_snapshot_keep,
     )
     try:
         run_server(

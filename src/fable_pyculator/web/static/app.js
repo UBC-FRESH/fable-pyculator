@@ -211,6 +211,7 @@ async function loadOptimization() {
     await loadSharedTimelineViews();
     await loadRetentionPolicy();
     await loadRetentionRuns();
+    await loadLibrarySnapshots();
     const select = $("#optimization-version");
     if (!state.optimization.list.length) {
       status.textContent = "no frontier";
@@ -1379,6 +1380,85 @@ function exportSharedOptimizationPresets() {
 }
 
 
+function formatSnapshotBytes(value) {
+  const bytes = Number(value || 0);
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+async function loadLibrarySnapshots() {
+  const container = $("#optimization-shared-snapshots");
+  if (!container) return;
+  try {
+    const snapshots = await request("optimization/snapshots?limit=20");
+    state.optimization.librarySnapshots = Array.isArray(snapshots) ? snapshots : [];
+  } catch {
+    state.optimization.librarySnapshots = [];
+  }
+  renderLibrarySnapshots();
+}
+
+function renderLibrarySnapshots() {
+  const container = $("#optimization-shared-snapshots");
+  if (!container) return;
+  const snapshots = state.optimization.librarySnapshots || [];
+  if (!snapshots.length) {
+    container.innerHTML = '<p class="hint">No library snapshots.</p>';
+    return;
+  }
+  const rows = snapshots
+    .map((snapshot) => {
+      const name = escapeHtml(snapshot.name || "");
+      return `<tr><td>${escapeHtml(formatDate(snapshot.at))}</td><td>${escapeHtml(snapshot.source || "manual")}</td><td>${Number(snapshot.presets || 0)}</td><td>${Number(snapshot.timeline_views || 0)}</td><td>${escapeHtml(formatSnapshotBytes(snapshot.bytes))}</td><td><button class="button ghost small" type="button" data-snapshot-download="${name}">Download</button> <button class="button ghost small" type="button" data-snapshot-restore="${name}">Restore</button></td></tr>`;
+    })
+    .join("");
+  container.innerHTML = `<table><thead><tr><th>At</th><th>Source</th><th>Presets</th><th>Views</th><th>Size</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`;
+  container.querySelectorAll("[data-snapshot-download]").forEach((button) => {
+    button.addEventListener("click", () => downloadLibrarySnapshot(button.dataset.snapshotDownload));
+  });
+  container.querySelectorAll("[data-snapshot-restore]").forEach((button) => {
+    button.addEventListener("click", () => prepareLibrarySnapshotRestore(button.dataset.snapshotRestore));
+  });
+}
+
+async function createLibrarySnapshot() {
+  try {
+    const snapshot = await request("optimization/snapshots", { method: "POST" });
+    await loadLibrarySnapshots();
+    const target = $("#optimization-shared-snapshot-result");
+    if (target) target.textContent = `Snapshot ${snapshot.name} created`;
+    toast(`Created library snapshot ${snapshot.name}`, "good");
+  } catch (error) {
+    toast(`Could not create a library snapshot: ${error.message}`, "bad");
+  }
+}
+
+async function downloadLibrarySnapshot(name) {
+  if (!name) return;
+  try {
+    const payload = await request(`optimization/snapshots/${encodeURIComponent(name)}`);
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = name;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    toast(`Downloaded snapshot ${name}`, "good");
+  } catch (error) {
+    toast(`Could not download the snapshot: ${error.message}`, "bad");
+  }
+}
+
+async function prepareLibrarySnapshotRestore(name) {
+  if (!name) return;
+  state.optimization.sharedRestorePending = { snapshot: name };
+  await requestSharedLibraryRestorePreview();
+}
+
 async function exportSharedLibraryBackup() {
   try {
     const payload = await request("optimization/library");
@@ -1418,7 +1498,8 @@ function renderSharedLibraryRestorePreview(result) {
     return `${label}: ${entry.incoming} incoming, ${entry.added} added, ${entry.replaced} replaced, ${entry.removed} removed, ${entry.result} total${added}${replaced}${removed}`;
   };
   const mode = result.mode === "replace" ? "Replace" : "Merge";
-  preview.textContent = `${mode} preview · ${names(result.presets, "presets")} · ${names(result.timeline_views, "timeline views")}`;
+  const source = result.snapshot ? `Snapshot ${result.snapshot} · ` : "";
+  preview.textContent = `${source}${mode} preview · ${names(result.presets, "presets")} · ${names(result.timeline_views, "timeline views")}`;
 }
 
 async function requestSharedLibraryRestorePreview() {
@@ -1429,16 +1510,15 @@ async function requestSharedLibraryRestorePreview() {
   const preview = $("#optimization-shared-restore-preview");
   if (preview) preview.textContent = "Previewing restore…";
   const mode = $("#optimization-shared-restore-mode")?.value === "replace" ? "replace" : "merge";
+  const isSnapshot = typeof pending.snapshot === "string";
+  const path = isSnapshot
+    ? `optimization/snapshots/${encodeURIComponent(pending.snapshot)}/restore`
+    : "optimization/library/restore";
+  const body = isSnapshot
+    ? { mode, dry_run: true }
+    : { presets: pending.presets, timeline_views: pending.timeline_views, mode, dry_run: true };
   try {
-    const result = await request("optimization/library/restore", {
-      method: "POST",
-      body: JSON.stringify({
-        presets: pending.presets,
-        timeline_views: pending.timeline_views,
-        mode,
-        dry_run: true,
-      }),
-    });
+    const result = await request(path, { method: "POST", body: JSON.stringify(body) });
     state.optimization.sharedRestorePreview = result;
     renderSharedLibraryRestorePreview(result);
     if (confirm) confirm.disabled = !result.changed;
@@ -1479,16 +1559,15 @@ async function confirmSharedLibraryRestore() {
     return;
   }
   const mode = $("#optimization-shared-restore-mode")?.value === "replace" ? "replace" : "merge";
+  const isSnapshot = typeof pending.snapshot === "string";
+  const path = isSnapshot
+    ? `optimization/snapshots/${encodeURIComponent(pending.snapshot)}/restore`
+    : "optimization/library/restore";
+  const body = isSnapshot
+    ? { mode, dry_run: false }
+    : { presets: pending.presets, timeline_views: pending.timeline_views, mode, dry_run: false };
   try {
-    const result = await request("optimization/library/restore", {
-      method: "POST",
-      body: JSON.stringify({
-        presets: pending.presets,
-        timeline_views: pending.timeline_views,
-        mode,
-        dry_run: false,
-      }),
-    });
+    const result = await request(path, { method: "POST", body: JSON.stringify(body) });
     await Promise.all([loadSharedOptimizationPresets(), loadSharedTimelineViews()]);
     resetSharedLibraryRestore("Restore applied. Select another backup to preview a restore.");
     toast(`Restored ${result.presets.result} preset(s) and ${result.timeline_views.result} timeline view(s)`, "good");
@@ -2559,6 +2638,8 @@ function bindOptimizationEvents() {
     if (state.optimization.sharedRestorePending) requestSharedLibraryRestorePreview();
     else resetSharedLibraryRestore("Select a backup file to preview a restore.");
   });
+  $("#optimization-shared-snapshot-now").addEventListener("click", createLibrarySnapshot);
+  $("#optimization-shared-snapshot-refresh").addEventListener("click", loadLibrarySnapshots);
   $("#optimization-history-preview").addEventListener("click", () => {
     resetPruneConfirmation();
     pruneOptimizationHistory(true);

@@ -3,10 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from fable_pyculator.web.app import create_app
-from fable_pyculator.web.service import PortalConfig
+from fable_pyculator.web.service import PortalConfig, PortalState
 
 
 def _write_frontier(repo_root: Path) -> None:
@@ -103,6 +104,9 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-shared-restore-confirm"' in shell.text
     assert 'id="optimization-shared-restore-mode"' in shell.text
     assert 'id="optimization-shared-restore-preview"' in shell.text
+    assert 'id="optimization-shared-snapshot-now"' in shell.text
+    assert 'id="optimization-shared-snapshot-refresh"' in shell.text
+    assert 'id="optimization-shared-snapshots"' in shell.text
     assert 'id="optimization-shared-timeline"' in shell.text
     assert 'id="optimization-timeline-author"' in shell.text
     assert 'id="optimization-timeline-action"' in shell.text
@@ -171,6 +175,12 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "confirmSharedLibraryRestore" in script.text
     assert "requestSharedLibraryRestorePreview" in script.text
     assert "optimization/library/restore" in script.text
+    assert "loadLibrarySnapshots" in script.text
+    assert "renderLibrarySnapshots" in script.text
+    assert "createLibrarySnapshot" in script.text
+    assert "downloadLibrarySnapshot" in script.text
+    assert "prepareLibrarySnapshotRestore" in script.text
+    assert "optimization/snapshots" in script.text
     assert "timelineFilter" in script.text
     assert "Recently reviewed" in shell.text
     assert "renderReviewWorkload" in script.text
@@ -483,6 +493,83 @@ def test_shared_library_merge_does_not_silently_drop_entries(tmp_path: Path) -> 
         )
     assert response.status_code == 400
     assert "use replace" in response.json()["detail"]
+
+
+def test_library_snapshot_api_round_trip(tmp_path: Path) -> None:
+    config = PortalConfig(
+        repo_root=tmp_path,
+        runtime_dir=tmp_path / "runtime",
+        versions=("2024",),
+        library_snapshot_keep=2,
+    )
+    with TestClient(create_app(config)) as client:
+        client.post("/api/optimization/presets", json=_preset_payload("Snapshot view"))
+        client.post("/api/optimization/timeline-views", json=_timeline_view_payload("Snapshot timeline"))
+        created = client.post("/api/optimization/snapshots")
+        assert created.status_code == 200
+        assert created.json()["presets"] == 1
+        assert created.json()["timeline_views"] == 1
+        first = created.json()["name"]
+
+        second = client.post("/api/optimization/snapshots").json()["name"]
+        third = client.post("/api/optimization/snapshots").json()["name"]
+        listing = client.get("/api/optimization/snapshots").json()
+        assert [item["name"] for item in listing] == [third, second]
+        assert all(item["bytes"] > 0 for item in listing)
+
+        bundle = client.get(f"/api/optimization/snapshots/{third}").json()
+        assert bundle["schema"] == "fable-pyculator.optimization-library"
+        assert bundle["snapshot_source"] == "manual"
+        assert bundle["presets"][0]["history"][-1]["action"] == "created"
+
+        assert client.delete("/api/optimization/presets/Snapshot view").status_code == 200
+        assert client.delete("/api/optimization/timeline-views/Snapshot timeline").status_code == 200
+        preview = client.post(
+            f"/api/optimization/snapshots/{third}/restore",
+            json={"mode": "replace", "dry_run": True},
+        )
+        assert preview.status_code == 200
+        assert preview.json()["snapshot"] == third
+        assert preview.json()["presets"]["added"] == 1
+        assert client.get("/api/optimization/presets").json() == []
+        applied = client.post(
+            f"/api/optimization/snapshots/{third}/restore",
+            json={"mode": "replace", "dry_run": False},
+        )
+        assert applied.status_code == 200
+        assert [preset["name"] for preset in client.get("/api/optimization/presets").json()] == ["Snapshot view"]
+        assert [view["name"] for view in client.get("/api/optimization/timeline-views").json()] == ["Snapshot timeline"]
+
+        assert client.get(f"/api/optimization/snapshots/{first}").status_code == 404
+        assert client.get("/api/optimization/snapshots/bad-name").status_code == 400
+        assert client.delete(f"/api/optimization/snapshots/{third}").status_code == 200
+        assert client.get(f"/api/optimization/snapshots/{third}").status_code == 404
+
+
+def test_library_snapshot_config_validation(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="library_snapshot_keep"):
+        PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", library_snapshot_keep=0)
+    with pytest.raises(ValueError, match="library_snapshot_interval_minutes"):
+        PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", library_snapshot_interval_minutes=-1)
+
+
+def test_library_snapshot_scheduler_starts_and_stops(tmp_path: Path) -> None:
+    config = PortalConfig(
+        repo_root=tmp_path,
+        runtime_dir=tmp_path / "runtime",
+        versions=("2024",),
+        library_snapshot_interval_minutes=1,
+    )
+    state = PortalState(config)
+    try:
+        assert state._snapshot_thread is not None
+        assert state._snapshot_thread.is_alive()
+        snapshot = state.create_library_snapshot(source="scheduled")
+        assert snapshot["source"] == "scheduled"
+        assert state.library_snapshots()[0]["source"] == "scheduled"
+    finally:
+        state.close()
+    assert not state._snapshot_thread.is_alive()
 
 
 def test_prune_shared_preset_history_preserves_latest(tmp_path: Path) -> None:

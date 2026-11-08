@@ -400,6 +400,8 @@ class PortalConfig:
     history_retention_days: int = 0
     history_retention_dry_run: bool = False
     history_retention_interval_minutes: int = 0
+    library_snapshot_interval_minutes: int = 0
+    library_snapshot_keep: int = 10
     title: str = "FABLE Pyculator"
 
     def __post_init__(self) -> None:
@@ -416,6 +418,10 @@ class PortalConfig:
             raise ValueError("history_retention_days must be between 0 and 3650")
         if self.history_retention_interval_minutes < 0 or self.history_retention_interval_minutes > 10080:
             raise ValueError("history_retention_interval_minutes must be between 0 and 10080")
+        if self.library_snapshot_interval_minutes < 0 or self.library_snapshot_interval_minutes > 10080:
+            raise ValueError("library_snapshot_interval_minutes must be between 0 and 10080")
+        if self.library_snapshot_keep < 1 or self.library_snapshot_keep > 100:
+            raise ValueError("library_snapshot_keep must be between 1 and 100")
 
 
 class PortalState:
@@ -433,9 +439,13 @@ class PortalState:
         self._retention_lock = threading.Lock()
         self._retention_stop = threading.Event()
         self._retention_thread: threading.Thread | None = None
+        self._snapshot_lock = threading.Lock()
+        self._snapshot_stop = threading.Event()
+        self._snapshot_thread: threading.Thread | None = None
         self._cheat_sheet: CheatSheet | None = None
         self._apply_startup_retention()
         self._start_retention_scheduler()
+        self._start_snapshot_scheduler()
         self.ensure_cheat_sheet()
 
     @property
@@ -1093,6 +1103,126 @@ class PortalState:
             },
         }
 
+    def _snapshot_dir(self) -> Path:
+        path = self.runtime_dir / "library-snapshots"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @staticmethod
+    def _snapshot_name(value: datetime) -> str:
+        return f"library-{value.strftime('%Y%m%dT%H%M%S%fZ')}.json"
+
+    @staticmethod
+    def _snapshot_path_name(name: Any) -> str:
+        if not isinstance(name, str) or not re.fullmatch(r"library-\d{8}T\d{12}Z\.json", name):
+            raise ValueError("invalid library snapshot name")
+        return name
+
+    @staticmethod
+    def _snapshot_summary(path: Path, payload: Mapping[str, Any]) -> dict[str, Any]:
+        presets = payload.get("presets")
+        views = payload.get("timeline_views")
+        return {
+            "name": path.name,
+            "at": str(payload.get("exported_at", "")),
+            "source": str(payload.get("snapshot_source", "manual")),
+            "presets": len(presets) if isinstance(presets, list) else 0,
+            "timeline_views": len(views) if isinstance(views, list) else 0,
+            "bytes": path.stat().st_size,
+        }
+
+    def create_library_snapshot(self, source: str = "manual") -> dict[str, Any]:
+        """Write one immutable library snapshot and retain the newest configured count."""
+
+        if source not in {"manual", "scheduled"}:
+            raise ValueError("snapshot source must be manual or scheduled")
+        with self._snapshot_lock:
+            at = datetime.now(UTC)
+            path = self._snapshot_dir() / self._snapshot_name(at)
+            while path.exists():
+                at = at + timedelta(microseconds=1)
+                path = self._snapshot_dir() / self._snapshot_name(at)
+            bundle = self.optimization_library()
+            bundle["snapshot_source"] = source
+            temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+            temporary.write_text(json.dumps(bundle, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            temporary.replace(path)
+            pruned = 0
+            snapshots = sorted(self._snapshot_dir().glob("library-*.json"), key=lambda item: item.name, reverse=True)
+            for old in snapshots[self.config.library_snapshot_keep :]:
+                try:
+                    old.unlink()
+                    pruned += 1
+                except OSError:
+                    continue
+            summary = self._snapshot_summary(path, bundle)
+            summary["pruned"] = pruned
+            return summary
+
+    def library_snapshots(self, limit: int = 20) -> list[dict[str, Any]]:
+        """Return recent snapshot metadata, newest first."""
+
+        bounded = max(1, min(100, int(limit)))
+        directory = self._snapshot_dir()
+        summaries: list[dict[str, Any]] = []
+        for path in sorted(directory.glob("library-*.json"), key=lambda item: item.name, reverse=True):
+            if not re.fullmatch(r"library-\d{8}T\d{12}Z\.json", path.name):
+                continue
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if isinstance(payload, Mapping):
+                summaries.append(self._snapshot_summary(path, payload))
+            if len(summaries) >= bounded:
+                break
+        return summaries
+
+    def library_snapshot(self, name: str) -> dict[str, Any]:
+        """Return one stored snapshot bundle."""
+
+        clean_name = self._snapshot_path_name(name)
+        path = self._snapshot_dir() / clean_name
+        if not path.is_file():
+            raise PortalError(f"unknown library snapshot {clean_name!r}", status_code=404)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise PortalError(f"library snapshot {clean_name!r} could not be read: {error}", status_code=500) from error
+        if not isinstance(payload, Mapping):
+            raise PortalError(f"library snapshot {clean_name!r} is invalid", status_code=500)
+        return dict(payload)
+
+    def delete_library_snapshot(self, name: str) -> dict[str, Any]:
+        """Delete one stored snapshot."""
+
+        clean_name = self._snapshot_path_name(name)
+        path = self._snapshot_dir() / clean_name
+        with self._snapshot_lock:
+            if not path.is_file():
+                raise PortalError(f"unknown library snapshot {clean_name!r}", status_code=404)
+            path.unlink()
+        return {"deleted": clean_name, "count": len(self.library_snapshots(limit=100))}
+
+    def restore_library_snapshot(
+        self,
+        name: str,
+        *,
+        mode: str = "merge",
+        dry_run: bool = True,
+    ) -> dict[str, Any]:
+        """Preview or apply a restore directly from a stored snapshot."""
+
+        payload = self.library_snapshot(name)
+        result = self.restore_optimization_library(
+            payload.get("presets", []),
+            payload.get("timeline_views", []),
+            mode=mode,
+            dry_run=dry_run,
+        )
+        result["snapshot"] = name
+        return result
+
     def save_timeline_view(
         self,
         name: str,
@@ -1341,13 +1471,33 @@ class PortalState:
         self._retention_thread = thread
         thread.start()
 
+    def _start_snapshot_scheduler(self) -> None:
+        interval = self.config.library_snapshot_interval_minutes
+        if interval <= 0:
+            return
+
+        def loop() -> None:
+            while not self._snapshot_stop.wait(interval * 60):
+                try:
+                    self.create_library_snapshot(source="scheduled")
+                except Exception:  # noqa: BLE001 - maintenance must not kill the portal
+                    continue
+
+        thread = threading.Thread(target=loop, name="fable-snapshots", daemon=True)
+        self._snapshot_thread = thread
+        thread.start()
+
     def close(self) -> None:
-        """Stop the optional retention maintenance thread."""
+        """Stop optional retention and snapshot maintenance threads."""
 
         self._retention_stop.set()
         thread = self._retention_thread
         if thread is not None and thread.is_alive():
             thread.join(timeout=1.0)
+        self._snapshot_stop.set()
+        snapshot_thread = self._snapshot_thread
+        if snapshot_thread is not None and snapshot_thread.is_alive():
+            snapshot_thread.join(timeout=1.0)
 
     def _record_retention(self, result: Mapping[str, Any]) -> None:
         path = self.runtime_dir / "retention-log.jsonl"

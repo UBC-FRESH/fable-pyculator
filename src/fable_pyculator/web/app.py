@@ -74,6 +74,13 @@ class PruneHistoryRequest(BaseModel):
     dry_run: bool = False
 
 
+class SnapshotRestoreRequest(BaseModel):
+    """Restore one library snapshot."""
+
+    mode: str = Field(default="merge", max_length=20)
+    dry_run: bool = True
+
+
 class TimelineViewRequest(BaseModel):
     """One shared timeline filter view request."""
 
@@ -280,6 +287,38 @@ def create_app(config: PortalConfig) -> FastAPI:
                 mode=request.mode,
                 dry_run=request.dry_run,
             )
+        except ValueError as error:
+            raise PortalError(str(error), status_code=400) from error
+
+    @app.get("/api/optimization/snapshots")
+    def optimization_snapshots(limit: int = Query(default=20, ge=1, le=100)) -> list[dict[str, Any]]:
+        return state.library_snapshots(limit)
+
+    @app.post("/api/optimization/snapshots")
+    def create_optimization_snapshot() -> dict[str, Any]:
+        try:
+            return state.create_library_snapshot(source="manual")
+        except (OSError, ValueError) as error:
+            raise PortalError(str(error), status_code=400) from error
+
+    @app.get("/api/optimization/snapshots/{name}")
+    def optimization_snapshot(name: str) -> dict[str, Any]:
+        try:
+            return state.library_snapshot(name)
+        except ValueError as error:
+            raise PortalError(str(error), status_code=400) from error
+
+    @app.post("/api/optimization/snapshots/{name}/restore")
+    def restore_optimization_snapshot(name: str, request: SnapshotRestoreRequest) -> dict[str, Any]:
+        try:
+            return state.restore_library_snapshot(name, mode=request.mode, dry_run=request.dry_run)
+        except ValueError as error:
+            raise PortalError(str(error), status_code=400) from error
+
+    @app.delete("/api/optimization/snapshots/{name}")
+    def delete_optimization_snapshot(name: str) -> dict[str, Any]:
+        try:
+            return state.delete_library_snapshot(name)
         except ValueError as error:
             raise PortalError(str(error), status_code=400) from error
 
