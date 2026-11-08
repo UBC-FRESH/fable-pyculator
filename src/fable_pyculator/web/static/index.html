@@ -321,6 +321,16 @@
                 <button id="optimization-shared-export" class="button ghost small" type="button" disabled>Export audit</button>
                 <button id="optimization-shared-export-csv" class="button ghost small" type="button" disabled>Export audit CSV</button>
               </div>
+              <div class="inline-fields">
+                <label class="field"><span>Restore mode</span><select id="optimization-shared-restore-mode"><option value="merge">Merge</option><option value="replace">Replace</option></select></label>
+              </div>
+              <div class="button-row">
+                <button id="optimization-shared-backup" class="button ghost small" type="button">Backup library JSON</button>
+                <button id="optimization-shared-restore" class="button ghost small" type="button">Restore library</button>
+                <input id="optimization-shared-restore-file" type="file" accept="application/json,.json" hidden>
+                <button id="optimization-shared-restore-confirm" class="button ghost small" type="button" disabled>Confirm restore</button>
+              </div>
+              <p id="optimization-shared-restore-preview" class="hint">Select a backup file to preview a restore.</p>
               <div id="optimization-shared-audit" class="shared-audit">
                 <p class="hint">No shared presets loaded.</p>
               </div>

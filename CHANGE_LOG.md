@@ -169,6 +169,8 @@ This file records completed project work in chronological order.
 - Added per-value custom-table row resolution (`key_switch`) and pointed `CUSTOM-EXPORT-001` at the
   selected `scen_exports` value, with fail-closed regression coverage.
   PR #369 merged as `15b8516`; post-merge Test and Docs Pages passed.
+- Added a shared-library JSON backup and previewed merge/replace restore for preset histories and
+  timeline views, with over-cap, duplicate, and invalid-entry rejection.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
