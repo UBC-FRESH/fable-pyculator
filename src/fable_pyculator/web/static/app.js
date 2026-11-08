@@ -976,6 +976,7 @@ function renderOptimizationPresets() {
   const count = $("#optimization-preset-count");
   const load = $("#optimization-preset-load");
   const remove = $("#optimization-preset-delete");
+  const exportButton = $("#optimization-preset-export");
   if (!select) return;
   const presets = loadOptimizationPresets();
   const previous = select.value;
@@ -986,6 +987,7 @@ function renderOptimizationPresets() {
   if (count) count.textContent = String(presets.length);
   if (load) load.disabled = !presets.length;
   if (remove) remove.disabled = !presets.length;
+  if (exportButton) exportButton.disabled = !presets.length;
 }
 
 function saveOptimizationPreset() {
@@ -1025,6 +1027,99 @@ function deleteOptimizationPreset() {
   if (!saveOptimizationPresets(presets)) return;
   renderOptimizationPresets();
   toast(`Deleted view ${removed.name}`);
+}
+
+
+function normalizeImportedPreset(preset) {
+  if (!preset || typeof preset.name !== "string" || !preset.state || typeof preset.state !== "object") return null;
+  const name = preset.name.trim().slice(0, 40);
+  if (!name) return null;
+  const state = preset.state;
+  const brushes = (Array.isArray(state.brushes) ? state.brushes : [])
+    .filter(
+      (brush) =>
+        brush &&
+        PARALLEL_AXES.some((axis) => axis.key === brush.axisKey) &&
+        Number.isFinite(Number(brush.start)) &&
+        Number.isFinite(Number(brush.end)),
+    )
+    .map((brush) => ({
+      axisKey: brush.axisKey,
+      start: Math.max(0, Math.min(1, Number(brush.start))),
+      end: Math.max(0, Math.min(1, Number(brush.end))),
+    }));
+  return {
+    name,
+    saved_at: typeof preset.saved_at === "string" ? preset.saved_at : new Date().toISOString(),
+    state: {
+      version: String(state.version ?? "").slice(0, 16),
+      x: String(state.x ?? "").slice(0, 60),
+      y: String(state.y ?? "").slice(0, 60),
+      z: String(state.z ?? "").slice(0, 60),
+      colour: String(state.colour ?? "").slice(0, 60),
+      size: String(state.size ?? "").slice(0, 60),
+      floor_dimension: String(state.floor_dimension ?? "").slice(0, 60),
+      floor: Math.max(0, Math.min(100, Number(state.floor) || 0)),
+      front: Boolean(state.front),
+      warning_free: Boolean(state.warning_free),
+      brushes,
+      reference: state.reference ? String(state.reference).slice(0, 20) : null,
+      point: state.point ? String(state.point).slice(0, 20) : null,
+    },
+  };
+}
+
+function exportOptimizationPresets() {
+  const presets = loadOptimizationPresets();
+  if (!presets.length) {
+    toast("There are no saved views to export.", "warn");
+    return;
+  }
+  const payload = {
+    schema: "fable-pyculator.optimization-presets",
+    schema_version: 1,
+    exported_at: new Date().toISOString(),
+    presets,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "fable-optimization-views.json";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${presets.length} saved view${presets.length === 1 ? "" : "s"}`, "good");
+}
+
+async function importOptimizationPresets(event) {
+  const input = event.target;
+  const file = input.files?.[0];
+  if (!file) return;
+  try {
+    const parsed = JSON.parse(await file.text());
+    const candidates = Array.isArray(parsed) ? parsed : parsed?.presets;
+    if (!Array.isArray(candidates)) throw new Error("JSON must contain a presets array");
+    const existing = loadOptimizationPresets();
+    const byName = new Map(existing.map((preset) => [preset.name, preset]));
+    let imported = 0;
+    for (const candidate of candidates) {
+      const preset = normalizeImportedPreset(candidate);
+      if (!preset) continue;
+      byName.set(preset.name, preset);
+      imported += 1;
+    }
+    if (!imported) throw new Error("no valid presets were found");
+    const merged = Array.from(byName.values()).slice(0, 20);
+    if (!saveOptimizationPresets(merged)) return;
+    renderOptimizationPresets();
+    toast(`Imported ${imported} saved view${imported === 1 ? "" : "s"}`, "good");
+  } catch (error) {
+    toast(`Could not import presets: ${error.message}`, "bad");
+  } finally {
+    input.value = "";
+  }
 }
 
 function drawOptimization() {
@@ -1440,6 +1535,9 @@ function bindOptimizationEvents() {
   $("#optimization-preset-save").addEventListener("click", saveOptimizationPreset);
   $("#optimization-preset-load").addEventListener("click", loadOptimizationPreset);
   $("#optimization-preset-delete").addEventListener("click", deleteOptimizationPreset);
+  $("#optimization-preset-export").addEventListener("click", exportOptimizationPresets);
+  $("#optimization-preset-import").addEventListener("click", () => $("#optimization-preset-file").click());
+  $("#optimization-preset-file").addEventListener("change", importOptimizationPresets);
   $("#pareto-clear-reference").addEventListener("click", clearOptimizationReference);
   $("#pareto-clear-pins").addEventListener("click", clearOptimizationPins);
   $("#pareto-reset").addEventListener("click", resetOptimizationView);

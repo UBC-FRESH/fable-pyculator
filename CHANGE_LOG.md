@@ -108,6 +108,8 @@ This file records completed project work in chronological order.
 - Added a local saved-view preset library for complete Optimization states: axes, colour, size,
   filters, brushes, reference, and selected point, with save/load/delete.
   PR #297 merged as `bd39a2d`; post-merge Test and Docs Pages passed.
+- Added portable preset-library JSON export/import with schema validation, name-based merge, and a
+  cap of 20 saved views.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
