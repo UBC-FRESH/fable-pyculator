@@ -162,9 +162,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 56 is closed: the shared library has a compact cross-preset review activity timeline and
   event-level audit CSV export. PR #321 merged as `0050ecb`; parent #319 and child #320 are closed.
   Post-merge Test and Docs Pages passed.
-- Phase 57 is implemented on `feature/p57-timeline-filters`: the review timeline now filters by
-  author/action/preset/date window and has Recently reviewed and Reset shortcuts. Parent #322 and
-  child #323 are mapped; PR and closeout remain.
+- Phase 57 is closed: the review timeline filters by author/action/preset/date window and has
+  Recently reviewed and Reset shortcuts. PR #324 merged as `2af07a9`; parent #322 and child #323 are
+  closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4195,9 +4195,9 @@ GitHub parent issue: #322.
 
 Branch: `feature/p57-timeline-filters`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #324.
+Pull request: #324 (merged as `2af07a9`).
 
 Goal: make the shared review timeline filterable by author, action, preset, and date window.
 
@@ -4239,8 +4239,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; timeline filters and shortcuts verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #324 squash-merged as `2af07a9`; parent #322 and child #323 closed.
 
