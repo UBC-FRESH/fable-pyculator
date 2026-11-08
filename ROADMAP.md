@@ -180,9 +180,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 62 is closed: shared timeline views can carry optional self-declared author, note, and
   draft/reviewed status. PR #339 merged as `04fd12b`; parent #337 and child #338 are closed.
   Post-merge Test and Docs Pages passed.
-- Phase 63 is implemented on `feature/p63-audit-retention`: shared preset history can be previewed
-  and pruned by a configurable day window while always preserving each preset's latest event. Parent
-  #340 and child #341 are mapped; PR #342 and closeout remain.
+- Phase 63 is closed: shared preset history can be previewed and pruned by a configurable day window
+  while always preserving each preset's latest event. PR #342 merged as `89abc93`; parent #340 and
+  child #341 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4549,9 +4549,9 @@ GitHub parent issue: #340.
 
 Branch: `feature/p63-audit-retention`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #342.
+Pull request: #342 (merged as `89abc93`).
 
 Goal: add a previewable retention policy for shared preset history.
 
@@ -4594,8 +4594,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; preview verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #342 squash-merged as `89abc93`; parent #340 and child #341 closed.
 
