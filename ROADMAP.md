@@ -153,9 +153,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 53 is closed: the shared library filters by all/needs-review/reviewed, shows draft/reviewed
   counts, and can mark a selected draft reviewed. PR #312 merged as `f516c2f`; parent #310 and child
   #311 are closed. Post-merge Test and Docs Pages passed.
-- Phase 54 is implemented on `feature/p54-preset-review-history`: shared presets now keep a compact
-  server-owned history of created/updated/reviewed events with self-declared author and timestamp.
-  Parent #313 and child #314 are mapped; PR #315 and closeout remain.
+- Phase 54 is closed: shared presets keep a compact server-owned history of created/updated/reviewed
+  events with self-declared author and timestamp. PR #315 merged as `c9a7b16`; parent #313 and child
+  #314 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4018,9 +4018,9 @@ GitHub parent issue: #313.
 
 Branch: `feature/p54-preset-review-history`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #315.
+Pull request: #315 (merged as `c9a7b16`).
 
 Goal: add a compact per-preset changelog for shared Optimization views.
 
@@ -4064,8 +4064,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; history round-trip verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #315 squash-merged as `c9a7b16`; parent #313 and child #314 closed.
 
