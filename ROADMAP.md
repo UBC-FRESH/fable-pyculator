@@ -134,6 +134,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   each brush has a removable chip, clear-all works, and multiple brushes round-trip through
   `opt_brushes` with legacy `opt_brush` support. PR #294 merged as `bcf9f2a`; parent #292 and child
   #293 are closed. Post-merge Test and Docs Pages passed.
+- Phase 48 is implemented on `feature/p48-view-presets`: the Optimization page now has a local saved
+  view library covering axes, colour, size, floor, filters, brushes, reference, and selection, with
+  save/load/delete. Parent #295 and child #296 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3648,4 +3651,57 @@ Verification evidence:
 Closeout evidence:
 
 - PR #294 squash-merged as `bcf9f2a`; parent #292 and child #293 closed.
+
+## Phase 48: Saved Optimization View Presets
+
+GitHub parent issue: #295.
+
+Branch: `feature/p48-view-presets`.
+
+Status: implemented; PR pending.
+
+Goal: add a compact local preset library for complete Optimization viewer states.
+
+Tasks:
+
+- [x] P48.1 Add a compact local preset library. Child issue: #296.
+
+Scope:
+
+- Save named axis/filter/brush/reference/selection states.
+- Load and delete presets.
+- Persist in browser local storage.
+- Keep the preset library compact and version-aware.
+
+Out of scope:
+
+- Server-side accounts or sync.
+- New optimization runs.
+- Global-frontier claims.
+
+Architecture notes:
+
+- Presets store viewer state only; they do not copy frontier points.
+- Presets are version-aware and local to the browser.
+- Saved views include axes, colour, size, floor, front/warning filters, brushes, reference, and
+  selected point.
+
+Implementation evidence:
+
+- Added a collapsible **Saved views** panel with a preset dropdown, name input, save, load, and delete.
+- Saved `My Food View` with land X, exact-front, warning-free, a diet brush, and a reference point.
+- Changed the view, then loaded the preset: X axis, filters, brush chip, and reference were restored.
+- Delete removed the preset and cleared local storage.
+- Existing multi-brush, reference/delta, share, CSV, hover, and Workbench prefill remain intact.
+
+Verification evidence:
+
+- Full suite: 227 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; save/load/delete and persistence verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

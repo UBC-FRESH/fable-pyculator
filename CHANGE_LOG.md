@@ -105,7 +105,8 @@ This file records completed project work in chronological order.
 - Added multi-axis brushing with Shift-drag, AND semantics, removable brush chips, clear-all, and
   `opt_brushes` URL state with legacy `opt_brush` compatibility.
   PR #294 merged as `bcf9f2a`; post-merge Test and Docs Pages passed.
-  PR #291 merged as `9e74875`; post-merge Test and Docs Pages passed.
+- Added a local saved-view preset library for complete Optimization states: axes, colour, size,
+  filters, brushes, reference, and selected point, with save/load/delete.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

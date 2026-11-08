@@ -98,8 +98,9 @@ Optimization
    selects the matching 3D point. Dragging vertically on an axis brushes a range and filters both
    views; Shift-drag adds another axis brush, each brush has a removable chip, and **Clear brushes**
    resets them. A point can be set as a reference, with an exact selected-vs-reference delta card and
-   synchronized reference markers. The current axes, colour, size, filters, brushes, selected point,
-   and reference are encoded in the URL; **Copy view link** shares that exact state, and
+   synchronized reference markers. Complete viewer states can be saved as named local presets and
+   recalled from the **Saved views** panel. The current axes, colour, size, filters, brushes, selected
+   point, and reference are encoded in the URL; **Copy view link** shares that exact state, and
    **Download filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through
    ``/api/optimization/frontiers``; it never runs an optimizer or a surrogate in the browser.

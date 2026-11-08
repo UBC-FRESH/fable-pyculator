@@ -276,6 +276,19 @@
               <select id="optimization-version"></select>
             </label>
 
+            <details class="preset-box">
+              <summary>Saved views <span id="optimization-preset-count" class="pill muted">0</span></summary>
+              <div class="inline-fields">
+                <label class="field"><span>Preset</span><select id="optimization-preset"></select></label>
+                <label class="field"><span>Name</span><input id="optimization-preset-name" type="text" maxlength="40" placeholder="e.g. Food-first"></label>
+              </div>
+              <div class="button-row">
+                <button id="optimization-preset-save" class="button ghost small" type="button">Save view</button>
+                <button id="optimization-preset-load" class="button ghost small" type="button">Load</button>
+                <button id="optimization-preset-delete" class="button ghost small" type="button">Delete</button>
+              </div>
+            </details>
+
             <div class="inline-fields three-up">
               <label class="field"><span>X</span><select id="pareto-x"></select></label>
               <label class="field"><span>Y</span><select id="pareto-y"></select></label>

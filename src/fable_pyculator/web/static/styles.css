@@ -635,3 +635,8 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
   font: inherit; line-height: 1; cursor: pointer;
 }
 .brush-chip button:hover { background: var(--red-soft); color: var(--red); }
+.preset-box { margin: 0.35rem 0 0.7rem; padding: 0.45rem 0.55rem; border: 1px solid var(--line); border-radius: 0.45rem; background: var(--panel-soft); }
+.preset-box summary { cursor: pointer; color: var(--muted); font-size: 0.75rem; font-weight: 650; }
+.preset-box summary .pill { margin-left: 0.35rem; }
+.preset-box .inline-fields { margin-top: 0.45rem; }
+.preset-box .field { margin-bottom: 0.35rem; }
