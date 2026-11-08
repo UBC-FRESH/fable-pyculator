@@ -230,7 +230,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   Post-merge Test and Docs Pages passed.
 - Phase 79 is implemented on `feature/p79-release-candidate-a6`: the local package and provider report
   `0.1.0a6`, release docs distinguish the candidate from published `0.1.0a5`, and the clean-install
-  artifact check passed. Parent #390 and child #391 are mapped; PR and closeout remain. No tag or
+  artifact check passed. Parent #390 and child #391 are mapped; PR #392 and closeout remain. No tag or
   publication was created.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
@@ -5537,7 +5537,9 @@ GitHub parent issue: #390.
 
 Branch: `feature/p79-release-candidate-a6`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #392.
 
 Goal: prepare and verify a local 0.1.0a6 release candidate without tagging or publishing.
 
