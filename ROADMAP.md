@@ -106,11 +106,11 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   (GHG ≤ 110) pick the Phase 38 candidate at 3,301.11 kcal / 108.95 MtCO2e; GHG-first at food ≥ 3,000
   picks 3,290.23 kcal / 108.84 MtCO2e. PR #272 merged as `5b88e8d`; parent #269 and children
   #270-#271 are closed. Post-merge Test and Docs Pages passed.
-- Phase 41 is implemented on `feature/p41-pareto-viewer`: the portal now serves a tracked exact
-  frontier artifact (160 points, 15 unique Pareto objectives) and has an Optimization page with a
-  Three.js solution cloud, X/Y/Z/colour/size mapping, quality-floor and exact-front filters, pinning,
-  comparison, and Workbench prefill. Parent #273 and children #274-#275 are mapped; PR #276 and closeout
-  remain.
+- Phase 41 is closed: the portal serves a tracked exact frontier artifact (160 points, 15 unique
+  Pareto objectives) and has an Optimization page with a Three.js solution cloud,
+  X/Y/Z/colour/size mapping, quality-floor and exact-front filters, pinning, comparison, and
+  Workbench prefill. PR #276 merged as `1beceee`; parent #273 and children #274-#275 are closed.
+  Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3230,9 +3230,9 @@ GitHub parent issue: #273.
 
 Branch: `feature/p41-pareto-viewer`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #276.
+Pull request: #276 (merged as `1beceee`).
 
 Goal: port the reference multi-dimensional Pareto solution-space interaction into the FABLE portal,
 backed by the exact Phases 37-40 frontier.
@@ -3282,8 +3282,9 @@ Verification evidence:
 - Sphinx warning-as-error docs build and theme check passed.
 - Release artifact check passed; the wheel includes the vendored Three.js assets.
 - Browser smoke passed with no console/page errors.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #276 squash-merged as `1beceee`; parent #273 and children #274-#275 closed.
 
