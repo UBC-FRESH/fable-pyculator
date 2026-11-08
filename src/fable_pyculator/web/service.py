@@ -70,6 +70,41 @@ _PRESET_STATE_KEYS = (
 )
 
 
+def _clean_timeline_view(
+    name: Any,
+    timeline_filter: Any,
+    saved_at: Any = None,
+) -> dict[str, Any]:
+    """Validate and normalize one shared timeline filter view."""
+
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("timeline view name must be a non-empty string")
+    if not isinstance(timeline_filter, Mapping):
+        raise ValueError("timeline view filter must be an object")
+    clean_name = name.strip()[:40]
+    if not clean_name:
+        raise ValueError("timeline view name must be a non-empty string")
+    window = str(timeline_filter.get("window", "all"))
+    action = str(timeline_filter.get("action", ""))
+    if window not in {"all", "24h", "7d", "30d"}:
+        raise ValueError("timeline view window must be all, 24h, 7d, or 30d")
+    if action not in {"", "created", "updated", "reviewed"}:
+        raise ValueError("timeline view action is invalid")
+    timestamp = saved_at if isinstance(saved_at, str) and len(saved_at) <= 40 else None
+    if timestamp is None:
+        timestamp = datetime.now(UTC).isoformat(timespec="seconds")
+    return {
+        "name": clean_name,
+        "saved_at": timestamp,
+        "filter": {
+            "author": str(timeline_filter.get("author", ""))[:40],
+            "action": action,
+            "preset": str(timeline_filter.get("preset", ""))[:40],
+            "window": window,
+        },
+    }
+
+
 def _clean_preset_history(value: Any) -> list[dict[str, Any]]:
     """Validate the server-owned review history list."""
 
@@ -337,6 +372,7 @@ class PortalState:
         self._prepared: dict[str, PreparedModel] = {}
         self._compute_lock = threading.RLock()
         self._preset_lock = threading.Lock()
+        self._timeline_lock = threading.Lock()
         self._cheat_sheet: CheatSheet | None = None
         self.ensure_cheat_sheet()
 
@@ -857,6 +893,65 @@ class PortalState:
                 raise PortalError(f"unknown optimization preset {name!r}", status_code=404)
             self._write_shared_presets(remaining)
         return {"deleted": name, "count": len(remaining)}
+
+    def timeline_views(self) -> list[dict[str, Any]]:
+        """Return the shared timeline filter library."""
+
+        with self._timeline_lock:
+            return self._load_shared_timeline_views()
+
+    def save_timeline_view(
+        self,
+        name: str,
+        timeline_filter: Mapping[str, Any],
+        saved_at: str | None = None,
+    ) -> dict[str, Any]:
+        """Create or replace one shared timeline filter view."""
+
+        view = _clean_timeline_view(name, timeline_filter, saved_at)
+        with self._timeline_lock:
+            views = [item for item in self._load_shared_timeline_views() if item["name"] != view["name"]]
+            views.insert(0, view)
+            self._write_shared_timeline_views(views[:20])
+        return view
+
+    def delete_timeline_view(self, name: str) -> dict[str, Any]:
+        """Delete one shared timeline filter view."""
+
+        with self._timeline_lock:
+            views = self._load_shared_timeline_views()
+            remaining = [item for item in views if item["name"] != name]
+            if len(remaining) == len(views):
+                raise PortalError(f"unknown timeline view {name!r}", status_code=404)
+            self._write_shared_timeline_views(remaining)
+        return {"deleted": name, "count": len(remaining)}
+
+    def _load_shared_timeline_views(self) -> list[dict[str, Any]]:
+        path = self.runtime_dir / "timeline-views.json"
+        if not path.is_file():
+            return []
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return []
+        if not isinstance(payload, list):
+            return []
+        views: list[dict[str, Any]] = []
+        for item in payload:
+            if not isinstance(item, Mapping):
+                continue
+            try:
+                views.append(_clean_timeline_view(item.get("name"), item.get("filter"), item.get("saved_at")))
+            except ValueError:
+                continue
+        return views[:20]
+
+    def _write_shared_timeline_views(self, views: list[dict[str, Any]]) -> None:
+        path = self.runtime_dir / "timeline-views.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+        temporary.write_text(json.dumps(views, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        temporary.replace(path)
 
     def _load_shared_presets(self) -> list[dict[str, Any]]:
         path = self.runtime_dir / "optimization-presets.json"

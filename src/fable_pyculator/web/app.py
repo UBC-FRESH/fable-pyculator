@@ -58,6 +58,14 @@ class OptimizationPresetRequest(BaseModel):
     review_status: str | None = Field(default=None, max_length=20)
 
 
+class TimelineViewRequest(BaseModel):
+    """One shared timeline filter view request."""
+
+    name: str = Field(min_length=1, max_length=40)
+    filter: dict[str, Any] = Field(default_factory=dict)
+    saved_at: str | None = Field(default=None, max_length=40)
+
+
 class ChatCreateRequest(BaseModel):
     """Create a persistent assistant chat."""
 
@@ -257,6 +265,21 @@ def create_app(config: PortalConfig) -> FastAPI:
     @app.delete("/api/optimization/presets/{name}")
     def delete_optimization_preset(name: str) -> dict[str, Any]:
         return state.delete_optimization_preset(name)
+
+    @app.get("/api/optimization/timeline-views")
+    def timeline_views() -> list[dict[str, Any]]:
+        return state.timeline_views()
+
+    @app.post("/api/optimization/timeline-views")
+    def save_timeline_view(request: TimelineViewRequest) -> dict[str, Any]:
+        try:
+            return state.save_timeline_view(request.name, request.filter, request.saved_at)
+        except ValueError as error:
+            raise PortalError(str(error), status_code=400) from error
+
+    @app.delete("/api/optimization/timeline-views/{name}")
+    def delete_timeline_view(name: str) -> dict[str, Any]:
+        return state.delete_timeline_view(name)
 
     @app.get("/api/chats")
     def chats(

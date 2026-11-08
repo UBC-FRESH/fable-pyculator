@@ -174,6 +174,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 60 is closed: timeline filters can be copied as URL state and the saved timeline library can
   be exported/imported as JSON. PR #333 merged as `aebfc7e`; parent #331 and child #332 are closed.
   Post-merge Test and Docs Pages passed.
+- Phase 61 is implemented on `feature/p61-shared-timeline-views`: a server-backed shared timeline
+  library persists filter views under the runtime directory with list/save/delete APIs and UI
+  controls. Parent #334 and child #335 are mapped; PR #336 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4420,4 +4423,59 @@ Verification evidence:
 Closeout evidence:
 
 - PR #333 squash-merged as `aebfc7e`; parent #331 and child #332 closed.
+
+## Phase 61: Shared Timeline Views
+
+GitHub parent issue: #334.
+
+Branch: `feature/p61-shared-timeline-views`.
+
+Status: pr-open.
+
+Pull request: #336.
+
+Goal: add a server-side shared library for timeline filter views.
+
+Tasks:
+
+- [x] P61.1 Add server-side shared timeline filter views. Child issue: #335.
+
+Scope:
+
+- Persist shared timeline views under the runtime directory.
+- Add list/save/delete API endpoints.
+- Add shared timeline view controls to the activity panel.
+- Validate filters and cap the library.
+
+Out of scope:
+
+- Per-user permissions.
+- New optimization runs.
+- Global-frontier claims.
+
+Architecture notes:
+
+- Shared timeline views are visible to everyone with portal access.
+- Writes are atomic and protected by a process lock.
+- Filter validation mirrors the local timeline views.
+
+Implementation evidence:
+
+- Added `GET/POST/DELETE /api/optimization/timeline-views`.
+- Stored shared views in `runtime/portal/timeline-views.json` with atomic writes and a process lock.
+- Added a **Shared timeline view** panel with save current, load, and delete.
+- Browser smoke saved `Team reviews` with reviewed/7d filters, loaded it, and deleted it.
+- API tests cover round-trip, invalid window rejection, and restart persistence.
+- Existing local timeline views/links/export, audit views, presets, and viewer behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 232 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; shared timeline save/load/delete verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

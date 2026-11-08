@@ -27,6 +27,7 @@ const state = {
     reference: null,
     brushes: [],
     sharedPresets: [],
+    sharedTimelineViews: [],
     sharedFilter: "all",
     timelineFilter: { author: "", action: "", preset: "", window: "all" },
     timelineUrlApplied: false,
@@ -204,6 +205,7 @@ async function loadOptimization() {
       state.optimization.list = await request("optimization/frontiers");
     }
     await loadSharedOptimizationPresets();
+    await loadSharedTimelineViews();
     const select = $("#optimization-version");
     if (!state.optimization.list.length) {
       status.textContent = "no frontier";
@@ -1689,6 +1691,79 @@ async function importTimelinePresets(event) {
   }
 }
 
+
+async function loadSharedTimelineViews() {
+  try {
+    const views = await request("optimization/timeline-views");
+    state.optimization.sharedTimelineViews = Array.isArray(views) ? views : [];
+  } catch {
+    state.optimization.sharedTimelineViews = [];
+  }
+  renderSharedTimelineViews();
+}
+
+function renderSharedTimelineViews(selectedName = "") {
+  const select = $("#optimization-shared-timeline-view");
+  const load = $("#optimization-shared-timeline-load");
+  const remove = $("#optimization-shared-timeline-delete");
+  if (!select) return;
+  const views = state.optimization.sharedTimelineViews || [];
+  select.innerHTML = views.length
+    ? views.map((view, index) => `<option value="${index}">${escapeHtml(view.name)}</option>`).join("")
+    : '<option value="">No shared timeline views</option>';
+  if (selectedName) {
+    const index = views.findIndex((view) => view.name === selectedName);
+    if (index >= 0) select.value = String(index);
+  }
+  if (load) load.disabled = !views.length;
+  if (remove) remove.disabled = !views.length;
+}
+
+async function saveSharedTimelineView() {
+  const input = $("#optimization-shared-timeline-name");
+  const views = state.optimization.sharedTimelineViews || [];
+  const name = (input?.value || "").trim() || `Shared Timeline ${views.length + 1}`;
+  try {
+    await request("optimization/timeline-views", {
+      method: "POST",
+      body: JSON.stringify({
+        name: name.slice(0, 40),
+        filter: { ...state.optimization.timelineFilter },
+      }),
+    });
+    await loadSharedTimelineViews();
+    renderSharedTimelineViews(name.slice(0, 40));
+    if (input) input.value = name.slice(0, 40);
+    toast(`Saved shared timeline view ${name.slice(0, 40)}`, "good");
+  } catch (error) {
+    toast(`Could not save shared timeline view: ${error.message}`, "bad");
+  }
+}
+
+function loadSharedTimelineView() {
+  const select = $("#optimization-shared-timeline-view");
+  const view = select?.value === "" ? null : state.optimization.sharedTimelineViews?.[Number(select?.value)];
+  if (!view) {
+    toast("No shared timeline view is selected.", "warn");
+    return;
+  }
+  applyTimelineFilter(view.filter);
+  toast(`Loaded shared timeline view ${view.name}`, "good");
+}
+
+async function deleteSharedTimelineView() {
+  const select = $("#optimization-shared-timeline-view");
+  const view = select?.value === "" ? null : state.optimization.sharedTimelineViews?.[Number(select?.value)];
+  if (!view) return;
+  try {
+    await request(`optimization/timeline-views/${encodeURIComponent(view.name)}`, { method: "DELETE" });
+    await loadSharedTimelineViews();
+    toast(`Deleted shared timeline view ${view.name}`);
+  } catch (error) {
+    toast(`Could not delete shared timeline view: ${error.message}`, "bad");
+  }
+}
+
 function drawOptimization() {
   const chart = ensureOptimizationChart();
   const data = state.optimization.data;
@@ -2170,6 +2245,9 @@ function bindOptimizationEvents() {
   $("#optimization-timeline-preset-export").addEventListener("click", exportTimelinePresets);
   $("#optimization-timeline-preset-import").addEventListener("click", () => $("#optimization-timeline-preset-file").click());
   $("#optimization-timeline-preset-file").addEventListener("change", importTimelinePresets);
+  $("#optimization-shared-timeline-save").addEventListener("click", saveSharedTimelineView);
+  $("#optimization-shared-timeline-load").addEventListener("click", loadSharedTimelineView);
+  $("#optimization-shared-timeline-delete").addEventListener("click", deleteSharedTimelineView);
   $("#optimization-timeline-reset").addEventListener("click", () => {
     state.optimization.timelineFilter = { author: "", action: "", preset: "", window: "all" };
     $("#optimization-timeline-author").value = "";
