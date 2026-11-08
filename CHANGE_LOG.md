@@ -144,6 +144,7 @@ This file records completed project work in chronological order.
   controls.
   PR #336 merged as `502a4f2`; post-merge Test and Docs Pages passed.
 - Added self-declared author, note, and draft/reviewed metadata to shared timeline views.
+  PR #339 merged as `04fd12b`; post-merge Test and Docs Pages passed.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

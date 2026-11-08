@@ -177,9 +177,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 61 is closed: a server-backed shared timeline library persists filter views under the runtime
   directory with list/save/delete APIs and UI controls. PR #336 merged as `502a4f2`; parent #334 and
   child #335 are closed. Post-merge Test and Docs Pages passed.
-- Phase 62 is implemented on `feature/p62-timeline-view-metadata`: shared timeline views can carry
-  optional self-declared author, note, and draft/reviewed status. Parent #337 and child #338 are
-  mapped; PR #339 and closeout remain.
+- Phase 62 is closed: shared timeline views can carry optional self-declared author, note, and
+  draft/reviewed status. PR #339 merged as `04fd12b`; parent #337 and child #338 are closed.
+  Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4489,9 +4489,9 @@ GitHub parent issue: #337.
 
 Branch: `feature/p62-timeline-view-metadata`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #339.
+Pull request: #339 (merged as `04fd12b`).
 
 Goal: add lightweight metadata to shared timeline views.
 
@@ -4534,8 +4534,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; metadata round-trip verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #339 squash-merged as `04fd12b`; parent #337 and child #338 closed.
 
