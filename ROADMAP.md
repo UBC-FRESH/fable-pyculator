@@ -231,9 +231,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 79 is closed: the local package and provider report `0.1.0a6`, release docs distinguish the
   candidate from published `0.1.0a5`, and the clean-install artifact check passed. PR #392 merged as
   `35a3f2e`; parent #390 and child #391 are closed. No tag or publication was created.
-- Phase 80 is implemented on `feature/p80-snapshot-diff-export`: the selected snapshot diff can be
-  downloaded as exact JSON or a flattened review CSV. Parent #393 and child #394 are mapped; PR #395 and
-  closeout remain.
+- Phase 80 is closed: the selected snapshot diff can be downloaded as exact JSON or a flattened review
+  CSV. PR #395 merged as `4a80ae5`; parent #393 and child #394 are closed. Post-merge Test and Docs
+  Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5598,9 +5598,9 @@ GitHub parent issue: #393.
 
 Branch: `feature/p80-snapshot-diff-export`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #395.
+Pull request: #395 (merged as `4a80ae5`).
 
 Goal: export the selected snapshot diff as JSON or CSV for offline review.
 
@@ -5646,8 +5646,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke: no page errors.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #395 squash-merged as `4a80ae5`; parent #393 and child #394 closed.
 
