@@ -119,7 +119,7 @@ function showPage(page) {
     button.classList.toggle("active", button.dataset.page === page);
     button.setAttribute("aria-current", button.dataset.page === page ? "page" : "false");
   });
-  history.replaceState(null, "", `#${page}`);
+  history.replaceState(null, "", `${location.search || ""}#${page}`);
   if (page === "workbench") loadWorkbench();
   if (page === "results") loadRuns();
   if (page === "compare") renderComparePicker();
@@ -203,7 +203,8 @@ async function loadOptimization() {
       $("#optimization-views").innerHTML = '<p class="hint">No decision views are available.</p>';
       return;
     }
-    const previous = select.value || state.optimization.data?.version || "";
+    const params = new URLSearchParams(location.search);
+    const previous = params.get("opt_version") || select.value || state.optimization.data?.version || "";
     select.innerHTML = state.optimization.list
       .map((item) => `<option value="${escapeHtml(item.version)}">FABLE ${escapeHtml(item.version)} · ${escapeHtml(item.title || "exact frontier")}</option>`)
       .join("");
@@ -239,6 +240,7 @@ async function loadOptimizationFrontier(version) {
   $("#pareto-clear-pins").disabled = true;
   $("#pareto-compare").innerHTML = "";
   initOptimizationControls(data);
+  restoreOptimizationState();
   $("#pareto-meta").textContent =
     `${data.points.length} exact points · ${data.pareto_ids.length} unique Pareto objectives · ${formatDate(data.generated_at)}`;
   $("#pareto-count").textContent = `${data.points.length} pts`;
@@ -367,6 +369,7 @@ function selectOptimizationPoint(pointId) {
   const point = state.optimization.data?.points?.find((item) => item.id === pointId);
   if (!point) return;
   renderOptimizationInfo(point);
+  persistOptimizationState();
   const stage = $("#page-optimization");
   const grid = document.querySelector(".optimization-grid");
   if (stage && !stage.hidden && grid) {
@@ -650,6 +653,7 @@ function drawOptimization() {
   $("#pareto-legend").innerHTML = optimizationLegendHtml(data, colourMode, filtered) +
     `<span>${filtered.length} of ${data.points.length} exact points</span>`;
   updateOptimizationSelectionMarker();
+  persistOptimizationState();
   chart.renderer.render(chart.scene, chart.camera);
 }
 
@@ -782,6 +786,125 @@ function applyOptimizationPending() {
   toast(`Loaded ${applied} frontier selections into the Workbench`, "good");
 }
 
+
+function persistOptimizationState() {
+  if (!state.optimization.data) return;
+  const data = state.optimization.data;
+  const params = new URLSearchParams(location.search);
+  params.set("opt_version", data.version);
+  const values = {
+    opt_x: $("#pareto-x")?.value,
+    opt_y: $("#pareto-y")?.value,
+    opt_z: $("#pareto-z")?.value,
+    opt_colour: $("#pareto-colour")?.value,
+    opt_size: $("#pareto-size")?.value,
+    opt_floor_dimension: $("#pareto-floor-dimension")?.value,
+    opt_floor: $("#pareto-floor")?.value,
+  };
+  for (const [key, value] of Object.entries(values)) {
+    if (value !== undefined && value !== null && value !== "") params.set(key, value);
+  }
+  if ($("#pareto-front-only")?.checked) params.set("opt_front", "1");
+  else params.delete("opt_front");
+  if ($("#pareto-warning-free")?.checked) params.set("opt_nowarn", "1");
+  else params.delete("opt_nowarn");
+  if (state.optimization.selected?.id) params.set("opt_point", state.optimization.selected.id);
+  else params.delete("opt_point");
+  const search = params.toString();
+  history.replaceState(null, "", `${search ? `?${search}` : ""}${location.hash || "#optimization"}`);
+}
+
+function restoreOptimizationState() {
+  const data = state.optimization.data;
+  if (!data) return;
+  const params = new URLSearchParams(location.search);
+  const setSelect = (id, key) => {
+    const select = $(`#${id}`);
+    const value = params.get(key);
+    if (!select || !value) return;
+    if (Array.from(select.options).some((option) => option.value === value)) select.value = value;
+  };
+  setSelect("pareto-x", "opt_x");
+  setSelect("pareto-y", "opt_y");
+  setSelect("pareto-z", "opt_z");
+  setSelect("pareto-colour", "opt_colour");
+  setSelect("pareto-size", "opt_size");
+  setSelect("pareto-floor-dimension", "opt_floor_dimension");
+  const floor = params.get("opt_floor");
+  if (floor !== null) {
+    const value = Math.max(0, Math.min(100, Number(floor) || 0));
+    const input = $("#pareto-floor");
+    if (input) input.value = String(value);
+    const output = $("#pareto-floor-value");
+    if (output) output.textContent = value <= 0 ? "all" : `≥ ${(value / 100).toFixed(2)}`;
+  }
+  const front = $("#pareto-front-only");
+  if (front) front.checked = params.get("opt_front") === "1";
+  const warningFree = $("#pareto-warning-free");
+  if (warningFree) warningFree.checked = params.get("opt_nowarn") === "1";
+  const pointId = params.get("opt_point");
+  if (pointId) {
+    const point = data.points?.find((item) => item.id === pointId);
+    if (point) renderOptimizationInfo(point);
+  }
+}
+
+async function copyOptimizationLink() {
+  persistOptimizationState();
+  const text = location.href;
+  try {
+    await navigator.clipboard.writeText(text);
+    toast("View link copied", "good");
+    return;
+  } catch {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.append(area);
+    area.select();
+    const copied = document.execCommand("copy");
+    area.remove();
+    toast(copied ? "View link copied" : "Copy failed; copy the URL from the address bar", copied ? "good" : "warn");
+  }
+}
+
+function optimizationCsvCell(value) {
+  return `"${String(value ?? "").replaceAll('"', '""')}"`;
+}
+
+function downloadOptimizationCsv() {
+  const data = state.optimization.data;
+  const points = state.optimization.filtered || [];
+  if (!data || !points.length) {
+    toast("No exact points are currently visible.", "warn");
+    return;
+  }
+  const metrics = (data.dimensions || []).map((dimension) => dimension.key);
+  const controls = data.controls || [];
+  const header = ["id", "origin", "front", "warnings", ...metrics, ...controls];
+  const rows = points.map((point) => [
+    point.id,
+    point.origin || "",
+    point.front ? "true" : "false",
+    (point.warnings || []).join(";"),
+    ...metrics.map((key) => (key === "goal" ? point.goal : point.objectives?.[key])),
+    ...controls.map((name) => point.selections?.[name]),
+  ]);
+  const csv = [header, ...rows].map((row) => row.map(optimizationCsvCell).join(",")).join("\n") + "\n";
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `fable-${data.version}-filtered-pareto.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${points.length} filtered points`, "good");
+}
+
 function downloadOptimizationJson() {
   const data = state.optimization.data;
   if (!data) return;
@@ -815,7 +938,9 @@ function bindOptimizationEvents() {
   $("#pareto-clear-pins").addEventListener("click", clearOptimizationPins);
   $("#pareto-reset").addEventListener("click", resetOptimizationView);
   $("#pareto-load").addEventListener("click", loadOptimizationPointInWorkbench);
+  $("#pareto-copy-link").addEventListener("click", copyOptimizationLink);
   $("#pareto-download").addEventListener("click", downloadOptimizationJson);
+  $("#pareto-download-csv").addEventListener("click", downloadOptimizationCsv);
 }
 
 function renderOverview() {
