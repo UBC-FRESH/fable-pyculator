@@ -165,9 +165,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 57 is closed: the review timeline filters by author/action/preset/date window and has
   Recently reviewed and Reset shortcuts. PR #324 merged as `2af07a9`; parent #322 and child #323 are
   closed. Post-merge Test and Docs Pages passed.
-- Phase 58 is implemented on `feature/p58-review-workload`: a per-author workload table summarizes
-  created/updated/reviewed counts and latest activity, with author-row click-through to the timeline
-  filter. Parent #325 and child #326 are mapped; PR #327 and closeout remain.
+- Phase 58 is closed: a per-author workload table summarizes created/updated/reviewed counts and
+  latest activity, with author-row click-through to the timeline filter. PR #327 merged as
+  `4975072`; parent #325 and child #326 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4254,9 +4254,9 @@ GitHub parent issue: #325.
 
 Branch: `feature/p58-review-workload`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #327.
+Pull request: #327 (merged as `4975072`).
 
 Goal: add a compact per-author review workload summary to the shared audit.
 
@@ -4297,8 +4297,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; workload and click-through verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #327 squash-merged as `4975072`; parent #325 and child #326 closed.
 
