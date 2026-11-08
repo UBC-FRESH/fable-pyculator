@@ -180,6 +180,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 62 is closed: shared timeline views can carry optional self-declared author, note, and
   draft/reviewed status. PR #339 merged as `04fd12b`; parent #337 and child #338 are closed.
   Post-merge Test and Docs Pages passed.
+- Phase 63 is implemented on `feature/p63-audit-retention`: shared preset history can be previewed
+  and pruned by a configurable day window while always preserving each preset's latest event. Parent
+  #340 and child #341 are mapped; PR #342 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4539,4 +4542,60 @@ Verification evidence:
 Closeout evidence:
 
 - PR #339 squash-merged as `04fd12b`; parent #337 and child #338 closed.
+
+## Phase 63: Audit Retention Policy
+
+GitHub parent issue: #340.
+
+Branch: `feature/p63-audit-retention`.
+
+Status: pr-open.
+
+Pull request: #342.
+
+Goal: add a previewable retention policy for shared preset history.
+
+Tasks:
+
+- [x] P63.1 Add previewable shared-history pruning. Child issue: #341.
+
+Scope:
+
+- Prune history events older than a configurable day window.
+- Always preserve each preset's latest event.
+- Support a dry-run preview.
+- Add compact maintenance controls.
+
+Out of scope:
+
+- Authentication or verified review.
+- New optimization runs.
+- Pruning viewer/timeline libraries.
+
+Architecture notes:
+
+- The server owns pruning and writes atomically.
+- Dry-run reports counts without changing storage.
+- Invalid or missing timestamps are preserved.
+
+Implementation evidence:
+
+- Added `POST /api/optimization/presets/prune` with `days` and `dry_run`.
+- Prune keeps the latest event per preset even when older than the window.
+- Added Preview prune / Prune history controls and result text.
+- Browser smoke previewed with no removals for a current preset.
+- API test covers dry-run non-destructiveness and real prune removing an old event while keeping the
+  latest reviewed event.
+- Existing shared/local presets, timeline views, audit exports, and viewer behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 233 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; preview verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

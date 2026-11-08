@@ -14,7 +14,7 @@ import time
 import uuid
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Literal
 
@@ -981,6 +981,55 @@ class PortalState:
         temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
         temporary.write_text(json.dumps(views, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         temporary.replace(path)
+
+    def prune_optimization_history(self, days: int = 90, dry_run: bool = False) -> dict[str, Any]:
+        """Remove history events older than the retention window, keeping each latest event."""
+
+        if not isinstance(days, int) or days < 1 or days > 3650:
+            raise ValueError("retention days must be between 1 and 3650")
+        cutoff = datetime.now(UTC) - timedelta(days=days)
+        with self._preset_lock:
+            presets = self._load_shared_presets()
+            removed = 0
+            kept = 0
+            touched = 0
+            updated: list[dict[str, Any]] = []
+            for preset in presets:
+                history = list(preset.get("history", []))
+                if not history:
+                    updated.append(preset)
+                    continue
+                retained: list[dict[str, Any]] = []
+                for index, event in enumerate(history):
+                    keep = index == len(history) - 1
+                    if not keep:
+                        try:
+                            event_time = datetime.fromisoformat(str(event.get("at", "")))
+                            if event_time.tzinfo is None:
+                                event_time = event_time.replace(tzinfo=UTC)
+                            keep = event_time >= cutoff
+                        except ValueError:
+                            keep = True
+                    if keep:
+                        retained.append(event)
+                    else:
+                        removed += 1
+                kept += len(retained)
+                if len(retained) != len(history):
+                    touched += 1
+                    preset = dict(preset)
+                    preset["history"] = retained
+                updated.append(preset)
+            if not dry_run and touched:
+                self._write_shared_presets(updated)
+        return {
+            "days": days,
+            "dry_run": bool(dry_run),
+            "removed": removed,
+            "kept": kept,
+            "presets_touched": touched,
+            "presets_total": len(presets),
+        }
 
     def _load_shared_presets(self) -> list[dict[str, Any]]:
         path = self.runtime_dir / "optimization-presets.json"

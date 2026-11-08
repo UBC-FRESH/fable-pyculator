@@ -373,6 +373,17 @@
               <div id="optimization-review-workload" class="review-workload">
                 <p class="hint">No workload data.</p>
               </div>
+              <div class="retention-box">
+                <div class="inline-fields">
+                  <label class="field"><span>Keep history (days)</span><input id="optimization-history-days" type="number" min="1" max="3650" value="90"></label>
+                  <label class="field"><span>Maintenance</span><span class="hint">Latest event always kept</span></label>
+                </div>
+                <div class="button-row">
+                  <button id="optimization-history-preview" class="button ghost small" type="button">Preview prune</button>
+                  <button id="optimization-history-prune" class="button ghost small" type="button">Prune history</button>
+                  <span id="optimization-history-result" class="hint"></span>
+                </div>
+              </div>
             </details>
 
             <div class="inline-fields three-up">

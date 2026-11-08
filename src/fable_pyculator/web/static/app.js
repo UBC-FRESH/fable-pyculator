@@ -1783,6 +1783,24 @@ async function deleteSharedTimelineView() {
   }
 }
 
+
+async function pruneOptimizationHistory(dryRun) {
+  const days = Number($("#optimization-history-days")?.value || 90);
+  try {
+    const result = await request("optimization/presets/prune", {
+      method: "POST",
+      body: JSON.stringify({ days, dry_run: Boolean(dryRun) }),
+    });
+    const resultText = `${result.dry_run ? "Preview" : "Pruned"}: ${result.removed} removed, ${result.kept} kept, ${result.presets_touched} preset(s) touched`;
+    const target = $("#optimization-history-result");
+    if (target) target.textContent = resultText;
+    toast(resultText, "good");
+    if (!dryRun) await loadSharedOptimizationPresets();
+  } catch (error) {
+    toast(`Could not prune history: ${error.message}`, "bad");
+  }
+}
+
 function drawOptimization() {
   const chart = ensureOptimizationChart();
   const data = state.optimization.data;
@@ -2238,6 +2256,8 @@ function bindOptimizationEvents() {
   $("#optimization-shared-mark-reviewed").addEventListener("click", markSharedOptimizationPresetReviewed);
   $("#optimization-shared-export").addEventListener("click", exportSharedOptimizationPresets);
   $("#optimization-shared-export-csv").addEventListener("click", exportSharedAuditCsv);
+  $("#optimization-history-preview").addEventListener("click", () => pruneOptimizationHistory(true));
+  $("#optimization-history-prune").addEventListener("click", () => pruneOptimizationHistory(false));
   for (const [id, key] of [
     ["optimization-timeline-author", "author"],
     ["optimization-timeline-action", "action"],
