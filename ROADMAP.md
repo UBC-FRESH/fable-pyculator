@@ -119,10 +119,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   point in the URL; supports copy-link; and exports the currently filtered exact points as CSV.
   PR #282 merged as `49e3bed`; parent #280 and child #281 are closed. Post-merge Test and Docs Pages
   passed.
-- Phase 44 is implemented on `feature/p44-parallel-coordinates`: the Optimization page now has a
-  synchronized parallel-coordinates view over land, diet, trade-fix, livestock, crop, afforestation,
-  food, GHG, and goal. It renders the same filtered exact points and clicking a line selects the 3D
-  point. Parent #283 and child #284 are mapped; PR #285 and closeout remain.
+- Phase 44 is closed: the Optimization page now has a synchronized parallel-coordinates view over
+  land, diet, trade-fix, livestock, crop, afforestation, food, GHG, and goal. It renders the same
+  filtered exact points and clicking a line selects the 3D point. PR #285 merged as `64e1a01`;
+  parent #283 and child #284 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3418,9 +3418,9 @@ GitHub parent issue: #283.
 
 Branch: `feature/p44-parallel-coordinates`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #285.
+Pull request: #285 (merged as `64e1a01`).
 
 Goal: add a synchronized parallel-coordinates view for the same exact Pareto points.
 
@@ -3462,8 +3462,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; 160 lines and 9 axes rendered, line selection worked.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #285 squash-merged as `64e1a01`; parent #283 and child #284 closed.
 
