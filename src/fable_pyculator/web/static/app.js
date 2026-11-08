@@ -1146,6 +1146,7 @@ function renderSharedOptimizationPresets(selectedName = "") {
   const load = $("#optimization-shared-load");
   const remove = $("#optimization-shared-delete");
   const mark = $("#optimization-shared-mark-reviewed");
+  const exportButton = $("#optimization-shared-export");
   if (!select) return;
   const presets = state.optimization.sharedPresets || [];
   if (filter) filter.value = state.optimization.sharedFilter || "all";
@@ -1174,6 +1175,8 @@ function renderSharedOptimizationPresets(selectedName = "") {
     const selected = select.value === "" ? null : presets[Number(select.value)];
     mark.disabled = !selected || selected.review_status === "reviewed";
   }
+  if (exportButton) exportButton.disabled = !presets.length;
+  renderSharedAudit(presets);
   syncSharedPresetMetadata();
 }
 
@@ -1303,6 +1306,48 @@ async function markSharedOptimizationPresetReviewed() {
   } catch (error) {
     toast(`Could not mark shared view reviewed: ${error.message}`, "bad");
   }
+}
+
+
+function renderSharedAudit(presets) {
+  const container = $("#optimization-shared-audit");
+  if (!container) return;
+  if (!presets.length) {
+    container.innerHTML = '<p class="hint">No shared presets loaded.</p>';
+    return;
+  }
+  const rows = presets
+    .map((preset) => {
+      const latest = (preset.history || []).slice(-1)[0];
+      const latestText = latest ? `${latest.action}${latest.at ? ` · ${formatDate(latest.at)}` : ""}` : "—";
+      return `<tr><td>${escapeHtml(preset.name)}</td><td>${escapeHtml(preset.author || "—")}</td><td>${escapeHtml(preset.review_status || "draft")}</td><td>${escapeHtml(latestText)}</td><td>${(preset.history || []).length}</td></tr>`;
+    })
+    .join("");
+  container.innerHTML = `<table><thead><tr><th>Name</th><th>Author</th><th>Status</th><th>Latest event</th><th>History</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function exportSharedOptimizationPresets() {
+  const presets = state.optimization.sharedPresets || [];
+  if (!presets.length) {
+    toast("There are no shared presets to export.", "warn");
+    return;
+  }
+  const payload = {
+    schema: "fable-pyculator.shared-optimization-presets",
+    schema_version: 1,
+    exported_at: new Date().toISOString(),
+    presets,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "fable-shared-optimization-presets.json";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${presets.length} shared preset${presets.length === 1 ? "" : "s"}`, "good");
 }
 
 function drawOptimization() {
@@ -1758,6 +1803,7 @@ function bindOptimizationEvents() {
     renderSharedOptimizationPresets();
   });
   $("#optimization-shared-mark-reviewed").addEventListener("click", markSharedOptimizationPresetReviewed);
+  $("#optimization-shared-export").addEventListener("click", exportSharedOptimizationPresets);
   $("#optimization-shared-load").addEventListener("click", loadSharedOptimizationPreset);
   $("#optimization-shared-delete").addEventListener("click", deleteSharedOptimizationPreset);
   $("#pareto-clear-reference").addEventListener("click", clearOptimizationReference);

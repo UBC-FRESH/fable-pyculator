@@ -94,6 +94,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-shared-summary"' in shell.text
     assert 'id="optimization-shared-mark-reviewed"' in shell.text
     assert 'id="optimization-shared-history"' in shell.text
+    assert 'id="optimization-shared-audit"' in shell.text
+    assert 'id="optimization-shared-export"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -132,6 +134,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "markSharedOptimizationPresetReviewed" in script.text
     assert "sharedFilter" in script.text
     assert "renderSharedPresetHistory" in script.text
+    assert "renderSharedAudit" in script.text
+    assert "exportSharedOptimizationPresets" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200

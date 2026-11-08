@@ -156,6 +156,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 54 is closed: shared presets keep a compact server-owned history of created/updated/reviewed
   events with self-declared author and timestamp. PR #315 merged as `c9a7b16`; parent #313 and child
   #314 are closed. Post-merge Test and Docs Pages passed.
+- Phase 55 is implemented on `feature/p55-shared-review-audit`: a read-only shared audit table and
+  JSON export now cover all shared presets, metadata, latest events, and full history. Parent #316
+  and child #317 are mapped; PR #318 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4069,4 +4072,58 @@ Verification evidence:
 Closeout evidence:
 
 - PR #315 squash-merged as `c9a7b16`; parent #313 and child #314 closed.
+
+## Phase 55: Shared Review Audit and Export
+
+GitHub parent issue: #316.
+
+Branch: `feature/p55-shared-review-audit`.
+
+Status: pr-open.
+
+Pull request: #318.
+
+Goal: add an audit table and JSON export for the shared preset library.
+
+Tasks:
+
+- [x] P55.1 Add shared audit table and JSON export. Child issue: #317.
+
+Scope:
+
+- Show all shared presets with author, status, latest event, and history count.
+- Export shared presets with full history as JSON.
+- Keep the audit view compact and read-only.
+- Preserve existing shared/library behavior.
+
+Out of scope:
+
+- Authentication or verified reviewer identity.
+- New optimization runs.
+- Global-frontier claims.
+
+Architecture notes:
+
+- The audit table consumes the existing shared preset API payload.
+- Export includes schema marker, timestamp, presets, metadata, and history.
+- Self-declared metadata remains non-authoritative.
+
+Implementation evidence:
+
+- Added a read-only audit table with name, author, status, latest event, and history count.
+- Added **Export audit** downloading `fable-shared-optimization-presets.json` with schema,
+  timestamp, presets, metadata, and full history.
+- Browser smoke created two shared presets, saw two audit rows, and exported both with history.
+- Existing review queue, history, local/shared presets, links, and viewer behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 230 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; audit and export verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 
