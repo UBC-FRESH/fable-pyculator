@@ -122,6 +122,7 @@ This file records completed project work in chronological order.
   PR #309 merged as `17acb88`; post-merge Test and Docs Pages passed.
 - Added a shared preset review queue: all/needs-review/reviewed filters, draft/reviewed counts, and a
   mark-reviewed action.
+  PR #312 merged as `f516c2f`; post-merge Test and Docs Pages passed.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

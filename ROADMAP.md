@@ -150,9 +150,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 52 is closed: shared presets can carry optional self-declared author, note, and
   draft/reviewed status, shown in the shared selector and persisted by the API. PR #309 merged as
   `17acb88`; parent #307 and child #308 are closed. Post-merge Test and Docs Pages passed.
-- Phase 53 is implemented on `feature/p53-shared-review-queue`: the shared library now filters by
-  all/needs-review/reviewed, shows draft/reviewed counts, and can mark a selected draft reviewed.
-  Parent #310 and child #311 are mapped; PR #312 and closeout remain.
+- Phase 53 is closed: the shared library filters by all/needs-review/reviewed, shows draft/reviewed
+  counts, and can mark a selected draft reviewed. PR #312 merged as `f516c2f`; parent #310 and child
+  #311 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3959,9 +3959,9 @@ GitHub parent issue: #310.
 
 Branch: `feature/p53-shared-review-queue`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #312.
+Pull request: #312 (merged as `f516c2f`).
 
 Goal: turn shared preset review status into a lightweight review queue.
 
@@ -4003,8 +4003,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; filter/count/mark-reviewed verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #312 squash-merged as `f516c2f`; parent #310 and child #311 closed.
 
