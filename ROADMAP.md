@@ -219,9 +219,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   added/replaced/removed/kept counts, changed metadata/state/filter keys, and bounded history
   deltas. PR #380 merged as `c3a97d3`; parent #378 and child #379 are closed. Post-merge Test and
   Docs Pages passed.
-- Phase 76 is implemented on `feature/p76-generated-review-package`: the expert review worksheet
-  and Markdown rule block are generated from the YAML registry, preserve reviewer decisions, and
-  have a `--check` drift gate. Parent #381 and child #382 are mapped; PR #383 and closeout remain.
+- Phase 76 is closed: the expert review worksheet and Markdown rule block are generated from the YAML
+  registry, preserve reviewer decisions, and have a `--check` drift gate. PR #383 merged as
+  `996745c`; parent #381 and child #382 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5342,9 +5342,9 @@ GitHub parent issue: #381.
 
 Branch: `feature/p76-generated-review-package`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #383.
+Pull request: #383 (merged as `996745c`).
 
 Goal: generate the expert review worksheet and Markdown rule table from the YAML registry with a drift check.
 
@@ -5390,8 +5390,9 @@ Verification evidence:
 - Reviewer decision preservation is tested.
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #383 squash-merged as `996745c`; parent #381 and child #382 closed.
 
