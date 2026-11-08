@@ -161,7 +161,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   are closed. Post-merge Test and Docs Pages passed.
 - Phase 56 is implemented on `feature/p56-activity-timeline`: the shared library now has a compact
   cross-preset review activity timeline and event-level audit CSV export. Parent #319 and child #320
-  are mapped; PR and closeout remain.
+  are mapped; PR #321 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4137,7 +4137,9 @@ GitHub parent issue: #319.
 
 Branch: `feature/p56-activity-timeline`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #321.
 
 Goal: add a cross-preset review activity timeline and CSV audit export.
 
