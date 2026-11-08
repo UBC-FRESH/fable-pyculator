@@ -74,6 +74,9 @@ def _clean_timeline_view(
     name: Any,
     timeline_filter: Any,
     saved_at: Any = None,
+    author: Any = None,
+    note: Any = None,
+    review_status: Any = None,
 ) -> dict[str, Any]:
     """Validate and normalize one shared timeline filter view."""
 
@@ -93,9 +96,15 @@ def _clean_timeline_view(
     timestamp = saved_at if isinstance(saved_at, str) and len(saved_at) <= 40 else None
     if timestamp is None:
         timestamp = datetime.now(UTC).isoformat(timespec="seconds")
+    status = str(review_status or "draft").strip().lower()
+    if status not in {"draft", "reviewed"}:
+        raise ValueError("timeline view review_status must be draft or reviewed")
     return {
         "name": clean_name,
         "saved_at": timestamp,
+        "author": author.strip()[:40] if isinstance(author, str) else "",
+        "note": note.strip()[:200] if isinstance(note, str) else "",
+        "review_status": status,
         "filter": {
             "author": str(timeline_filter.get("author", ""))[:40],
             "action": action,
@@ -905,10 +914,21 @@ class PortalState:
         name: str,
         timeline_filter: Mapping[str, Any],
         saved_at: str | None = None,
+        *,
+        author: str | None = None,
+        note: str | None = None,
+        review_status: str | None = None,
     ) -> dict[str, Any]:
         """Create or replace one shared timeline filter view."""
 
-        view = _clean_timeline_view(name, timeline_filter, saved_at)
+        view = _clean_timeline_view(
+            name,
+            timeline_filter,
+            saved_at,
+            author=author,
+            note=note,
+            review_status=review_status,
+        )
         with self._timeline_lock:
             views = [item for item in self._load_shared_timeline_views() if item["name"] != view["name"]]
             views.insert(0, view)
@@ -941,7 +961,16 @@ class PortalState:
             if not isinstance(item, Mapping):
                 continue
             try:
-                views.append(_clean_timeline_view(item.get("name"), item.get("filter"), item.get("saved_at")))
+                views.append(
+                    _clean_timeline_view(
+                        item.get("name"),
+                        item.get("filter"),
+                        item.get("saved_at"),
+                        author=item.get("author"),
+                        note=item.get("note"),
+                        review_status=item.get("review_status"),
+                    )
+                )
             except ValueError:
                 continue
         return views[:20]

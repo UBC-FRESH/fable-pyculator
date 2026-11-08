@@ -111,7 +111,8 @@ Optimization
    filters and a Recently reviewed shortcut; a per-author workload table summarizes created/updated/
    reviewed counts and links author rows to the timeline filter. Timeline filter combinations can be
    saved as named local views, copied as a URL, exported/imported as JSON, or saved to a
-   server-backed shared timeline library. **Export audit** / **Export audit CSV** download the shared
+   server-backed shared timeline library; shared timeline views can carry a self-declared author,
+   note, and draft/reviewed status. **Export audit** / **Export audit CSV** download the shared
    library or event-level CSV. The current axes, colour, size, filters, brushes, selected point, and
    reference are encoded in the
    URL; **Copy view link** shares that exact state, and **Download
