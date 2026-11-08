@@ -170,7 +170,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   `4975072`; parent #325 and child #326 are closed. Post-merge Test and Docs Pages passed.
 - Phase 59 is implemented on `feature/p59-saved-timeline-views`: named local timeline filter views
   can save and restore author/action/preset/window combinations. Parent #328 and child #329 are
-  mapped; PR and closeout remain.
+  mapped; PR #330 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4312,7 +4312,9 @@ GitHub parent issue: #328.
 
 Branch: `feature/p59-saved-timeline-views`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #330.
 
 Goal: add local saved timeline filter views.
 
