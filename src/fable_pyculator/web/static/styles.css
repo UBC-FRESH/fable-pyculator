@@ -627,3 +627,11 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .parallel-brush { fill: rgba(31, 111, 235, 0.12); stroke: #1f6feb; stroke-width: 1; pointer-events: none; }
 .parallel-brush-hit { fill: transparent; cursor: ns-resize; touch-action: none; }
 .parallel-brush-label { margin-right: 0.2rem; }
+
+.brush-chip { display: inline-flex; gap: 0.3rem; align-items: center; padding: 0.12rem 0.2rem 0.12rem 0.45rem; }
+.brush-chip button {
+  display: grid; place-items: center; width: 1rem; height: 1rem; padding: 0;
+  border: 0; border-radius: 999px; background: #e8eef4; color: var(--muted);
+  font: inherit; line-height: 1; cursor: pointer;
+}
+.brush-chip button:hover { background: var(--red-soft); color: var(--red); }
