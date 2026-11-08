@@ -144,9 +144,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   plus `opt_preset`; local presets restore from `opt_preset` when no explicit state params exist.
   PR #303 merged as `034478b`; parent #301 and child #302 are closed. Post-merge Test and Docs Pages
   passed.
-- Phase 51 is implemented on `feature/p51-shared-presets`: a server-backed Shared library persists
-  named Optimization views under the runtime directory, with list/save/delete APIs and UI controls.
-  Parent #304 and child #305 are mapped; PR #306 and closeout remain.
+- Phase 51 is closed: a server-backed Shared library persists named Optimization views under the
+  runtime directory, with list/save/delete APIs and UI controls. PR #306 merged as `9bd4d1f`; parent
+  #304 and child #305 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3838,9 +3838,9 @@ GitHub parent issue: #304.
 
 Branch: `feature/p51-shared-presets`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #306.
+Pull request: #306 (merged as `9bd4d1f`).
 
 Goal: add a server-side shared preset library for the Optimization page.
 
@@ -3884,8 +3884,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; shared save/load/delete verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #306 squash-merged as `9bd4d1f`; parent #304 and child #305 closed.
 
