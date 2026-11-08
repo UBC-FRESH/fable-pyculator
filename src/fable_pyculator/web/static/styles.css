@@ -614,3 +614,13 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .parallel-line.selected { stroke: #c58b16; stroke-width: 3; opacity: 1; }
 .parallel-line:hover { opacity: 0.9; stroke-width: 2.2; }
 .parallel-empty { fill: var(--muted); font: 12px/1 system-ui, sans-serif; text-anchor: middle; }
+.pareto-delta { margin: 0.5rem 0; font-size: 0.76rem; }
+.pareto-delta .delta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.35rem; }
+.pareto-delta .delta-card { padding: 0.4rem 0.45rem; border: 1px solid var(--line); border-radius: 0.4rem; background: var(--panel); }
+.pareto-delta .delta-card span { display: block; color: var(--muted); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.pareto-delta .delta-card strong { display: block; margin-top: 0.1rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; }
+.pareto-delta .delta-good { color: var(--green); }
+.pareto-delta .delta-bad { color: var(--red); }
+.pareto-delta .selection-list { max-height: 6.5rem; }
+.parallel-line.reference { stroke: #1f6feb; stroke-width: 2.4; stroke-dasharray: 5 3; opacity: 0.95; }
+.parallel-line.reference.selected { stroke: #c58b16; }

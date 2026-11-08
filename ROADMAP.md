@@ -123,6 +123,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   land, diet, trade-fix, livestock, crop, afforestation, food, GHG, and goal. It renders the same
   filtered exact points and clicking a line selects the 3D point. PR #285 merged as `64e1a01`;
   parent #283 and child #284 are closed. Post-merge Test and Docs Pages passed.
+- Phase 45 is implemented on `feature/p45-reference-delta`: an exact point can be set as a reference,
+  compared with the selected point through objective and selection deltas, and marked in both the 3D
+  and parallel views. The reference is shareable in the URL. Parent #286 and child #287 are mapped;
+  PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3467,4 +3471,58 @@ Verification evidence:
 Closeout evidence:
 
 - PR #285 squash-merged as `64e1a01`; parent #283 and child #284 closed.
+
+## Phase 45: Reference Point and Delta Comparison
+
+GitHub parent issue: #286.
+
+Branch: `feature/p45-reference-delta`.
+
+Status: implemented; PR pending.
+
+Goal: let a user pin one exact point as the reference and compare the selected point against it.
+
+Tasks:
+
+- [x] P45.1 Add reference selection, delta card, and synchronized reference markers. Child issue: #287.
+
+Scope:
+
+- Set and clear a reference point.
+- Exact food, GHG, land, goal, and selection deltas.
+- Reference markers in the 3D scene and parallel coordinates.
+- Reference in shareable URL state.
+
+Out of scope:
+
+- New optimization runs.
+- Surrogate points.
+- Global-frontier claims.
+
+Architecture notes:
+
+- The reference is another exact point, not a baseline model run.
+- Deltas are selected minus reference.
+- The reference marker is distinct from the selected marker.
+
+Implementation evidence:
+
+- Added set/clear reference controls and a selected-vs-reference delta card.
+- Browser smoke compared selected `p033` against reference `p012`: food −10.88 kcal, GHG −0.1064
+  MtCO2e, land 0, afforestation `Affor2 → Affor1`.
+- Added a blue dashed reference line in parallel coordinates and a blue wireframe reference marker in
+  3D.
+- Added `opt_reference` URL state; clear-reference removes it.
+- Existing filters, hover, marker, share-link, CSV, pin/compare, and Workbench prefill remain intact.
+
+Verification evidence:
+
+- Full suite: 227 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; reference marker/line and delta card verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 
