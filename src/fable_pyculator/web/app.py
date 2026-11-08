@@ -58,6 +58,15 @@ class OptimizationPresetRequest(BaseModel):
     review_status: str | None = Field(default=None, max_length=20)
 
 
+class OptimizationLibraryRestoreRequest(BaseModel):
+    """A shared Optimization library restore request."""
+
+    presets: list[dict[str, Any]] = Field(default_factory=list)
+    timeline_views: list[dict[str, Any]] = Field(default_factory=list)
+    mode: str = Field(default="merge", max_length=20)
+    dry_run: bool = True
+
+
 class PruneHistoryRequest(BaseModel):
     """A shared-history retention request."""
 
@@ -257,6 +266,22 @@ def create_app(config: PortalConfig) -> FastAPI:
     @app.get("/api/optimization/presets")
     def optimization_presets() -> list[dict[str, Any]]:
         return state.optimization_presets()
+
+    @app.get("/api/optimization/library")
+    def optimization_library() -> dict[str, Any]:
+        return state.optimization_library()
+
+    @app.post("/api/optimization/library/restore")
+    def restore_optimization_library(request: OptimizationLibraryRestoreRequest) -> dict[str, Any]:
+        try:
+            return state.restore_optimization_library(
+                request.presets,
+                request.timeline_views,
+                mode=request.mode,
+                dry_run=request.dry_run,
+            )
+        except ValueError as error:
+            raise PortalError(str(error), status_code=400) from error
 
     @app.get("/api/optimization/retention")
     def optimization_retention() -> dict[str, Any]:

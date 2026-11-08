@@ -209,6 +209,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 72 is closed: requirements can resolve the custom-table row from `key_switch`, and
   `CUSTOM-EXPORT-001` now checks the selected `scen_exports` value. PR #369 merged as `15b8516`;
   parent #367 and child #368 are closed. Post-merge Test and Docs Pages passed.
+- Phase 73 is implemented on `feature/p73-shared-library-backup`: shared presets, histories, and
+  timeline views can be backed up as one JSON bundle and restored through a dry-run preview with
+  merge or replace mode. Parent #370 and children #371/#372 are mapped; PR #373 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5135,4 +5138,65 @@ Verification evidence:
 Closeout evidence:
 
 - PR #369 squash-merged as `15b8516`; parent #367 and child #368 closed.
+
+## Phase 73: Shared Library Backup and Previewed Restore
+
+GitHub parent issue: #370.
+
+Branch: `feature/p73-shared-library-backup`.
+
+Status: pr-open.
+
+Pull request: #373.
+
+Goal: back up the shared Optimization library and restore it with a dry-run preview.
+
+Tasks:
+
+- [x] P73.1 Add bundle export and previewed restore API. Child issue: #371.
+- [x] P73.2 Add shared backup/restore UI and browser verification. Child issue: #372.
+
+Scope:
+
+- Export shared presets, histories, and shared timeline views as one JSON bundle.
+- Restore with merge or replace mode.
+- Preview counts before writing; no writes during dry run.
+- Preserve histories and metadata exactly within existing caps.
+- Fail closed on duplicates, invalid entries, and over-cap merges.
+
+Out of scope:
+
+- Authentication or approval semantics.
+- Backend retention changes.
+- New optimization runs.
+- Local browser preset import changes.
+
+Architecture notes:
+
+- Shared presets already include bounded history; timeline views include filter metadata.
+- Restore validates every entry before writing.
+- Merge rejects a result over 20 entries rather than silently dropping data.
+- The bundle is self-declared metadata, not authenticated approval.
+
+Implementation evidence:
+
+- Added `/api/optimization/library` and `/api/optimization/library/restore`.
+- Bundle includes schema metadata, presets with histories, and timeline views.
+- Dry run reports added/replaced/removed/result counts and selected names without writing.
+- Merge preserves existing entries and merges bounded histories; replace removes entries not in the bundle.
+- Merge over-cap, duplicate names, and invalid entries are rejected with 400 responses.
+- Added shared backup/restore controls with mode selection, preview, and Confirm restore.
+- Mode changes re-run the dry run and disable confirm until the new preview returns.
+- Browser smoke backed up a seeded preset and timeline view, deleted them, previewed merge/replace, restored, and cleaned up.
+
+Verification evidence:
+
+- Full suite: 243 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; preview counts and restored names matched.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

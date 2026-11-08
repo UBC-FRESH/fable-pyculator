@@ -208,6 +208,47 @@ def _clean_optimization_preset(
     }
 
 
+def _clean_restored_preset(value: Any) -> dict[str, Any]:
+    """Validate one preset from a shared-library backup, including its history."""
+
+    if not isinstance(value, Mapping):
+        raise ValueError("each preset must be an object")
+    preset = _clean_optimization_preset(
+        value.get("name"),
+        value.get("state"),
+        value.get("saved_at"),
+        author=value.get("author"),
+        note=value.get("note"),
+        review_status=value.get("review_status"),
+    )
+    preset["history"] = _clean_preset_history(value.get("history"))
+    return preset
+
+
+def _merge_preset_history(
+    existing: Any,
+    incoming: Any,
+) -> list[dict[str, Any]]:
+    """Merge two bounded review histories without duplicating events."""
+
+    merged: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str, str]] = set()
+    for event in [*(_clean_preset_history(existing)), *(_clean_preset_history(incoming))]:
+        key = (
+            str(event.get("at", "")),
+            str(event.get("action", "")),
+            str(event.get("author", "")),
+            str(event.get("note", "")),
+            str(event.get("review_status", "")),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(event)
+    merged.sort(key=lambda event: str(event.get("at", "")))
+    return merged[-10:]
+
+
 class PortalError(RuntimeError):
     """A user-facing portal error with an HTTP status hint."""
 
@@ -920,6 +961,137 @@ class PortalState:
 
         with self._timeline_lock:
             return self._load_shared_timeline_views()
+
+    def optimization_library(self) -> dict[str, Any]:
+        """Return a portable backup of shared presets and timeline views."""
+
+        return {
+            "schema": "fable-pyculator.optimization-library",
+            "schema_version": 1,
+            "exported_at": datetime.now(UTC).isoformat(timespec="seconds"),
+            "presets": self.optimization_presets(),
+            "timeline_views": self.timeline_views(),
+        }
+
+    def restore_optimization_library(
+        self,
+        presets: Any,
+        timeline_views: Any,
+        *,
+        mode: str = "merge",
+        dry_run: bool = True,
+    ) -> dict[str, Any]:
+        """Preview or apply a shared-library backup in merge or replace mode."""
+
+        if mode not in {"merge", "replace"}:
+            raise ValueError("restore mode must be merge or replace")
+        if not isinstance(presets, (list, tuple)) or not isinstance(timeline_views, (list, tuple)):
+            raise ValueError("restore payload needs presets and timeline_views lists")
+        if len(presets) > 20 or len(timeline_views) > 20:
+            raise ValueError("a restore can contain at most 20 presets and 20 timeline views")
+        incoming_presets: list[dict[str, Any]] = []
+        seen_presets: set[str] = set()
+        for index, item in enumerate(presets, start=1):
+            try:
+                preset = _clean_restored_preset(item)
+            except ValueError as error:
+                raise ValueError(f"preset {index}: {error}") from error
+            if preset["name"] in seen_presets:
+                raise ValueError(f"duplicate preset name {preset['name']!r}")
+            seen_presets.add(preset["name"])
+            incoming_presets.append(preset)
+        incoming_views: list[dict[str, Any]] = []
+        seen_views: set[str] = set()
+        for index, item in enumerate(timeline_views, start=1):
+            if not isinstance(item, Mapping):
+                raise ValueError(f"timeline view {index} must be an object")
+            try:
+                view = _clean_timeline_view(
+                    item.get("name"),
+                    item.get("filter"),
+                    item.get("saved_at"),
+                    author=item.get("author"),
+                    note=item.get("note"),
+                    review_status=item.get("review_status"),
+                )
+            except ValueError as error:
+                raise ValueError(f"timeline view {index}: {error}") from error
+            if view["name"] in seen_views:
+                raise ValueError(f"duplicate timeline view name {view['name']!r}")
+            seen_views.add(view["name"])
+            incoming_views.append(view)
+
+        with self._preset_lock, self._timeline_lock:
+            existing_presets = self._load_shared_presets()
+            existing_views = self._load_shared_timeline_views()
+            existing_preset_names = {preset["name"] for preset in existing_presets}
+            existing_view_names = {view["name"] for view in existing_views}
+            incoming_preset_names = {preset["name"] for preset in incoming_presets}
+            incoming_view_names = {view["name"] for view in incoming_views}
+            preset_added = [name for name in incoming_preset_names if name not in existing_preset_names]
+            preset_replaced = [name for name in incoming_preset_names if name in existing_preset_names]
+            view_added = [name for name in incoming_view_names if name not in existing_view_names]
+            view_replaced = [name for name in incoming_view_names if name in existing_view_names]
+            if mode == "merge":
+                if len(existing_preset_names | incoming_preset_names) > 20:
+                    raise ValueError("merge would exceed 20 shared presets; use replace or reduce the bundle")
+                if len(existing_view_names | incoming_view_names) > 20:
+                    raise ValueError("merge would exceed 20 shared timeline views; use replace or reduce the bundle")
+                result_presets: list[dict[str, Any]] = []
+                existing_by_name = {preset["name"]: preset for preset in existing_presets}
+                for preset in incoming_presets:
+                    old = existing_by_name.get(preset["name"])
+                    if old is not None:
+                        preset = dict(preset)
+                        preset["history"] = _merge_preset_history(old.get("history"), preset.get("history"))
+                    result_presets.append(preset)
+                result_presets.extend(
+                    preset for preset in existing_presets if preset["name"] not in incoming_preset_names
+                )
+                result_views: list[dict[str, Any]] = list(incoming_views)
+                result_views.extend(view for view in existing_views if view["name"] not in incoming_view_names)
+                preset_removed: list[str] = []
+                view_removed: list[str] = []
+            else:
+                result_presets = list(incoming_presets)
+                result_views = list(incoming_views)
+                preset_removed = [name for name in existing_preset_names if name not in incoming_preset_names]
+                view_removed = [name for name in existing_view_names if name not in incoming_view_names]
+            changed = bool(
+                preset_added or preset_replaced or preset_removed or view_added or view_replaced or view_removed
+            )
+            if not dry_run and changed:
+                self._write_shared_presets(result_presets[:20])
+                self._write_shared_timeline_views(result_views[:20])
+
+        return {
+            "schema": "fable-pyculator.optimization-library",
+            "schema_version": 1,
+            "mode": mode,
+            "dry_run": bool(dry_run),
+            "changed": changed,
+            "at": datetime.now(UTC).isoformat(timespec="seconds"),
+            "presets": {
+                "incoming": len(incoming_presets),
+                "added": len(preset_added),
+                "replaced": len(preset_replaced),
+                "removed": len(preset_removed),
+                "result": len(result_presets),
+                "added_names": sorted(preset_added),
+                "replaced_names": sorted(preset_replaced),
+                "removed_names": sorted(preset_removed),
+            },
+            "timeline_views": {
+                "incoming": len(incoming_views),
+                "added": len(view_added),
+                "replaced": len(view_replaced),
+                "removed": len(view_removed),
+                "result": len(result_views),
+                "added_names": sorted(view_added),
+                "replaced_names": sorted(view_replaced),
+                "removed_names": sorted(view_removed),
+            },
+        }
 
     def save_timeline_view(
         self,

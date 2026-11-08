@@ -1379,6 +1379,124 @@ function exportSharedOptimizationPresets() {
 }
 
 
+async function exportSharedLibraryBackup() {
+  try {
+    const payload = await request("optimization/library");
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "fable-optimization-library.json";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    const presets = payload.presets?.length || 0;
+    const views = payload.timeline_views?.length || 0;
+    toast(`Backed up ${presets} preset${presets === 1 ? "" : "s"} and ${views} timeline view${views === 1 ? "" : "s"}`, "good");
+  } catch (error) {
+    toast(`Could not back up the shared library: ${error.message}`, "bad");
+  }
+}
+
+function resetSharedLibraryRestore(message = "Select a backup file to preview a restore.") {
+  state.optimization.sharedRestorePending = null;
+  state.optimization.sharedRestorePreview = null;
+  const confirm = $("#optimization-shared-restore-confirm");
+  if (confirm) confirm.disabled = true;
+  const preview = $("#optimization-shared-restore-preview");
+  if (preview) preview.textContent = message;
+}
+
+function renderSharedLibraryRestorePreview(result) {
+  const preview = $("#optimization-shared-restore-preview");
+  if (!preview) return;
+  const names = (entry, label) => {
+    const added = (entry.added_names || []).length ? ` · added: ${entry.added_names.join(", ")}` : "";
+    const replaced = (entry.replaced_names || []).length ? ` · replaced: ${entry.replaced_names.join(", ")}` : "";
+    const removed = (entry.removed_names || []).length ? ` · removed: ${entry.removed_names.join(", ")}` : "";
+    return `${label}: ${entry.incoming} incoming, ${entry.added} added, ${entry.replaced} replaced, ${entry.removed} removed, ${entry.result} total${added}${replaced}${removed}`;
+  };
+  const mode = result.mode === "replace" ? "Replace" : "Merge";
+  preview.textContent = `${mode} preview · ${names(result.presets, "presets")} · ${names(result.timeline_views, "timeline views")}`;
+}
+
+async function requestSharedLibraryRestorePreview() {
+  const pending = state.optimization.sharedRestorePending;
+  if (!pending) return;
+  const confirm = $("#optimization-shared-restore-confirm");
+  if (confirm) confirm.disabled = true;
+  const preview = $("#optimization-shared-restore-preview");
+  if (preview) preview.textContent = "Previewing restore…";
+  const mode = $("#optimization-shared-restore-mode")?.value === "replace" ? "replace" : "merge";
+  try {
+    const result = await request("optimization/library/restore", {
+      method: "POST",
+      body: JSON.stringify({
+        presets: pending.presets,
+        timeline_views: pending.timeline_views,
+        mode,
+        dry_run: true,
+      }),
+    });
+    state.optimization.sharedRestorePreview = result;
+    renderSharedLibraryRestorePreview(result);
+    if (confirm) confirm.disabled = !result.changed;
+    if (!result.changed) toast("The backup matches the current shared library.", "warn");
+  } catch (error) {
+    resetSharedLibraryRestore(`Restore preview failed: ${error.message}`);
+    toast(`Could not preview the restore: ${error.message}`, "bad");
+  }
+}
+
+async function previewSharedLibraryRestore(event) {
+  const input = event.target;
+  const file = input.files?.[0];
+  if (!file) return;
+  try {
+    const parsed = JSON.parse(await file.text());
+    if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.presets) || !Array.isArray(parsed.timeline_views)) {
+      throw new Error("JSON must contain presets and timeline_views arrays");
+    }
+    state.optimization.sharedRestorePending = {
+      presets: parsed.presets,
+      timeline_views: parsed.timeline_views,
+    };
+    await requestSharedLibraryRestorePreview();
+  } catch (error) {
+    resetSharedLibraryRestore(`Could not read the backup: ${error.message}`);
+    toast(`Could not read the backup: ${error.message}`, "bad");
+  } finally {
+    input.value = "";
+  }
+}
+
+async function confirmSharedLibraryRestore() {
+  const pending = state.optimization.sharedRestorePending;
+  const preview = state.optimization.sharedRestorePreview;
+  if (!pending || !preview?.changed) {
+    toast("Preview a restore before confirming.", "warn");
+    return;
+  }
+  const mode = $("#optimization-shared-restore-mode")?.value === "replace" ? "replace" : "merge";
+  try {
+    const result = await request("optimization/library/restore", {
+      method: "POST",
+      body: JSON.stringify({
+        presets: pending.presets,
+        timeline_views: pending.timeline_views,
+        mode,
+        dry_run: false,
+      }),
+    });
+    await Promise.all([loadSharedOptimizationPresets(), loadSharedTimelineViews()]);
+    resetSharedLibraryRestore("Restore applied. Select another backup to preview a restore.");
+    toast(`Restored ${result.presets.result} preset(s) and ${result.timeline_views.result} timeline view(s)`, "good");
+  } catch (error) {
+    toast(`Could not restore the shared library: ${error.message}`, "bad");
+  }
+}
+
 function sharedAuditEvents(presets) {
   return presets
     .flatMap((preset) =>
@@ -2433,6 +2551,14 @@ function bindOptimizationEvents() {
   $("#optimization-shared-mark-reviewed").addEventListener("click", markSharedOptimizationPresetReviewed);
   $("#optimization-shared-export").addEventListener("click", exportSharedOptimizationPresets);
   $("#optimization-shared-export-csv").addEventListener("click", exportSharedAuditCsv);
+  $("#optimization-shared-backup").addEventListener("click", exportSharedLibraryBackup);
+  $("#optimization-shared-restore").addEventListener("click", () => $("#optimization-shared-restore-file").click());
+  $("#optimization-shared-restore-file").addEventListener("change", previewSharedLibraryRestore);
+  $("#optimization-shared-restore-confirm").addEventListener("click", confirmSharedLibraryRestore);
+  $("#optimization-shared-restore-mode").addEventListener("change", () => {
+    if (state.optimization.sharedRestorePending) requestSharedLibraryRestorePreview();
+    else resetSharedLibraryRestore("Select a backup file to preview a restore.");
+  });
   $("#optimization-history-preview").addEventListener("click", () => {
     resetPruneConfirmation();
     pruneOptimizationHistory(true);

@@ -97,6 +97,12 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-shared-audit"' in shell.text
     assert 'id="optimization-shared-export"' in shell.text
     assert 'id="optimization-shared-export-csv"' in shell.text
+    assert 'id="optimization-shared-backup"' in shell.text
+    assert 'id="optimization-shared-restore"' in shell.text
+    assert 'id="optimization-shared-restore-file"' in shell.text
+    assert 'id="optimization-shared-restore-confirm"' in shell.text
+    assert 'id="optimization-shared-restore-mode"' in shell.text
+    assert 'id="optimization-shared-restore-preview"' in shell.text
     assert 'id="optimization-shared-timeline"' in shell.text
     assert 'id="optimization-timeline-author"' in shell.text
     assert 'id="optimization-timeline-action"' in shell.text
@@ -160,6 +166,11 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "exportSharedOptimizationPresets" in script.text
     assert "renderSharedTimeline" in script.text
     assert "exportSharedAuditCsv" in script.text
+    assert "exportSharedLibraryBackup" in script.text
+    assert "previewSharedLibraryRestore" in script.text
+    assert "confirmSharedLibraryRestore" in script.text
+    assert "requestSharedLibraryRestorePreview" in script.text
+    assert "optimization/library/restore" in script.text
     assert "timelineFilter" in script.text
     assert "Recently reviewed" in shell.text
     assert "renderReviewWorkload" in script.text
@@ -328,6 +339,150 @@ def test_shared_timeline_views_survive_app_restart(tmp_path: Path) -> None:
     with TestClient(create_app(config)) as client:
         listing = client.get("/api/optimization/timeline-views").json()
     assert [view["name"] for view in listing] == ["Persistent"]
+
+
+def test_shared_library_backup_round_trip(tmp_path: Path) -> None:
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", versions=("2024",))
+    with TestClient(create_app(config)) as client:
+        client.post("/api/optimization/presets", json=_preset_payload("Team view"))
+        client.post("/api/optimization/timeline-views", json=_timeline_view_payload("Team timeline"))
+        bundle = client.get("/api/optimization/library").json()
+
+        assert bundle["schema"] == "fable-pyculator.optimization-library"
+        assert bundle["schema_version"] == 1
+        assert bundle["presets"][0]["history"][-1]["action"] == "created"
+        assert bundle["timeline_views"][0]["filter"]["window"] == "7d"
+
+        assert client.delete("/api/optimization/presets/Team view").status_code == 200
+        assert client.delete("/api/optimization/timeline-views/Team timeline").status_code == 200
+
+        preview = client.post(
+            "/api/optimization/library/restore",
+            json={
+                "presets": bundle["presets"],
+                "timeline_views": bundle["timeline_views"],
+                "mode": "replace",
+                "dry_run": True,
+            },
+        )
+        assert preview.status_code == 200
+        assert preview.json()["dry_run"] is True
+        assert preview.json()["changed"] is True
+        assert preview.json()["presets"]["added"] == 1
+        assert client.get("/api/optimization/presets").json() == []
+        assert client.get("/api/optimization/timeline-views").json() == []
+
+        restored = client.post(
+            "/api/optimization/library/restore",
+            json={
+                "presets": bundle["presets"],
+                "timeline_views": bundle["timeline_views"],
+                "mode": "replace",
+                "dry_run": False,
+            },
+        )
+        assert restored.status_code == 200
+        assert restored.json()["dry_run"] is False
+        assert restored.json()["presets"]["result"] == 1
+        assert restored.json()["timeline_views"]["result"] == 1
+        presets = client.get("/api/optimization/presets").json()
+        views = client.get("/api/optimization/timeline-views").json()
+        assert presets[0]["name"] == "Team view"
+        assert presets[0]["state"]["point"] == "p001"
+        assert presets[0]["history"][-1]["action"] == "created"
+        assert views[0]["name"] == "Team timeline"
+        assert views[0]["filter"]["action"] == "reviewed"
+
+
+def test_shared_library_merge_preview_and_rejections(tmp_path: Path) -> None:
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", versions=("2024",))
+    existing = _preset_payload("Existing")
+    incoming_existing = _preset_payload("Existing")
+    incoming_existing["note"] = "From backup"
+    incoming_existing["history"] = [
+        {
+            "at": "2000-01-01T00:00:00+00:00",
+            "action": "updated",
+            "author": "Backup",
+            "note": "Restored",
+            "review_status": "reviewed",
+        }
+    ]
+    incoming_new = _preset_payload("New")
+    with TestClient(create_app(config)) as client:
+        client.post("/api/optimization/presets", json=existing)
+        client.post("/api/optimization/timeline-views", json=_timeline_view_payload("Existing view"))
+        payload = {
+            "presets": [incoming_existing, incoming_new],
+            "timeline_views": [_timeline_view_payload("New view")],
+            "mode": "merge",
+        }
+
+        preview = client.post("/api/optimization/library/restore", json={**payload, "dry_run": True})
+        assert preview.status_code == 200
+        assert preview.json()["presets"]["added"] == 1
+        assert preview.json()["presets"]["replaced"] == 1
+        assert preview.json()["presets"]["removed"] == 0
+        assert preview.json()["timeline_views"]["added"] == 1
+        assert client.get("/api/optimization/presets").json()[0]["note"] == "Team view"
+
+        applied = client.post("/api/optimization/library/restore", json={**payload, "dry_run": False})
+        assert applied.status_code == 200
+        listed = client.get("/api/optimization/presets").json()
+        assert [preset["name"] for preset in listed] == ["Existing", "New"]
+        existing_preset = next(preset for preset in listed if preset["name"] == "Existing")
+        assert existing_preset["note"] == "From backup"
+        assert [event["action"] for event in existing_preset["history"]] == ["updated", "created"]
+
+        duplicate = client.post(
+            "/api/optimization/library/restore",
+            json={
+                "presets": [incoming_new, incoming_new],
+                "timeline_views": [],
+                "mode": "merge",
+                "dry_run": True,
+            },
+        )
+        assert duplicate.status_code == 400
+
+        invalid = client.post(
+            "/api/optimization/library/restore",
+            json={"presets": [{"name": "Bad", "state": {}}], "timeline_views": [], "mode": "merge"},
+        )
+        assert invalid.status_code == 400
+
+        replace = client.post(
+            "/api/optimization/library/restore",
+            json={
+                "presets": [incoming_new],
+                "timeline_views": [_timeline_view_payload("New view")],
+                "mode": "replace",
+                "dry_run": False,
+            },
+        )
+        assert replace.status_code == 200
+        assert replace.json()["presets"]["removed"] == 1
+        assert [preset["name"] for preset in client.get("/api/optimization/presets").json()] == ["New"]
+        assert [view["name"] for view in client.get("/api/optimization/timeline-views").json()] == ["New view"]
+
+
+def test_shared_library_merge_does_not_silently_drop_entries(tmp_path: Path) -> None:
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", versions=("2024",))
+    with TestClient(create_app(config)) as client:
+        for index in range(20):
+            response = client.post("/api/optimization/presets", json=_preset_payload(f"Preset {index}"))
+            assert response.status_code == 200
+        response = client.post(
+            "/api/optimization/library/restore",
+            json={
+                "presets": [_preset_payload("Overflow")],
+                "timeline_views": [],
+                "mode": "merge",
+                "dry_run": True,
+            },
+        )
+    assert response.status_code == 400
+    assert "use replace" in response.json()["detail"]
 
 
 def test_prune_shared_preset_history_preserves_latest(tmp_path: Path) -> None:
