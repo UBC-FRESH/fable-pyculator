@@ -98,6 +98,7 @@ This file records completed project work in chronological order.
 - Added selected-vs-reference comparison to the Optimization page: exact objective and selection
   deltas, a blue reference marker in 3D, a dashed reference line in parallel coordinates, and
   `opt_reference` URL state.
+  PR #288 merged as `59866c5`; post-merge Test and Docs Pages passed.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

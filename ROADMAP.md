@@ -123,10 +123,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   land, diet, trade-fix, livestock, crop, afforestation, food, GHG, and goal. It renders the same
   filtered exact points and clicking a line selects the 3D point. PR #285 merged as `64e1a01`;
   parent #283 and child #284 are closed. Post-merge Test and Docs Pages passed.
-- Phase 45 is implemented on `feature/p45-reference-delta`: an exact point can be set as a reference,
-  compared with the selected point through objective and selection deltas, and marked in both the 3D
-  and parallel views. The reference is shareable in the URL. Parent #286 and child #287 are mapped;
-  PR #288 and closeout remain.
+- Phase 45 is closed: an exact point can be set as a reference, compared with the selected point
+  through objective and selection deltas, and marked in both the 3D and parallel views. The reference
+  is shareable in the URL. PR #288 merged as `59866c5`; parent #286 and child #287 are closed.
+  Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3478,9 +3478,9 @@ GitHub parent issue: #286.
 
 Branch: `feature/p45-reference-delta`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #288.
+Pull request: #288 (merged as `59866c5`).
 
 Goal: let a user pin one exact point as the reference and compare the selected point against it.
 
@@ -3523,8 +3523,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; reference marker/line and delta card verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #288 squash-merged as `59866c5`; parent #286 and child #287 closed.
 
