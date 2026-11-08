@@ -29,6 +29,7 @@ const state = {
     sharedPresets: [],
     sharedTimelineViews: [],
     retentionRuns: [],
+    retentionSelected: null,
     prunePreviewDays: null,
     sharedFilter: "all",
     timelineFilter: { author: "", action: "", preset: "", window: "all" },
@@ -1884,7 +1885,9 @@ async function loadRetentionRuns() {
       row.addEventListener("click", () => {
         container.querySelectorAll("tr.selected").forEach((item) => item.classList.remove("selected"));
         row.classList.add("selected");
-        renderRetentionDetail(state.optimization.retentionRuns[Number(row.dataset.retentionIndex)]);
+        const selected = state.optimization.retentionRuns[Number(row.dataset.retentionIndex)];
+        state.optimization.retentionSelected = selected;
+        renderRetentionDetail(selected);
       });
     });
     renderRetentionDetail(null);
@@ -1894,9 +1897,14 @@ async function loadRetentionRuns() {
 }
 
 
+function retentionVector(events) {
+  return (events || []).map((event) => `${event.action} ${formatDate(event.at)}`).join(" → ");
+}
+
 function renderRetentionDetail(run) {
   const container = $("#optimization-retention-detail");
   if (!container) return;
+  state.optimization.retentionSelected = run || null;
   if (!run) {
     container.innerHTML = '<p class="hint">Select a run to inspect removed events.</p>';
     return;
@@ -1907,15 +1915,37 @@ function renderRetentionDetail(run) {
     container.innerHTML = header + '<p class="hint">No per-event details were recorded for this run.</p>';
     return;
   }
-  const vector = (events) => (events || []).map((event) => `${event.action} ${formatDate(event.at)}`).join(" → ") || "—";
   const rows = details
     .map((entry) => {
-      const removed = (entry.removed || []).map((event) => `${event.action} ${formatDate(event.at)}`).join("; ");
-      return `<tr><td>${escapeHtml(entry.preset)}</td><td>${escapeHtml(vector(entry.before))}</td><td>${escapeHtml(vector(entry.after))}</td><td>${escapeHtml(removed || "—")}</td></tr>`;
+      const removed = retentionVector(entry.removed);
+      return `<tr><td>${escapeHtml(entry.preset)}</td><td>${escapeHtml(retentionVector(entry.before) || "—")}</td><td>${escapeHtml(retentionVector(entry.after) || "—")}</td><td>${escapeHtml(removed || "—")}</td></tr>`;
     })
     .join("");
   const truncated = run.details_truncated ? '<p class="hint">Details truncated.</p>' : "";
-  container.innerHTML = header + `<table><thead><tr><th>Preset</th><th>Before</th><th>After</th><th>Removed</th></tr></thead><tbody>${rows}</tbody></table>` + truncated;
+  container.innerHTML = header + '<div class="button-row"><button id="optimization-retention-diff-export" class="button ghost small" type="button">Export diff CSV</button></div>' + `<table><thead><tr><th>Preset</th><th>Before</th><th>After</th><th>Removed</th></tr></thead><tbody>${rows}</tbody></table>` + truncated;
+  $("#optimization-retention-diff-export")?.addEventListener("click", exportRetentionDiffCsv);
+}
+
+function exportRetentionDiffCsv() {
+  const run = state.optimization.retentionSelected;
+  const details = run && Array.isArray(run.details) ? run.details : [];
+  if (!details.length) {
+    toast("Select a retention run with per-preset details to export.", "warn");
+    return;
+  }
+  const header = ["preset", "before", "after", "removed"];
+  const rows = details.map((entry) => [entry.preset, retentionVector(entry.before), retentionVector(entry.after), retentionVector(entry.removed)]);
+  const csv = [header, ...rows].map((row) => row.map(optimizationCsvCell).join(",")).join("\n") + "\n";
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "fable-retention-diff.csv";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${details.length} preset diff${details.length === 1 ? "" : "s"}`, "good");
 }
 
 function exportRetentionRunsCsv() {

@@ -203,6 +203,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 70 is closed: Prune history now previews first and requires a second Confirm prune click;
   changing days resets the preview. PR #363 merged as `32423b3`; parent #361 and child #362 are
   closed. Post-merge Test and Docs Pages passed.
+- Phase 71 is implemented on `feature/p71-retention-diff-export`: the selected retention run can export
+  its exact per-preset before/after/removed vectors as CSV. Parent #364 and child #365 are mapped; PR
+  and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5014,4 +5017,58 @@ Verification evidence:
 Closeout evidence:
 
 - PR #363 squash-merged as `32423b3`; parent #361 and child #362 closed.
+
+## Phase 71: Retention Diff CSV Export
+
+GitHub parent issue: #364.
+
+Branch: `feature/p71-retention-diff-export`.
+
+Status: implemented; PR pending.
+
+Goal: export the selected retention run's exact before/after vectors as CSV.
+
+Tasks:
+
+- [x] P71.1 Export the selected run before/after vectors as CSV. Child issue: #365.
+
+Scope:
+
+- Track the selected run in UI state.
+- Export preset, before, after, and removed vectors.
+- Download from the detail panel.
+- Keep old runs without details readable.
+- Preserve existing run CSV and prune behavior.
+
+Out of scope:
+
+- Backend retention changes.
+- Authentication.
+- New optimization runs.
+
+Architecture notes:
+
+- The run details are already returned by the runs API.
+- CSV is generated in the browser from the selected run.
+- Vectors remain bounded by the existing retention details cap.
+
+Implementation evidence:
+
+- The detail panel now renders `Export diff CSV` when a run has per-preset details.
+- CSV columns are `preset`, `before`, `after`, and `removed`; vectors preserve exact actions and timestamps.
+- The selected run is tracked explicitly and cleared on reload.
+- Runs without details retain the no-export fallback.
+- Browser smoke seeded a two-event preset, previewed a one-event removal, downloaded the CSV, and removed the preset.
+- Existing dashboard/run CSV/prune and viewer behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 237 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; downloaded CSV matched the rendered diff.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

@@ -164,6 +164,7 @@ This file records completed project work in chronological order.
   PR #360 merged as `d10b289`; post-merge Test and Docs Pages passed.
 - Added a confirm-before-prune flow: first click previews and arms, second click commits.
   PR #363 merged as `32423b3`; post-merge Test and Docs Pages passed.
+- Added CSV export of the selected retention run's per-preset before/after/removed vectors.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
