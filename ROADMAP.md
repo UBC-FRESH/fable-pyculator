@@ -168,9 +168,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 58 is closed: a per-author workload table summarizes created/updated/reviewed counts and
   latest activity, with author-row click-through to the timeline filter. PR #327 merged as
   `4975072`; parent #325 and child #326 are closed. Post-merge Test and Docs Pages passed.
-- Phase 59 is implemented on `feature/p59-saved-timeline-views`: named local timeline filter views
-  can save and restore author/action/preset/window combinations. Parent #328 and child #329 are
-  mapped; PR #330 and closeout remain.
+- Phase 59 is closed: named local timeline filter views save and restore author/action/preset/window
+  combinations. PR #330 merged as `eda3171`; parent #328 and child #329 are closed. Post-merge Test
+  and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4312,9 +4312,9 @@ GitHub parent issue: #328.
 
 Branch: `feature/p59-saved-timeline-views`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #330.
+Pull request: #330 (merged as `eda3171`).
 
 Goal: add local saved timeline filter views.
 
@@ -4355,8 +4355,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; timeline preset save/load/delete verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #330 squash-merged as `eda3171`; parent #328 and child #329 closed.
 
