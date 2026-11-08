@@ -70,6 +70,31 @@ _PRESET_STATE_KEYS = (
 )
 
 
+def _clean_preset_history(value: Any) -> list[dict[str, Any]]:
+    """Validate the server-owned review history list."""
+
+    if not isinstance(value, (list, tuple)):
+        return []
+    history: list[dict[str, Any]] = []
+    for event in value[-10:]:
+        if not isinstance(event, Mapping):
+            continue
+        action = str(event.get("action", "")).strip().lower()
+        status = str(event.get("review_status", "draft")).strip().lower()
+        if action not in {"created", "updated", "reviewed"} or status not in {"draft", "reviewed"}:
+            continue
+        history.append(
+            {
+                "at": str(event.get("at", ""))[:40],
+                "action": action,
+                "author": str(event.get("author", ""))[:40],
+                "note": str(event.get("note", ""))[:80],
+                "review_status": status,
+            }
+        )
+    return history[-10:]
+
+
 def _clean_optimization_preset(
     name: Any,
     state: Any,
@@ -796,6 +821,27 @@ class PortalState:
             review_status=review_status,
         )
         with self._preset_lock:
+            existing = next(
+                (item for item in self._load_shared_presets() if item["name"] == preset["name"]),
+                None,
+            )
+            history = list(existing.get("history", [])) if existing else []
+            if not existing:
+                action = "created"
+            elif existing.get("review_status") != "reviewed" and preset["review_status"] == "reviewed":
+                action = "reviewed"
+            else:
+                action = "updated"
+            history.append(
+                {
+                    "at": preset["saved_at"],
+                    "action": action,
+                    "author": preset["author"],
+                    "note": preset["note"][:80],
+                    "review_status": preset["review_status"],
+                }
+            )
+            preset["history"] = history[-10:]
             presets = [item for item in self._load_shared_presets() if item["name"] != preset["name"]]
             presets.insert(0, preset)
             self._write_shared_presets(presets[:20])
@@ -827,16 +873,16 @@ class PortalState:
             if not isinstance(item, Mapping):
                 continue
             try:
-                presets.append(
-                    _clean_optimization_preset(
-                        item.get("name"),
-                        item.get("state"),
-                        item.get("saved_at"),
-                        author=item.get("author"),
-                        note=item.get("note"),
-                        review_status=item.get("review_status"),
-                    )
+                preset = _clean_optimization_preset(
+                    item.get("name"),
+                    item.get("state"),
+                    item.get("saved_at"),
+                    author=item.get("author"),
+                    note=item.get("note"),
+                    review_status=item.get("review_status"),
                 )
+                preset["history"] = _clean_preset_history(item.get("history"))
+                presets.append(preset)
             except ValueError:
                 continue
         return presets[:20]

@@ -640,3 +640,7 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .preset-box summary .pill { margin-left: 0.35rem; }
 .preset-box .inline-fields { margin-top: 0.45rem; }
 .preset-box .field { margin-bottom: 0.35rem; }
+.preset-history { margin: 0.35rem 0 0.5rem; max-height: 8rem; overflow: auto; }
+.preset-history ol { margin: 0; padding-left: 1.1rem; }
+.preset-history li { margin-bottom: 0.2rem; color: var(--muted); font-size: 0.68rem; line-height: 1.35; }
+.preset-history b { color: var(--ink); }

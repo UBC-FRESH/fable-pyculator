@@ -538,8 +538,8 @@ views. Complete viewer states, including multiple brushes and the reference, can
 presets in the **Saved views** panel, and the preset library can be exported/imported as JSON or
 shared as a named preset link carrying the full viewer state. A server-backed **Shared library** stores
 named views for everyone with portal access, with optional self-declared author, note, and
-draft/reviewed metadata. The shared panel has a needs-review queue, draft/reviewed counts, and a
-mark-reviewed action. The view state is shareable through URL query parameters, and the currently
+draft/reviewed metadata. The shared panel has a needs-review queue, draft/reviewed counts, a
+mark-reviewed action, and a compact created/updated/reviewed history per preset. The view state is shareable through URL query parameters, and the currently
 filtered exact points can be downloaded as CSV.
 
 This is the same interaction pattern as the urban-forest lab and WS4 Pareto explorer. The FABLE

@@ -105,7 +105,8 @@ Optimization
    everyone with portal access. Shared presets can carry a self-declared author, note, and
    draft/reviewed status; these are labels, not authenticated approval. The shared panel filters by
    all / needs review / reviewed, shows draft and reviewed counts, and can mark a selected draft as
-   reviewed. The current axes, colour, size, filters, brushes, selected point, and reference are
+   reviewed. Each shared preset keeps a compact self-declared history of created/updated/reviewed
+   events. The current axes, colour, size, filters, brushes, selected point, and reference are
    encoded in the URL; **Copy view link** shares that exact state, and **Download
    filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through
