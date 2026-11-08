@@ -126,7 +126,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 45 is implemented on `feature/p45-reference-delta`: an exact point can be set as a reference,
   compared with the selected point through objective and selection deltas, and marked in both the 3D
   and parallel views. The reference is shareable in the URL. Parent #286 and child #287 are mapped;
-  PR and closeout remain.
+  PR #288 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3478,7 +3478,9 @@ GitHub parent issue: #286.
 
 Branch: `feature/p45-reference-delta`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #288.
 
 Goal: let a user pin one exact point as the reference and compare the selected point against it.
 
