@@ -222,9 +222,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 76 is closed: the expert review worksheet and Markdown rule block are generated from the YAML
   registry, preserve reviewer decisions, and have a `--check` drift gate. PR #383 merged as
   `996745c`; parent #381 and child #382 are closed. Post-merge Test and Docs Pages passed.
-- Phase 77 is implemented on `feature/p77-rule-decision-roundtrip`: completed worksheet decisions
-  can be dry-run or explicitly imported into the registry with status/severity/provenance updates.
-  Parent #384 and child #385 are mapped; PR #386 and closeout remain.
+- Phase 77 is closed: completed worksheet decisions can be dry-run or explicitly imported into the
+  registry with status/severity/provenance updates. PR #386 merged as `f3dc487`; parent #384 and
+  child #385 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5405,9 +5405,9 @@ GitHub parent issue: #384.
 
 Branch: `feature/p77-rule-decision-roundtrip`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #386.
+Pull request: #386 (merged as `f3dc487`).
 
 Goal: import completed review worksheet decisions into the YAML registry with a dry-run preview.
 
@@ -5458,8 +5458,9 @@ Verification evidence:
 - `build_rule_review_package.py --check` passes.
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #386 squash-merged as `f3dc487`; parent #384 and child #385 closed.
 
