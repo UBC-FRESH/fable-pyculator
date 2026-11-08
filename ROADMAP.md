@@ -176,7 +176,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   Post-merge Test and Docs Pages passed.
 - Phase 61 is implemented on `feature/p61-shared-timeline-views`: a server-backed shared timeline
   library persists filter views under the runtime directory with list/save/delete APIs and UI
-  controls. Parent #334 and child #335 are mapped; PR and closeout remain.
+  controls. Parent #334 and child #335 are mapped; PR #336 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4430,7 +4430,9 @@ GitHub parent issue: #334.
 
 Branch: `feature/p61-shared-timeline-views`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #336.
 
 Goal: add a server-side shared library for timeline filter views.
 
