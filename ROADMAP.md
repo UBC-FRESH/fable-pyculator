@@ -237,6 +237,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 81 published `0.1.0a6`: TestPyPI run 42515188099 passed, tag `v0.1.0a6` triggered PyPI run
   42515378564, and a clean PyPI install imported `0.1.0a6`. GitHub prerelease
   https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a6 has the wheel and sdist.
+  Evidence PR #398.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5661,7 +5662,9 @@ GitHub parent issue: #396.
 
 Branch: `feature/p81-publish-a6`.
 
-Status: implemented; evidence PR pending.
+Status: pr-open.
+
+Pull request: #398.
 
 Goal: publish the verified 0.1.0a6 candidate with OIDC trusted publishing and create the GitHub prerelease.
 
