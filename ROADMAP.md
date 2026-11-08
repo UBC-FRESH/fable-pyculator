@@ -127,9 +127,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   through objective and selection deltas, and marked in both the 3D and parallel views. The reference
   is shareable in the URL. PR #288 merged as `59866c5`; parent #286 and child #287 are closed.
   Post-merge Test and Docs Pages passed.
-- Phase 46 is implemented on `feature/p46-parallel-brush`: dragging a range on a parallel-coordinates
-  axis now filters both the parallel and 3D views, with a visible brush band, clear action, and
-  `opt_brush` URL state. Parent #289 and child #290 are mapped; PR #291 and closeout remain.
+- Phase 46 is closed: dragging a range on a parallel-coordinates axis filters both the parallel and
+  3D views, with a visible brush band, clear action, and `opt_brush` URL state. PR #291 merged as
+  `9e74875`; parent #289 and child #290 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3538,9 +3538,9 @@ GitHub parent issue: #289.
 
 Branch: `feature/p46-parallel-brush`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #291.
+Pull request: #291 (merged as `9e74875`).
 
 Goal: add brush-to-filter on the parallel-coordinates axes, synchronized with the 3D exact viewer.
 
@@ -3581,8 +3581,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; brush and clear behavior verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #291 squash-merged as `9e74875`; parent #289 and child #290 closed.
 

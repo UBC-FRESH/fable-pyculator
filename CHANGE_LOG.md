@@ -101,6 +101,7 @@ This file records completed project work in chronological order.
   PR #288 merged as `59866c5`; post-merge Test and Docs Pages passed.
 - Added brush-to-filter on the parallel-coordinates axes. Dragging a range filters both the parallel
   and 3D views, displays a brush band, supports clearing, and persists as `opt_brush` URL state.
+  PR #291 merged as `9e74875`; post-merge Test and Docs Pages passed.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
