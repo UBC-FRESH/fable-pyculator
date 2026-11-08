@@ -183,9 +183,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 63 is closed: shared preset history can be previewed and pruned by a configurable day window
   while always preserving each preset's latest event. PR #342 merged as `89abc93`; parent #340 and
   child #341 are closed. Post-merge Test and Docs Pages passed.
-- Phase 64 is implemented on `feature/p64-startup-retention`: the portal can apply a configurable
-  startup retention policy (or dry run), writes a JSONL retention log, and exposes the policy/last
-  result through the API and UI. Parent #343 and child #344 are mapped; PR #345 and closeout remain.
+- Phase 64 is closed: the portal can apply a configurable startup retention policy (or dry run),
+  writes a JSONL retention log, and exposes the policy/last result through the API and UI. PR #345
+  merged as `b0d70ba`; parent #343 and child #344 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4609,9 +4609,9 @@ GitHub parent issue: #343.
 
 Branch: `feature/p64-startup-retention`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #345.
+Pull request: #345 (merged as `b0d70ba`).
 
 Goal: add a configurable startup retention policy and retention audit log.
 
@@ -4655,8 +4655,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; policy display verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #345 squash-merged as `b0d70ba`; parent #343 and child #344 closed.
 
