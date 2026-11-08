@@ -673,3 +673,8 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .retention-runs th, .retention-runs td { padding: 0.2rem 0.25rem; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
 .retention-runs th:first-child, .retention-runs td:first-child { text-align: left; }
 .retention-runs th { color: var(--muted); font-weight: 650; }
+.retention-detail { margin-top: 0.3rem; max-height: 8rem; overflow: auto; }
+.retention-detail table { width: 100%; border-collapse: collapse; font-size: 0.64rem; }
+.retention-detail th, .retention-detail td { padding: 0.2rem 0.25rem; border-bottom: 1px solid var(--line); text-align: left; }
+.retention-detail th { color: var(--muted); font-weight: 650; }
+.retention-runs tr.selected { background: var(--blue-soft); }

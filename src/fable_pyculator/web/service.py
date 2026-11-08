@@ -1011,6 +1011,8 @@ class PortalState:
             removed = 0
             kept = 0
             touched = 0
+            details: list[dict[str, Any]] = []
+            details_truncated = False
             updated: list[dict[str, Any]] = []
             for preset in presets:
                 history = list(preset.get("history", []))
@@ -1018,6 +1020,7 @@ class PortalState:
                     updated.append(preset)
                     continue
                 retained: list[dict[str, Any]] = []
+                removed_events: list[dict[str, Any]] = []
                 for index, event in enumerate(history):
                     keep = index == len(history) - 1
                     if not keep:
@@ -1032,9 +1035,22 @@ class PortalState:
                         retained.append(event)
                     else:
                         removed += 1
+                        removed_events.append(
+                            {"at": str(event.get("at", ""))[:40], "action": str(event.get("action", ""))[:20]}
+                        )
                 kept += len(retained)
                 if len(retained) != len(history):
                     touched += 1
+                    if len(details) < 20:
+                        details.append(
+                            {
+                                "preset": preset["name"],
+                                "removed": removed_events[:10],
+                                "kept": len(retained),
+                            }
+                        )
+                    else:
+                        details_truncated = True
                     preset = dict(preset)
                     preset["history"] = retained
                 updated.append(preset)
@@ -1049,6 +1065,8 @@ class PortalState:
             "presets_total": len(presets),
             "source": source,
             "at": datetime.now(UTC).isoformat(timespec="seconds"),
+            "details": details,
+            "details_truncated": details_truncated,
         }
         self._record_retention(result)
         return result

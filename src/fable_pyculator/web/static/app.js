@@ -1842,14 +1842,45 @@ async function loadRetentionRuns() {
       return;
     }
     const rows = runs
-      .map((run) => `<tr><td>${escapeHtml(formatDate(run.at))}</td><td>${escapeHtml(run.source || "manual")}</td><td>${Number(run.days || 0)}</td><td>${run.dry_run ? "dry run" : "applied"}</td><td>${Number(run.removed || 0)}</td><td>${Number(run.kept || 0)}</td><td>${Number(run.presets_touched || 0)}</td></tr>`)
+      .map((run, index) => `<tr data-retention-index="${index}"><td>${escapeHtml(formatDate(run.at))}</td><td>${escapeHtml(run.source || "manual")}</td><td>${Number(run.days || 0)}</td><td>${run.dry_run ? "dry run" : "applied"}</td><td>${Number(run.removed || 0)}</td><td>${Number(run.kept || 0)}</td><td>${Number(run.presets_touched || 0)}</td></tr>`)
       .join("");
     container.innerHTML = `<table><thead><tr><th>At</th><th>Source</th><th>Days</th><th>Mode</th><th>Removed</th><th>Kept</th><th>Touched</th></tr></thead><tbody>${rows}</tbody></table>`;
+    container.querySelectorAll("[data-retention-index]").forEach((row) => {
+      row.addEventListener("click", () => {
+        container.querySelectorAll("tr.selected").forEach((item) => item.classList.remove("selected"));
+        row.classList.add("selected");
+        renderRetentionDetail(state.optimization.retentionRuns[Number(row.dataset.retentionIndex)]);
+      });
+    });
+    renderRetentionDetail(null);
   } catch {
     container.innerHTML = '<p class="hint">Retention history unavailable.</p>';
   }
 }
 
+
+function renderRetentionDetail(run) {
+  const container = $("#optimization-retention-detail");
+  if (!container) return;
+  if (!run) {
+    container.innerHTML = '<p class="hint">Select a run to inspect removed events.</p>';
+    return;
+  }
+  const details = Array.isArray(run.details) ? run.details : [];
+  const header = `<p class="hint">${escapeHtml(formatDate(run.at))} · ${escapeHtml(run.source || "manual")} · ${run.dry_run ? "dry run" : "applied"} · ${Number(run.removed || 0)} removed, ${Number(run.kept || 0)} kept</p>`;
+  if (!details.length) {
+    container.innerHTML = header + '<p class="hint">No per-event details were recorded for this run.</p>';
+    return;
+  }
+  const rows = details
+    .map((entry) => {
+      const removed = (entry.removed || []).map((event) => `${event.action} ${formatDate(event.at)}`).join("; ");
+      return `<tr><td>${escapeHtml(entry.preset)}</td><td>${escapeHtml(removed || "—")}</td><td>${Number(entry.kept || 0)}</td></tr>`;
+    })
+    .join("");
+  const truncated = run.details_truncated ? '<p class="hint">Details truncated.</p>' : "";
+  container.innerHTML = header + `<table><thead><tr><th>Preset</th><th>Removed events</th><th>Kept</th></tr></thead><tbody>${rows}</tbody></table>` + truncated;
+}
 
 function exportRetentionRunsCsv() {
   const runs = state.optimization.retentionRuns || [];
