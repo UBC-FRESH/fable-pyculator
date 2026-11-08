@@ -113,7 +113,8 @@ Optimization
    saved as named local views, copied as a URL, exported/imported as JSON, or saved to a
    server-backed shared timeline library; shared timeline views can carry a self-declared author,
    note, and draft/reviewed status. Audit maintenance can preview or prune history older than a
-   configurable day window while always keeping each preset's latest event. Startup retention can be
+   configurable day window while always keeping each preset's latest event; Prune history first runs
+   the preview and requires a second Confirm prune click. Startup retention can be
    configured with `--history-retention-days`, `--history-retention-dry-run`, and
    `--history-retention-interval-minutes`; results are written to
    `runtime/portal/retention-log.jsonl`, and a compact dashboard shows recent runs with source, mode,

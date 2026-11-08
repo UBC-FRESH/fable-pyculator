@@ -200,6 +200,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 69 is closed: retention run details include exact before/after history vectors per affected
   preset and the dashboard renders the diff. PR #360 merged as `d10b289`; parent #358 and child #359
   are closed. Post-merge Test and Docs Pages passed.
+- Phase 70 is implemented on `feature/p70-confirm-prune`: Prune history now previews first and requires
+  a second Confirm prune click; changing days resets the preview. Parent #361 and child #362 are
+  mapped; PR #363 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4954,4 +4957,60 @@ Verification evidence:
 Closeout evidence:
 
 - PR #360 squash-merged as `d10b289`; parent #358 and child #359 closed.
+
+## Phase 70: Confirm-Before-Prune Flow
+
+GitHub parent issue: #361.
+
+Branch: `feature/p70-confirm-prune`.
+
+Status: pr-open.
+
+Pull request: #363.
+
+Goal: require a dry-run preview before committing retention pruning.
+
+Tasks:
+
+- [x] P70.1 Arm and confirm destructive retention pruning. Child issue: #362.
+
+Scope:
+
+- First Prune click runs a dry run and shows the diff.
+- Second click confirms and commits.
+- Changing the days resets the preview.
+- Keep Preview and export controls.
+- Preserve existing retention behavior.
+
+Out of scope:
+
+- Authentication.
+- New optimization runs.
+- Changing backend retention semantics.
+
+Architecture notes:
+
+- The preview is the existing dry-run endpoint.
+- Confirm state is local UI state.
+- No backend changes are required.
+
+Implementation evidence:
+
+- `Prune history` now runs a dry-run, renders the diff, and changes the button to `Confirm prune`.
+- A second click commits with the same day window and resets the button.
+- Editing the days resets the armed preview.
+- Preview and export controls remain available.
+- Browser smoke verified both clicks and the dry-run/applied log entries.
+- Existing retention dashboard/CSV/diff and viewer behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 237 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; confirm flow verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

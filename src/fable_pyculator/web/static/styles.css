@@ -678,3 +678,5 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .retention-detail th, .retention-detail td { padding: 0.2rem 0.25rem; border-bottom: 1px solid var(--line); text-align: left; }
 .retention-detail th { color: var(--muted); font-weight: 650; }
 .retention-runs tr.selected { background: var(--blue-soft); }
+.button.danger { border-color: var(--red); background: var(--red); color: #fff; }
+.button.danger:hover:not(:disabled) { background: #7f2222; }
