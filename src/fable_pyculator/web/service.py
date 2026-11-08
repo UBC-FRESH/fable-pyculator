@@ -1086,6 +1086,29 @@ class PortalState:
             "last": last,
         }
 
+    def retention_runs(self, limit: int = 20) -> list[dict[str, Any]]:
+        """Return recent retention maintenance records, newest first."""
+
+        bounded = max(1, min(100, int(limit)))
+        path = self.runtime_dir / "retention-log.jsonl"
+        if not path.is_file():
+            return []
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            return []
+        records: list[dict[str, Any]] = []
+        for line in lines:
+            if not line.strip():
+                continue
+            try:
+                payload = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(payload, Mapping):
+                records.append(dict(payload))
+        return list(reversed(records[-bounded:]))
+
     def _apply_startup_retention(self) -> None:
         days = self.config.history_retention_days
         if days <= 0:

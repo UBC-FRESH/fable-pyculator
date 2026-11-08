@@ -668,3 +668,8 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .timeline-preset-box .field { margin-bottom: 0.25rem; }
 .retention-box { margin-top: 0.45rem; padding-top: 0.4rem; border-top: 1px solid var(--line); }
 .retention-box .field { margin-bottom: 0.25rem; }
+.retention-runs { margin-top: 0.35rem; max-height: 8rem; overflow: auto; }
+.retention-runs table { width: 100%; border-collapse: collapse; font-size: 0.64rem; }
+.retention-runs th, .retention-runs td { padding: 0.2rem 0.25rem; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.retention-runs th:first-child, .retention-runs td:first-child { text-align: left; }
+.retention-runs th { color: var(--muted); font-weight: 650; }

@@ -179,6 +179,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "loadRetentionPolicy" in script.text
     assert "optimization/retention" in script.text
     assert "history_retention_interval_minutes" in script.text
+    assert "loadRetentionRuns" in script.text
+    assert "optimization/retention/runs" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
@@ -490,3 +492,37 @@ def test_scheduled_retention_thread_starts_and_stops(tmp_path: Path) -> None:
     finally:
         state.close()
     assert not state._retention_thread.is_alive()
+
+
+def test_retention_runs_endpoint_returns_newest_first(tmp_path: Path) -> None:
+    runtime = tmp_path / "runtime"
+    runtime.mkdir(parents=True)
+    rows = [
+        {
+            "days": 30,
+            "dry_run": True,
+            "removed": 0,
+            "kept": 2,
+            "presets_touched": 0,
+            "presets_total": 1,
+            "source": "startup",
+            "at": "2026-01-01T00:00:00+00:00",
+        },
+        {
+            "days": 30,
+            "dry_run": False,
+            "removed": 1,
+            "kept": 1,
+            "presets_touched": 1,
+            "presets_total": 1,
+            "source": "scheduled",
+            "at": "2026-01-02T00:00:00+00:00",
+        },
+    ]
+    (runtime / "retention-log.jsonl").write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=runtime, versions=("2024",))
+    with TestClient(create_app(config)) as client:
+        runs = client.get("/api/optimization/retention/runs?limit=1").json()
+    assert len(runs) == 1
+    assert runs[0]["source"] == "scheduled"
+    assert runs[0]["at"].startswith("2026-01-02")

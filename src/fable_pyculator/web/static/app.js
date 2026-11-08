@@ -207,6 +207,7 @@ async function loadOptimization() {
     await loadSharedOptimizationPresets();
     await loadSharedTimelineViews();
     await loadRetentionPolicy();
+    await loadRetentionRuns();
     const select = $("#optimization-version");
     if (!state.optimization.list.length) {
       status.textContent = "no frontier";
@@ -1823,6 +1824,25 @@ async function loadRetentionPolicy() {
     }
   } catch {
     target.textContent = "Startup retention: unavailable.";
+  }
+}
+
+
+async function loadRetentionRuns() {
+  const container = $("#optimization-retention-runs");
+  if (!container) return;
+  try {
+    const runs = await request("optimization/retention/runs?limit=20");
+    if (!Array.isArray(runs) || !runs.length) {
+      container.innerHTML = '<p class="hint">No retention runs.</p>';
+      return;
+    }
+    const rows = runs
+      .map((run) => `<tr><td>${escapeHtml(formatDate(run.at))}</td><td>${escapeHtml(run.source || "manual")}</td><td>${Number(run.days || 0)}</td><td>${run.dry_run ? "dry run" : "applied"}</td><td>${Number(run.removed || 0)}</td><td>${Number(run.kept || 0)}</td><td>${Number(run.presets_touched || 0)}</td></tr>`)
+      .join("");
+    container.innerHTML = `<table><thead><tr><th>At</th><th>Source</th><th>Days</th><th>Mode</th><th>Removed</th><th>Kept</th><th>Touched</th></tr></thead><tbody>${rows}</tbody></table>`;
+  } catch {
+    container.innerHTML = '<p class="hint">Retention history unavailable.</p>';
   }
 }
 
