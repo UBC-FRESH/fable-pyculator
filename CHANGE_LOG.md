@@ -9,6 +9,7 @@ This file records completed project work in chronological order.
   and imported the `0.1.0a6` wheel and sdist. No tag or publication was created; `0.1.0a5` remains
   the latest PyPI alpha.
   PR #392 merged as `35a3f2e`; post-merge Test, Docs Pages, and release-artifacts checks passed.
+- Added exact JSON and flattened CSV export for the selected snapshot-vs-current diff.
 
 ## 2026-11-07
 

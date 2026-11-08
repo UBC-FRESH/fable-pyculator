@@ -187,6 +187,10 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "renderLibrarySnapshotPolicy" in script.text
     assert "deleteLibrarySnapshot" in script.text
     assert "snapshotDeleteArmed" in script.text
+    assert "exportSnapshotDiffJson" in script.text
+    assert "exportSnapshotDiffCsv" in script.text
+    assert "snapshotDiffFilename" in script.text
+    assert "fable-snapshot-diff-" in script.text
     assert "optimization/snapshots" in script.text
     assert "/diff?mode=" in script.text
     assert "timelineFilter" in script.text

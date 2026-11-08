@@ -129,8 +129,9 @@ Optimization
    The snapshot table shows time, source, preset/view counts, size, and exposes **Diff**, **Download**,
    **Restore**, and two-step **Delete** / **Confirm delete**; snapshot restore uses the same
    preview/confirm flow, and **Diff** reports added/replaced/removed/kept entries, changed
-   metadata/state/filter keys, and bounded history additions/removals without writing. The current axes,
-   colour, size, filters, brushes, selected point, and reference are encoded in the
+   metadata/state/filter keys, and bounded history additions/removals without writing; **Export diff
+   JSON** and **Export diff CSV** download that exact comparison. The current axes, colour, size,
+   filters, brushes, selected point, and reference are encoded in the
    URL; **Copy view link** shares that exact state, and **Download
    filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through
