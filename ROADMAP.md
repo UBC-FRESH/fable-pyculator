@@ -114,7 +114,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 42 is implemented on `feature/p42-pareto-viewer-polish`: the Optimization page now has hover
   values, selected-point highlighting, actual axis ranges, categorical legends, and a
   hide-provisional-warning filter (91 of 160 points remain). Parent #277 and child #278 are mapped;
-  PR and closeout remain.
+  PR #279 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3298,7 +3298,9 @@ GitHub parent issue: #277.
 
 Branch: `feature/p42-pareto-viewer-polish`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #279.
 
 Goal: polish the exact Pareto viewer interactions without changing the exact frontier data.
 
