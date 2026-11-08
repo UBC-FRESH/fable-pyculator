@@ -136,6 +136,7 @@ This file records completed project work in chronological order.
 - Added a per-author shared review workload table with created/updated/reviewed counts, latest
   activity, and click-through to the timeline author filter.
   PR #327 merged as `4975072`; post-merge Test and Docs Pages passed.
+- Added local saved timeline filter views for author/action/preset/window combinations.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

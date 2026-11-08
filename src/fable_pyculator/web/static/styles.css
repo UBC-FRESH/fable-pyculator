@@ -664,3 +664,5 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 .review-workload th { color: var(--muted); font-weight: 650; }
 .review-workload tr[data-workload-author] { cursor: pointer; }
 .review-workload tr[data-workload-author]:hover { background: var(--panel-soft); }
+.timeline-preset-box { margin: 0.2rem 0 0.4rem; padding: 0.4rem 0.5rem; border: 1px solid var(--line); border-radius: 0.4rem; background: var(--panel); }
+.timeline-preset-box .field { margin-bottom: 0.25rem; }

@@ -198,6 +198,7 @@ async function loadOptimization() {
   if (!status) return;
   try {
     renderOptimizationPresets();
+    renderTimelinePresets();
     if (!state.optimization.list) {
       state.optimization.list = await request("optimization/frontiers");
     }
@@ -1480,6 +1481,102 @@ function exportSharedAuditCsv() {
   toast(`Exported ${events.length} audit event${events.length === 1 ? "" : "s"}`, "good");
 }
 
+
+const TIMELINE_PRESETS_KEY = "fable-pyculator.timeline-presets.v1";
+
+function loadTimelinePresets() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(TIMELINE_PRESETS_KEY) || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((preset) => preset && typeof preset.name === "string" && preset.filter && typeof preset.filter === "object")
+      .slice(0, 20);
+  } catch {
+    return [];
+  }
+}
+
+function saveTimelinePresets(presets) {
+  try {
+    localStorage.setItem(TIMELINE_PRESETS_KEY, JSON.stringify(presets.slice(0, 20)));
+    return true;
+  } catch {
+    toast("Could not write the saved timeline views.", "bad");
+    return false;
+  }
+}
+
+function renderTimelinePresets(selectedName = "") {
+  const select = $("#optimization-timeline-preset");
+  const load = $("#optimization-timeline-preset-load");
+  const remove = $("#optimization-timeline-preset-delete");
+  if (!select) return;
+  const presets = loadTimelinePresets();
+  select.innerHTML = presets.length
+    ? presets.map((preset, index) => `<option value="${index}">${escapeHtml(preset.name)}</option>`).join("")
+    : '<option value="">No saved timeline views</option>';
+  if (selectedName) {
+    const index = presets.findIndex((preset) => preset.name === selectedName);
+    if (index >= 0) select.value = String(index);
+  }
+  if (load) load.disabled = !presets.length;
+  if (remove) remove.disabled = !presets.length;
+}
+
+function applyTimelineFilter(filter) {
+  state.optimization.timelineFilter = {
+    author: String(filter?.author || ""),
+    action: String(filter?.action || ""),
+    preset: String(filter?.preset || ""),
+    window: ["all", "24h", "7d", "30d"].includes(filter?.window) ? filter.window : "all",
+  };
+  $("#optimization-timeline-author").value = state.optimization.timelineFilter.author;
+  $("#optimization-timeline-action").value = state.optimization.timelineFilter.action;
+  $("#optimization-timeline-preset").value = state.optimization.timelineFilter.preset;
+  $("#optimization-timeline-window").value = state.optimization.timelineFilter.window;
+  renderSharedTimeline(state.optimization.sharedPresets || []);
+}
+
+function saveTimelinePreset() {
+  const input = $("#optimization-timeline-preset-name");
+  const presets = loadTimelinePresets();
+  const name = (input?.value || "").trim() || `Timeline View ${presets.length + 1}`;
+  const preset = {
+    name: name.slice(0, 40),
+    saved_at: new Date().toISOString(),
+    filter: { ...state.optimization.timelineFilter },
+  };
+  const existing = presets.findIndex((item) => item.name === preset.name);
+  if (existing >= 0) presets[existing] = preset;
+  else presets.unshift(preset);
+  if (!saveTimelinePresets(presets)) return;
+  renderTimelinePresets(preset.name);
+  if (input) input.value = preset.name;
+  toast(`Saved timeline view ${preset.name}`, "good");
+}
+
+function loadTimelinePreset() {
+  const select = $("#optimization-timeline-preset");
+  const preset = loadTimelinePresets()[Number(select?.value)];
+  if (!preset) {
+    toast("No saved timeline view is selected.", "warn");
+    return;
+  }
+  applyTimelineFilter(preset.filter);
+  toast(`Loaded timeline view ${preset.name}`, "good");
+}
+
+function deleteTimelinePreset() {
+  const select = $("#optimization-timeline-preset");
+  const presets = loadTimelinePresets();
+  const index = Number(select?.value);
+  if (!presets[index]) return;
+  const [removed] = presets.splice(index, 1);
+  if (!saveTimelinePresets(presets)) return;
+  renderTimelinePresets();
+  toast(`Deleted timeline view ${removed.name}`);
+}
+
 function drawOptimization() {
   const chart = ensureOptimizationChart();
   const data = state.optimization.data;
@@ -1954,6 +2051,9 @@ function bindOptimizationEvents() {
     $("#optimization-timeline-window").value = "7d";
     renderSharedTimeline(state.optimization.sharedPresets || []);
   });
+  $("#optimization-timeline-preset-save").addEventListener("click", saveTimelinePreset);
+  $("#optimization-timeline-preset-load").addEventListener("click", loadTimelinePreset);
+  $("#optimization-timeline-preset-delete").addEventListener("click", deleteTimelinePreset);
   $("#optimization-timeline-reset").addEventListener("click", () => {
     state.optimization.timelineFilter = { author: "", action: "", preset: "", window: "all" };
     $("#optimization-timeline-author").value = "";

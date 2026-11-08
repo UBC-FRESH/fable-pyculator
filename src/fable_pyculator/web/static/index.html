@@ -335,6 +335,17 @@
                 <button id="optimization-timeline-reset" class="button ghost small" type="button">Reset filters</button>
                 <span id="optimization-timeline-count" class="pill muted">0 events</span>
               </div>
+              <div class="timeline-preset-box">
+                <div class="inline-fields">
+                  <label class="field"><span>Saved timeline view</span><select id="optimization-timeline-preset"></select></label>
+                  <label class="field"><span>Name</span><input id="optimization-timeline-preset-name" type="text" maxlength="40" placeholder="e.g. My reviews"></label>
+                </div>
+                <div class="button-row">
+                  <button id="optimization-timeline-preset-save" class="button ghost small" type="button">Save view</button>
+                  <button id="optimization-timeline-preset-load" class="button ghost small" type="button">Load</button>
+                  <button id="optimization-timeline-preset-delete" class="button ghost small" type="button">Delete</button>
+                </div>
+              </div>
               <div id="optimization-shared-timeline" class="shared-timeline">
                 <p class="hint">No review activity.</p>
               </div>
