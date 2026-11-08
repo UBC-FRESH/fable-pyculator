@@ -186,6 +186,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 64 is closed: the portal can apply a configurable startup retention policy (or dry run),
   writes a JSONL retention log, and exposes the policy/last result through the API and UI. PR #345
   merged as `b0d70ba`; parent #343 and child #344 are closed. Post-merge Test and Docs Pages passed.
+- Phase 65 is implemented on `feature/p65-scheduled-retention`: opt-in interval-scheduled retention
+  now runs in a daemon loop, logs source=scheduled, and exposes interval/next-run status. Parent #346
+  and child #347 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4660,4 +4663,60 @@ Verification evidence:
 Closeout evidence:
 
 - PR #345 squash-merged as `b0d70ba`; parent #343 and child #344 closed.
+
+## Phase 65: Scheduled Retention
+
+GitHub parent issue: #346.
+
+Branch: `feature/p65-scheduled-retention`.
+
+Status: pr-open.
+
+Pull request: #348.
+
+Goal: run the configured retention policy on a background maintenance interval.
+
+Tasks:
+
+- [x] P65.1 Add background retention interval and status. Child issue: #347.
+
+Scope:
+
+- Add a retention interval setting.
+- Start a daemon maintenance loop when enabled.
+- Record scheduled prune results in the existing audit log.
+- Show interval and next-run status in the UI.
+
+Out of scope:
+
+- Distributed scheduling.
+- Authentication or verified review.
+- Pruning viewer/timeline libraries.
+
+Architecture notes:
+
+- Scheduling is disabled by default.
+- The loop reuses the existing prune logic and log.
+- The thread is daemonized and opt-in.
+
+Implementation evidence:
+
+- Added `--history-retention-interval-minutes` CLI/config with 0 disabled and 10080 maximum.
+- Added a daemon maintenance thread that logs `source=scheduled`.
+- Extended `GET /api/optimization/retention` with interval and next-run.
+- UI policy text now shows the maintenance interval and next run.
+- Test verifies the thread starts and stops; earlier startup/dry-run tests remain.
+- Existing manual/startup retention, presets, timeline views, audit exports, and viewer behavior remain
+  intact.
+
+Verification evidence:
+
+- Full suite: 236 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

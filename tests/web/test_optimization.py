@@ -178,6 +178,7 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "optimization/presets/prune" in script.text
     assert "loadRetentionPolicy" in script.text
     assert "optimization/retention" in script.text
+    assert "history_retention_interval_minutes" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
@@ -467,3 +468,25 @@ def test_startup_retention_dry_run_is_non_destructive(tmp_path: Path) -> None:
         policy = client.get("/api/optimization/retention").json()
     assert policy["history_retention_dry_run"] is True
     assert policy["last"]["dry_run"] is True
+
+
+def test_scheduled_retention_thread_starts_and_stops(tmp_path: Path) -> None:
+    from fable_pyculator.web.service import PortalState
+
+    config = PortalConfig(
+        repo_root=tmp_path,
+        runtime_dir=tmp_path / "runtime",
+        versions=("2024",),
+        history_retention_days=30,
+        history_retention_interval_minutes=1,
+    )
+    state = PortalState(config)
+    try:
+        assert state._retention_thread is not None
+        assert state._retention_thread.is_alive()
+        status = state.retention_status()
+        assert status["history_retention_interval_minutes"] == 1
+        assert status["next_run_at"]
+    finally:
+        state.close()
+    assert not state._retention_thread.is_alive()
