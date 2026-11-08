@@ -167,7 +167,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   closed. Post-merge Test and Docs Pages passed.
 - Phase 58 is implemented on `feature/p58-review-workload`: a per-author workload table summarizes
   created/updated/reviewed counts and latest activity, with author-row click-through to the timeline
-  filter. Parent #325 and child #326 are mapped; PR and closeout remain.
+  filter. Parent #325 and child #326 are mapped; PR #327 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4254,7 +4254,9 @@ GitHub parent issue: #325.
 
 Branch: `feature/p58-review-workload`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #327.
 
 Goal: add a compact per-author review workload summary to the shared audit.
 
