@@ -140,9 +140,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 49 is closed: the local preset library can be exported as a versioned JSON document and
   imported back with validation and merge-by-name. PR #300 merged as `b4d67d9`; parent #298 and
   child #299 are closed. Post-merge Test and Docs Pages passed.
-- Phase 50 is implemented on `feature/p50-preset-deep-links`: named presets can be copied as portable
-  links carrying the full viewer state plus `opt_preset`; local presets restore from `opt_preset`
-  when no explicit state params exist. Parent #301 and child #302 are mapped; PR #303 and closeout remain.
+- Phase 50 is closed: named presets can be copied as portable links carrying the full viewer state
+  plus `opt_preset`; local presets restore from `opt_preset` when no explicit state params exist.
+  PR #303 merged as `034478b`; parent #301 and child #302 are closed. Post-merge Test and Docs Pages
+  passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3776,9 +3777,9 @@ GitHub parent issue: #301.
 
 Branch: `feature/p50-preset-deep-links`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #303.
+Pull request: #303 (merged as `034478b`).
 
 Goal: make named viewer presets linkable without requiring the recipient to have the local library.
 
@@ -3822,8 +3823,9 @@ Verification evidence:
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; preset link portability and local opt_preset restore
   verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #303 squash-merged as `034478b`; parent #301 and child #302 closed.
 
