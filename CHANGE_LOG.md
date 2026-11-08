@@ -111,6 +111,8 @@ This file records completed project work in chronological order.
 - Added portable preset-library JSON export/import with schema validation, name-based merge, and a
   cap of 20 saved views.
   PR #300 merged as `b4d67d9`; post-merge Test and Docs Pages passed.
+- Added Copy preset link with `opt_preset` plus full viewer state, portable to recipients without the
+  local preset library; local `opt_preset` links restore by name when state params are absent.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
