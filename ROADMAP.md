@@ -4730,7 +4730,9 @@ GitHub parent issue: #349.
 
 Branch: `feature/p66-retention-dashboard`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #351.
 
 Goal: add a compact dashboard for recent retention maintenance runs.
 
