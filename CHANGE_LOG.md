@@ -15,6 +15,7 @@ This file records completed project work in chronological order.
   passed, tag `v0.1.0a6` triggered PyPI run `42515378564`, and clean TestPyPI/PyPI installs imported
   `0.1.0a6`. Created GitHub prerelease https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a6
   with the workflow-built wheel and sdist.
+  Evidence PR #398 merged as `786193b`; post-merge Test and Docs Pages passed.
 
 ## 2026-11-07
 

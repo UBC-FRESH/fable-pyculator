@@ -235,9 +235,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   CSV. PR #395 merged as `4a80ae5`; parent #393 and child #394 are closed. Post-merge Test and Docs
   Pages passed.
 - Phase 81 published `0.1.0a6`: TestPyPI run 42515188099 passed, tag `v0.1.0a6` triggered PyPI run
-  42515378564, and a clean PyPI install imported `0.1.0a6`. GitHub prerelease
-  https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a6 has the wheel and sdist.
-  Evidence PR #398.
+  42515378564, and clean TestPyPI/PyPI installs imported `0.1.0a6`. GitHub prerelease
+  https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a6 has the wheel and sdist. Evidence
+  PR #398 merged as `786193b`; post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5662,9 +5662,9 @@ GitHub parent issue: #396.
 
 Branch: `feature/p81-publish-a6`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #398.
+Pull request: #398 (merged as `786193b`).
 
 Goal: publish the verified 0.1.0a6 candidate with OIDC trusted publishing and create the GitHub prerelease.
 
@@ -5713,5 +5713,6 @@ Verification evidence:
 
 Closeout evidence:
 
-- Pending evidence PR, CI, and closeout.
+- Evidence PR #398 squash-merged as `786193b`; post-merge Test and Docs Pages passed.
+- Tag `v0.1.0a6` remains on release commit `98e1b76`; evidence updates are after the tag.
 
