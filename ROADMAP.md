@@ -149,7 +149,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   #304 and child #305 are closed. Post-merge Test and Docs Pages passed.
 - Phase 52 is implemented on `feature/p52-preset-review-metadata`: shared presets can carry optional
   self-declared author, note, and draft/reviewed status, shown in the shared selector and persisted by
-  the API. Parent #307 and child #308 are mapped; PR and closeout remain.
+  the API. Parent #307 and child #308 are mapped; PR #309 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3899,7 +3899,9 @@ GitHub parent issue: #307.
 
 Branch: `feature/p52-preset-review-metadata`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #309.
 
 Goal: add lightweight review metadata to shared Optimization presets.
 
