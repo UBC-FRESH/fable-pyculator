@@ -189,9 +189,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 65 is closed: opt-in interval-scheduled retention runs in a daemon loop, logs
   source=scheduled, and exposes interval/next-run status. PR #348 merged as `b7ddf9b`; parent #346 and
   child #347 are closed. Post-merge Test and Docs Pages passed.
-- Phase 66 is implemented on `feature/p66-retention-dashboard`: retention log entries are exposed
-  newest-first through a read API and rendered in a compact dashboard table. Parent #349 and child
-  #350 are mapped; PR and closeout remain.
+- Phase 66 is closed: retention log entries are exposed newest-first through a read API and rendered
+  in a compact dashboard table. PR #351 merged as `edcd312`; parent #349 and child #350 are closed.
+  Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4730,9 +4730,9 @@ GitHub parent issue: #349.
 
 Branch: `feature/p66-retention-dashboard`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #351.
+Pull request: #351 (merged as `edcd312`).
 
 Goal: add a compact dashboard for recent retention maintenance runs.
 
@@ -4774,8 +4774,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; run table verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #351 squash-merged as `edcd312`; parent #349 and child #350 closed.
 

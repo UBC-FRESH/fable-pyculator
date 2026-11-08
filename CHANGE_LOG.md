@@ -154,6 +154,7 @@ This file records completed project work in chronological order.
 - Added opt-in interval-scheduled retention with a daemon loop and interval/next-run status.
   PR #348 merged as `b7ddf9b`; post-merge Test and Docs Pages passed.
 - Added a retention maintenance dashboard with newest-first run history from the JSONL log.
+  PR #351 merged as `edcd312`; post-merge Test and Docs Pages passed.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
