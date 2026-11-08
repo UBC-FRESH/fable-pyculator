@@ -115,10 +115,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   actual axis ranges, categorical legends, and a hide-provisional-warning filter (91 of 160 points
   remain). PR #279 merged as `a661259`; parent #277 and child #278 are closed. Post-merge Test and
   Docs Pages passed.
-- Phase 43 is implemented on `feature/p43-pareto-share-export`: the Optimization view now encodes
-  axes, colour, size, floor, filters, and selected point in the URL; supports copy-link; and exports
-  the currently filtered exact points as CSV. Parent #280 and child #281 are mapped; PR #282 and closeout
-  remain.
+- Phase 43 is closed: the Optimization view encodes axes, colour, size, floor, filters, and selected
+  point in the URL; supports copy-link; and exports the currently filtered exact points as CSV.
+  PR #282 merged as `49e3bed`; parent #280 and child #281 are closed. Post-merge Test and Docs Pages
+  passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3359,9 +3359,9 @@ GitHub parent issue: #280.
 
 Branch: `feature/p43-pareto-share-export`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #282.
+Pull request: #282 (merged as `49e3bed`).
 
 Goal: make exact Pareto views shareable and exportable without changing the frontier data.
 
@@ -3401,9 +3401,10 @@ Verification evidence:
 - Full suite: 227 passed, 16 skipped.
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
-- Browser smoke passed with no page errors.
+- Browser smoke passed with no page errors; URL round-trip, clipboard copy, and CSV export verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #282 squash-merged as `49e3bed`; parent #280 and child #281 closed.
 

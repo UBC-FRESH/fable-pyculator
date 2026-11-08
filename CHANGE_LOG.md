@@ -91,6 +91,7 @@ This file records completed project work in chronological order.
 - Added shareable URL state and filtered CSV export to the Optimization page. X/Y/Z, colour, size,
   floor, filters, and selected point round-trip through the URL; copy-link and CSV export were
   browser-smoked.
+  PR #282 merged as `49e3bed`; post-merge Test and Docs Pages passed.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
