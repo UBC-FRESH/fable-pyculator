@@ -108,6 +108,7 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-shared-snapshot-refresh"' in shell.text
     assert 'id="optimization-shared-snapshots"' in shell.text
     assert 'id="optimization-shared-snapshot-diff"' in shell.text
+    assert 'id="optimization-shared-snapshot-policy"' in shell.text
     assert 'id="optimization-shared-timeline"' in shell.text
     assert 'id="optimization-timeline-author"' in shell.text
     assert 'id="optimization-timeline-action"' in shell.text
@@ -183,6 +184,9 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "prepareLibrarySnapshotRestore" in script.text
     assert "showLibrarySnapshotDiff" in script.text
     assert "renderLibrarySnapshotDiff" in script.text
+    assert "renderLibrarySnapshotPolicy" in script.text
+    assert "deleteLibrarySnapshot" in script.text
+    assert "snapshotDeleteArmed" in script.text
     assert "optimization/snapshots" in script.text
     assert "/diff?mode=" in script.text
     assert "timelineFilter" in script.text
@@ -520,6 +524,11 @@ def test_library_snapshot_api_round_trip(tmp_path: Path) -> None:
         listing = client.get("/api/optimization/snapshots").json()
         assert [item["name"] for item in listing] == [third, second]
         assert all(item["bytes"] > 0 for item in listing)
+        policy = client.get("/api/optimization/snapshots/policy").json()
+        assert policy["keep"] == 2
+        assert policy["interval_minutes"] == 0
+        assert policy["scheduled"] is False
+        assert policy["count"] == 2
 
         bundle = client.get(f"/api/optimization/snapshots/{third}").json()
         assert bundle["schema"] == "fable-pyculator.optimization-library"
@@ -548,6 +557,7 @@ def test_library_snapshot_api_round_trip(tmp_path: Path) -> None:
         assert client.get("/api/optimization/snapshots/bad-name").status_code == 400
         assert client.delete(f"/api/optimization/snapshots/{third}").status_code == 200
         assert client.get(f"/api/optimization/snapshots/{third}").status_code == 404
+        assert client.get("/api/optimization/snapshots/policy").json()["count"] == 1
 
 
 def test_library_snapshot_config_validation(tmp_path: Path) -> None:

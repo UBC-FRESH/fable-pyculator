@@ -184,6 +184,7 @@ This file records completed project work in chronological order.
 - Added a dry-run/explicit-write importer from completed review worksheet decisions into the YAML
   registry, with self-declared reviewer provenance and fail-closed validation.
   PR #386 merged as `f3dc487`; post-merge Test and Docs Pages passed.
+- Added snapshot policy visibility and two-step snapshot deletion to the shared-library panel.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

@@ -1184,6 +1184,17 @@ class PortalState:
                 break
         return summaries
 
+    def library_snapshot_policy(self) -> dict[str, Any]:
+        """Return snapshot scheduling and retention policy metadata."""
+
+        return {
+            "interval_minutes": self.config.library_snapshot_interval_minutes,
+            "keep": self.config.library_snapshot_keep,
+            "scheduled": self.config.library_snapshot_interval_minutes > 0,
+            "count": len(self.library_snapshots(limit=100)),
+            "directory": str(self._snapshot_dir()),
+        }
+
     def library_snapshot(self, name: str) -> dict[str, Any]:
         """Return one stored snapshot bundle."""
 
