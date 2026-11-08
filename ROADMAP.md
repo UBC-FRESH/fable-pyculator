@@ -171,6 +171,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 59 is closed: named local timeline filter views save and restore author/action/preset/window
   combinations. PR #330 merged as `eda3171`; parent #328 and child #329 are closed. Post-merge Test
   and Docs Pages passed.
+- Phase 60 is implemented on `feature/p60-shareable-timeline-links`: timeline filters can be copied
+  as URL state and the saved timeline library can be exported/imported as JSON. Parent #331 and child
+  #332 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4360,4 +4363,58 @@ Verification evidence:
 Closeout evidence:
 
 - PR #330 squash-merged as `eda3171`; parent #328 and child #329 closed.
+
+## Phase 60: Shareable Timeline Links and Export
+
+GitHub parent issue: #331.
+
+Branch: `feature/p60-shareable-timeline-links`.
+
+Status: implemented; PR pending.
+
+Goal: make saved timeline filter views shareable and portable.
+
+Tasks:
+
+- [x] P60.1 Add timeline URL state and JSON export/import. Child issue: #332.
+
+Scope:
+
+- Encode timeline filters in a shareable URL.
+- Restore timeline filters from URL state.
+- Export/import the saved timeline library as JSON.
+- Keep filters local and self-declared.
+
+Out of scope:
+
+- Server-side timeline sync.
+- New optimization runs.
+- Global-frontier claims.
+
+Architecture notes:
+
+- Timeline URL parameters are separate from viewer state parameters.
+- URL restore runs once after shared presets load.
+- Timeline exports use a schema marker and validate filters.
+
+Implementation evidence:
+
+- Added **Copy timeline link** using `opt_tl_author`, `opt_tl_action`, `opt_tl_preset`, and
+  `opt_tl_window`.
+- URL restore now restores author/action/preset/window, including the action and window controls.
+- Added timeline library JSON export/import with schema validation, merge-by-name, and a 20-view cap.
+- Browser smoke copied a timeline link, restored filters in a fresh context, and exported/imported the
+  timeline library.
+- Existing saved timeline views, audit exports, shared presets, and viewer behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 230 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; link and JSON round-trip verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 
