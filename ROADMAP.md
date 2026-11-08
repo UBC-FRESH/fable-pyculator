@@ -130,10 +130,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 46 is closed: dragging a range on a parallel-coordinates axis filters both the parallel and
   3D views, with a visible brush band, clear action, and `opt_brush` URL state. PR #291 merged as
   `9e74875`; parent #289 and child #290 are closed. Post-merge Test and Docs Pages passed.
-- Phase 47 is implemented on `feature/p47-multi-axis-brush`: Shift-drag adds another parallel-axis
-  brush, brushes combine with AND semantics, each brush has a removable chip, clear-all works, and
-  multiple brushes round-trip through `opt_brushes` with legacy `opt_brush` support. Parent #292 and
-  child #293 are mapped; PR #294 and closeout remain.
+- Phase 47 is closed: Shift-drag adds another parallel-axis brush, brushes combine with AND semantics,
+  each brush has a removable chip, clear-all works, and multiple brushes round-trip through
+  `opt_brushes` with legacy `opt_brush` support. PR #294 merged as `bcf9f2a`; parent #292 and child
+  #293 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3597,9 +3597,9 @@ GitHub parent issue: #292.
 
 Branch: `feature/p47-multi-axis-brush`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #294.
+Pull request: #294 (merged as `bcf9f2a`).
 
 Goal: extend parallel-axis brushing from one range to multiple simultaneous axis ranges.
 
@@ -3643,8 +3643,9 @@ Verification evidence:
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; multi-brush, chip removal, clear-all, and URL restore
   verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #294 squash-merged as `bcf9f2a`; parent #292 and child #293 closed.
 
