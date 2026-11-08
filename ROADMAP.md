@@ -208,7 +208,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   closed. Post-merge Test and Docs Pages passed.
 - Phase 72 is implemented on `feature/p72-per-value-custom-export`: requirements can resolve the
   custom-table row from `key_switch`, and `CUSTOM-EXPORT-001` now checks the selected `scen_exports`
-  value. Parent #367 and child #368 are mapped; PR and closeout remain.
+  value. Parent #367 and child #368 are mapped; PR #369 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5084,7 +5084,9 @@ GitHub parent issue: #367.
 
 Branch: `feature/p72-per-value-custom-export`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #369.
 
 Goal: make `CUSTOM-EXPORT-001` check the selected custom export value instead of only `MyExportScen`.
 
