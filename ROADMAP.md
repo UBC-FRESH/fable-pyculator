@@ -214,7 +214,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   `d67e064`; parent #370 and children #371/#372 are closed. Post-merge Test and Docs Pages passed.
 - Phase 74 is implemented on `feature/p74-library-snapshots`: shared-library snapshots can be written
   manually or on an opt-in interval, retained newest-N, listed, downloaded, and restored through the
-  existing preview. Parent #374 and children #375/#376 are mapped; PR and closeout remain.
+  existing preview. Parent #374 and children #375/#376 are mapped; PR #377 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5210,7 +5210,9 @@ GitHub parent issue: #374.
 
 Branch: `feature/p74-library-snapshots`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #377.
 
 Goal: persist bounded shared-library snapshots manually or on a maintenance interval.
 
