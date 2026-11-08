@@ -123,7 +123,11 @@ Optimization
    maintenance log table. **Export audit** / **Export audit CSV** download the shared library or
    event-level CSV. **Backup library JSON** downloads shared presets, histories, and timeline views;
    **Restore library** previews merge or replace counts and requires **Confirm restore** before writing.
-   The current axes, colour, size, filters, brushes, selected point, and reference are encoded in the
+   **Snapshot now** writes an immutable snapshot under `runtime/portal/library-snapshots/`; scheduled
+   snapshots use `--library-snapshot-interval-minutes`, and `--library-snapshot-keep` bounds the newest
+   retained files. The snapshot table shows time, source, preset/view counts, size, and exposes
+   **Download** and **Restore**; snapshot restore uses the same preview/confirm flow. The current axes,
+   colour, size, filters, brushes, selected point, and reference are encoded in the
    URL; **Copy view link** shares that exact state, and **Download
    filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through

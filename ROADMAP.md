@@ -212,6 +212,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 73 is closed: shared presets, histories, and timeline views can be backed up as one JSON
   bundle and restored through a dry-run preview with merge or replace mode. PR #373 merged as
   `d67e064`; parent #370 and children #371/#372 are closed. Post-merge Test and Docs Pages passed.
+- Phase 74 is implemented on `feature/p74-library-snapshots`: shared-library snapshots can be written
+  manually or on an opt-in interval, retained newest-N, listed, downloaded, and restored through the
+  existing preview. Parent #374 and children #375/#376 are mapped; PR #377 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5200,4 +5203,67 @@ Verification evidence:
 Closeout evidence:
 
 - PR #373 squash-merged as `d67e064`; parent #370 and children #371/#372 closed.
+
+## Phase 74: Scheduled Library Snapshots
+
+GitHub parent issue: #374.
+
+Branch: `feature/p74-library-snapshots`.
+
+Status: pr-open.
+
+Pull request: #377.
+
+Goal: persist bounded shared-library snapshots manually or on a maintenance interval.
+
+Tasks:
+
+- [x] P74.1 Add snapshot storage, API, scheduler, and CLI flags. Child issue: #375.
+- [x] P74.2 Add snapshot inventory, download, and previewed restore UI. Child issue: #376.
+
+Scope:
+
+- Store snapshots under the portal runtime directory.
+- List, download, delete, and restore snapshots.
+- Add manual and scheduled snapshot creation with bounded retention.
+- Add CLI flags for interval and retained count.
+- Reuse the existing previewed restore semantics.
+
+Out of scope:
+
+- Authentication.
+- New optimization runs.
+- Remote object storage.
+- Changing retention of preset histories.
+
+Architecture notes:
+
+- A snapshot is the same JSON library bundle already used for backup/restore.
+- Snapshot names use UTC microseconds so multiple snapshots cannot collide.
+- Retention keeps the newest N snapshots and never rewrites existing snapshot contents.
+- Scheduled snapshots are disabled by default.
+
+Implementation evidence:
+
+- Added `runtime/portal/library-snapshots/library-<UTC>.json` snapshots written atomically.
+- Added create/list/get/delete/restore routes under `/api/optimization/snapshots`.
+- Added `--library-snapshot-interval-minutes` and `--library-snapshot-keep`.
+- Retention prunes only snapshots beyond the newest configured count.
+- Snapshot restore reuses the dry-run merge/replace preview and counts.
+- Added a snapshot inventory with source, counts, size, Download, and Restore actions.
+- Snapshot restore feeds the existing preview/confirm flow rather than writing directly.
+
+Verification evidence:
+
+- Full suite: 246 passed, 16 skipped.
+- Snapshot API round trip, retention, invalid-name, and direct-restore tests.
+- Scheduler lifecycle and scheduled-source test.
+- Browser smoke created a snapshot, downloaded it, deleted the seeded library entries, previewed restore, restored them, and cleaned up.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke: no page errors.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 
