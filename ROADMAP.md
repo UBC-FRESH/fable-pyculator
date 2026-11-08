@@ -133,7 +133,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 47 is implemented on `feature/p47-multi-axis-brush`: Shift-drag adds another parallel-axis
   brush, brushes combine with AND semantics, each brush has a removable chip, clear-all works, and
   multiple brushes round-trip through `opt_brushes` with legacy `opt_brush` support. Parent #292 and
-  child #293 are mapped; PR and closeout remain.
+  child #293 are mapped; PR #294 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3597,7 +3597,9 @@ GitHub parent issue: #292.
 
 Branch: `feature/p47-multi-axis-brush`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #294.
 
 Goal: extend parallel-axis brushing from one range to multiple simultaneous axis ranges.
 
