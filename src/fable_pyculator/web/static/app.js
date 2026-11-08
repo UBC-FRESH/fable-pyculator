@@ -29,6 +29,7 @@ const state = {
     sharedPresets: [],
     sharedFilter: "all",
     timelineFilter: { author: "", action: "", preset: "", window: "all" },
+    timelineUrlApplied: false,
     filtered: [],
     pinned: [],
     pending: null,
@@ -1137,6 +1138,21 @@ async function loadSharedOptimizationPresets() {
   } catch {
     state.optimization.sharedPresets = [];
   }
+  if (!state.optimization.timelineUrlApplied) {
+    const params = new URLSearchParams(location.search);
+    const keys = ["opt_tl_author", "opt_tl_action", "opt_tl_preset", "opt_tl_window"];
+    if (keys.some((key) => params.has(key))) {
+      state.optimization.timelineFilter = {
+        author: params.get("opt_tl_author") || "",
+        action: params.get("opt_tl_action") || "",
+        preset: params.get("opt_tl_preset") || "",
+        window: ["all", "24h", "7d", "30d"].includes(params.get("opt_tl_window"))
+          ? params.get("opt_tl_window")
+          : "all",
+      };
+    }
+    state.optimization.timelineUrlApplied = true;
+  }
   renderSharedOptimizationPresets();
 }
 
@@ -1393,6 +1409,12 @@ function renderSharedTimeline(presets) {
   }
   if (!authors.includes(filter.author)) filter.author = "";
   if (!presetNames.includes(filter.preset)) filter.preset = "";
+  if (!["", "created", "updated", "reviewed"].includes(filter.action)) filter.action = "";
+  if (!["all", "24h", "7d", "30d"].includes(filter.window)) filter.window = "all";
+  const actionSelect = $("#optimization-timeline-action");
+  const windowSelect = $("#optimization-timeline-window");
+  if (actionSelect) actionSelect.value = filter.action;
+  if (windowSelect) windowSelect.value = filter.window;
   const windowMs = { "24h": 24 * 60 * 60 * 1000, "7d": 7 * 24 * 60 * 60 * 1000, "30d": 30 * 24 * 60 * 60 * 1000 };
   const now = Date.now();
   const events = allEvents
@@ -1510,6 +1532,7 @@ function renderTimelinePresets(selectedName = "") {
   const select = $("#optimization-timeline-preset");
   const load = $("#optimization-timeline-preset-load");
   const remove = $("#optimization-timeline-preset-delete");
+  const exportButton = $("#optimization-timeline-preset-export");
   if (!select) return;
   const presets = loadTimelinePresets();
   select.innerHTML = presets.length
@@ -1521,6 +1544,7 @@ function renderTimelinePresets(selectedName = "") {
   }
   if (load) load.disabled = !presets.length;
   if (remove) remove.disabled = !presets.length;
+  if (exportButton) exportButton.disabled = !presets.length;
 }
 
 function applyTimelineFilter(filter) {
@@ -1575,6 +1599,94 @@ function deleteTimelinePreset() {
   if (!saveTimelinePresets(presets)) return;
   renderTimelinePresets();
   toast(`Deleted timeline view ${removed.name}`);
+}
+
+
+function normalizeTimelineFilter(filter) {
+  if (!filter || typeof filter !== "object") return null;
+  const windowValue = ["all", "24h", "7d", "30d"].includes(filter.window) ? filter.window : "all";
+  return {
+    author: String(filter.author || "").slice(0, 40),
+    action: ["", "created", "updated", "reviewed"].includes(filter.action) ? filter.action : "",
+    preset: String(filter.preset || "").slice(0, 40),
+    window: windowValue,
+  };
+}
+
+function normalizeTimelinePreset(preset) {
+  if (!preset || typeof preset.name !== "string") return null;
+  const name = preset.name.trim().slice(0, 40);
+  const filter = normalizeTimelineFilter(preset.filter);
+  if (!name || !filter) return null;
+  return { name, saved_at: typeof preset.saved_at === "string" ? preset.saved_at : new Date().toISOString(), filter };
+}
+
+async function copyTimelineLink() {
+  const url = new URL(location.href);
+  const filter = state.optimization.timelineFilter;
+  const params = {
+    opt_tl_author: filter.author,
+    opt_tl_action: filter.action,
+    opt_tl_preset: filter.preset,
+    opt_tl_window: filter.window,
+  };
+  for (const [key, value] of Object.entries(params)) {
+    if (value && value !== "all") url.searchParams.set(key, value);
+    else url.searchParams.delete(key);
+  }
+  await copyTextToClipboard(url.toString(), "Timeline link copied");
+}
+
+function exportTimelinePresets() {
+  const presets = loadTimelinePresets();
+  if (!presets.length) {
+    toast("There are no saved timeline views to export.", "warn");
+    return;
+  }
+  const payload = {
+    schema: "fable-pyculator.timeline-presets",
+    schema_version: 1,
+    exported_at: new Date().toISOString(),
+    presets,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "fable-timeline-views.json";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${presets.length} timeline view${presets.length === 1 ? "" : "s"}`, "good");
+}
+
+async function importTimelinePresets(event) {
+  const input = event.target;
+  const file = input.files?.[0];
+  if (!file) return;
+  try {
+    const parsed = JSON.parse(await file.text());
+    const candidates = Array.isArray(parsed) ? parsed : parsed?.presets;
+    if (!Array.isArray(candidates)) throw new Error("JSON must contain a presets array");
+    const existing = loadTimelinePresets();
+    const byName = new Map(existing.map((preset) => [preset.name, preset]));
+    let imported = 0;
+    for (const candidate of candidates) {
+      const preset = normalizeTimelinePreset(candidate);
+      if (!preset) continue;
+      byName.set(preset.name, preset);
+      imported += 1;
+    }
+    if (!imported) throw new Error("no valid timeline views were found");
+    if (!saveTimelinePresets(Array.from(byName.values()).slice(0, 20))) return;
+    renderTimelinePresets();
+    toast(`Imported ${imported} timeline view${imported === 1 ? "" : "s"}`, "good");
+  } catch (error) {
+    toast(`Could not import timeline views: ${error.message}`, "bad");
+  } finally {
+    input.value = "";
+  }
 }
 
 function drawOptimization() {
@@ -2054,6 +2166,10 @@ function bindOptimizationEvents() {
   $("#optimization-timeline-preset-save").addEventListener("click", saveTimelinePreset);
   $("#optimization-timeline-preset-load").addEventListener("click", loadTimelinePreset);
   $("#optimization-timeline-preset-delete").addEventListener("click", deleteTimelinePreset);
+  $("#optimization-timeline-preset-copy-link").addEventListener("click", copyTimelineLink);
+  $("#optimization-timeline-preset-export").addEventListener("click", exportTimelinePresets);
+  $("#optimization-timeline-preset-import").addEventListener("click", () => $("#optimization-timeline-preset-file").click());
+  $("#optimization-timeline-preset-file").addEventListener("change", importTimelinePresets);
   $("#optimization-timeline-reset").addEventListener("click", () => {
     state.optimization.timelineFilter = { author: "", action: "", preset: "", window: "all" };
     $("#optimization-timeline-author").value = "";

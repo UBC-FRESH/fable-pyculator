@@ -540,9 +540,10 @@ shared as a named preset link carrying the full viewer state. A server-backed **
 named views for everyone with portal access, with optional self-declared author, note, and
 draft/reviewed metadata. The shared panel has a needs-review queue, draft/reviewed counts, a
 mark-reviewed action, and a compact created/updated/reviewed history per preset. A read-only audit
-table, filterable activity timeline, per-author workload summary, saved timeline filter views, and
-JSON/CSV audit exports cover the full shared library. The view state is shareable through URL query
-parameters, and the currently filtered exact points can be downloaded as CSV.
+table, filterable activity timeline, per-author workload summary, saved timeline filter views with
+URL/JSON sharing, and JSON/CSV audit exports cover the full shared library. The view state is
+shareable through URL query parameters, and the currently filtered exact points can be downloaded as
+CSV.
 
 This is the same interaction pattern as the urban-forest lab and WS4 Pareto explorer. The FABLE
 viewer is read-only over exact points: it does not run the optimizer, a surrogate, or a hidden model
