@@ -189,6 +189,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 65 is closed: opt-in interval-scheduled retention runs in a daemon loop, logs
   source=scheduled, and exposes interval/next-run status. PR #348 merged as `b7ddf9b`; parent #346 and
   child #347 are closed. Post-merge Test and Docs Pages passed.
+- Phase 66 is implemented on `feature/p66-retention-dashboard`: retention log entries are exposed
+  newest-first through a read API and rendered in a compact dashboard table. Parent #349 and child
+  #350 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4720,4 +4723,57 @@ Verification evidence:
 Closeout evidence:
 
 - PR #348 squash-merged as `b7ddf9b`; parent #346 and child #347 closed.
+
+## Phase 66: Retention Maintenance Dashboard
+
+GitHub parent issue: #349.
+
+Branch: `feature/p66-retention-dashboard`.
+
+Status: implemented; PR pending.
+
+Goal: add a compact dashboard for recent retention maintenance runs.
+
+Tasks:
+
+- [x] P66.1 Add retention run history API and UI table. Child issue: #350.
+
+Scope:
+
+- Read the retention JSONL log through a read endpoint.
+- Show recent runs with source, days, dry-run, removed/kept/touched counts.
+- Keep the dashboard read-only.
+- Preserve existing retention controls/policy.
+
+Out of scope:
+
+- Background scheduler changes.
+- Authentication or verified review.
+- New optimization runs.
+
+Architecture notes:
+
+- The dashboard reads the existing JSONL log.
+- Runs are newest first and limited.
+- No writes are introduced.
+
+Implementation evidence:
+
+- Added `GET /api/optimization/retention/runs?limit=20`.
+- Malformed log lines are skipped.
+- Added a compact recent-runs table with At, Source, Days, Mode, Removed, Kept, Touched.
+- Browser smoke triggered a dry-run prune, reloaded, and saw the run row.
+- Existing retention controls, policy, startup/manual/scheduled behavior, presets, timeline views, and
+  viewer behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 237 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; run table verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 
