@@ -142,7 +142,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   child #299 are closed. Post-merge Test and Docs Pages passed.
 - Phase 50 is implemented on `feature/p50-preset-deep-links`: named presets can be copied as portable
   links carrying the full viewer state plus `opt_preset`; local presets restore from `opt_preset`
-  when no explicit state params exist. Parent #301 and child #302 are mapped; PR and closeout remain.
+  when no explicit state params exist. Parent #301 and child #302 are mapped; PR #303 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3776,7 +3776,9 @@ GitHub parent issue: #301.
 
 Branch: `feature/p50-preset-deep-links`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #303.
 
 Goal: make named viewer presets linkable without requiring the recipient to have the local library.
 
