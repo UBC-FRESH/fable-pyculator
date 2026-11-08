@@ -1396,6 +1396,10 @@ async function loadLibrarySnapshots() {
   } catch {
     state.optimization.librarySnapshots = [];
   }
+  if (state.optimization.snapshotDiffName && !state.optimization.librarySnapshots.some((snapshot) => snapshot.name === state.optimization.snapshotDiffName)) {
+    state.optimization.snapshotDiffName = null;
+    renderLibrarySnapshotDiff(null);
+  }
   renderLibrarySnapshots();
 }
 
@@ -1410,16 +1414,68 @@ function renderLibrarySnapshots() {
   const rows = snapshots
     .map((snapshot) => {
       const name = escapeHtml(snapshot.name || "");
-      return `<tr><td>${escapeHtml(formatDate(snapshot.at))}</td><td>${escapeHtml(snapshot.source || "manual")}</td><td>${Number(snapshot.presets || 0)}</td><td>${Number(snapshot.timeline_views || 0)}</td><td>${escapeHtml(formatSnapshotBytes(snapshot.bytes))}</td><td><button class="button ghost small" type="button" data-snapshot-download="${name}">Download</button> <button class="button ghost small" type="button" data-snapshot-restore="${name}">Restore</button></td></tr>`;
+      return `<tr><td>${escapeHtml(formatDate(snapshot.at))}</td><td>${escapeHtml(snapshot.source || "manual")}</td><td>${Number(snapshot.presets || 0)}</td><td>${Number(snapshot.timeline_views || 0)}</td><td>${escapeHtml(formatSnapshotBytes(snapshot.bytes))}</td><td><button class="button ghost small" type="button" data-snapshot-diff="${name}">Diff</button> <button class="button ghost small" type="button" data-snapshot-download="${name}">Download</button> <button class="button ghost small" type="button" data-snapshot-restore="${name}">Restore</button></td></tr>`;
     })
     .join("");
   container.innerHTML = `<table><thead><tr><th>At</th><th>Source</th><th>Presets</th><th>Views</th><th>Size</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`;
+  container.querySelectorAll("[data-snapshot-diff]").forEach((button) => {
+    button.addEventListener("click", () => showLibrarySnapshotDiff(button.dataset.snapshotDiff));
+  });
   container.querySelectorAll("[data-snapshot-download]").forEach((button) => {
     button.addEventListener("click", () => downloadLibrarySnapshot(button.dataset.snapshotDownload));
   });
   container.querySelectorAll("[data-snapshot-restore]").forEach((button) => {
     button.addEventListener("click", () => prepareLibrarySnapshotRestore(button.dataset.snapshotRestore));
   });
+}
+
+function renderLibrarySnapshotDiff(diff) {
+  const container = $("#optimization-shared-snapshot-diff");
+  if (!container) return;
+  if (!diff) {
+    container.innerHTML = '<p class="hint">Select Diff on a snapshot to compare it with the current library.</p>';
+    return;
+  }
+  const names = (label, values) => (values.length ? `${label}: ${values.join(", ")}` : "");
+  const presetSummary = [
+    names("added", diff.presets.added),
+    names("replaced", diff.presets.replaced),
+    names("removed", diff.presets.removed),
+    names("kept", diff.presets.kept),
+    `${diff.presets.unchanged} unchanged`,
+  ].filter(Boolean).join(" · ");
+  const viewSummary = [
+    names("added", diff.timeline_views.added),
+    names("replaced", diff.timeline_views.replaced),
+    names("removed", diff.timeline_views.removed),
+    names("kept", diff.timeline_views.kept),
+    `${diff.timeline_views.unchanged} unchanged`,
+  ].filter(Boolean).join(" · ");
+  const presetRows = diff.presets.changed
+    .map((entry) => `<tr><td>${escapeHtml(entry.name)}</td><td>${escapeHtml(entry.metadata.join(", ") || "—")}</td><td>${escapeHtml(entry.state.join(", ") || "—")}</td><td>+${entry.history_added.length} / −${entry.history_removed.length}</td></tr>`)
+    .join("");
+  const viewRows = diff.timeline_views.changed
+    .map((entry) => `<tr><td>${escapeHtml(entry.name)}</td><td>${escapeHtml(entry.metadata.join(", ") || "—")}</td><td>${escapeHtml(entry.filter.join(", ") || "—")}</td></tr>`)
+    .join("");
+  const presetTable = presetRows
+    ? `<table><thead><tr><th>Preset</th><th>Metadata</th><th>State</th><th>History +/−</th></tr></thead><tbody>${presetRows}</tbody></table>`
+    : '<p class="hint">No replaced preset fields differ.</p>';
+  const viewTable = viewRows
+    ? `<table><thead><tr><th>Timeline view</th><th>Metadata</th><th>Filter</th></tr></thead><tbody>${viewRows}</tbody></table>`
+    : '<p class="hint">No replaced timeline fields differ.</p>';
+  container.innerHTML = `<p class="hint">${escapeHtml(diff.snapshot)} · ${escapeHtml(diff.mode)} · presets: ${escapeHtml(presetSummary)} · timeline views: ${escapeHtml(viewSummary)}</p>` + presetTable + viewTable;
+}
+
+async function showLibrarySnapshotDiff(name) {
+  if (!name) return;
+  const mode = $("#optimization-shared-restore-mode")?.value === "replace" ? "replace" : "merge";
+  try {
+    const diff = await request(`optimization/snapshots/${encodeURIComponent(name)}/diff?mode=${mode}`);
+    state.optimization.snapshotDiffName = name;
+    renderLibrarySnapshotDiff(diff);
+  } catch (error) {
+    toast(`Could not diff the snapshot: ${error.message}`, "bad");
+  }
 }
 
 async function createLibrarySnapshot() {
@@ -1569,6 +1625,8 @@ async function confirmSharedLibraryRestore() {
   try {
     const result = await request(path, { method: "POST", body: JSON.stringify(body) });
     await Promise.all([loadSharedOptimizationPresets(), loadSharedTimelineViews()]);
+    state.optimization.snapshotDiffName = null;
+    renderLibrarySnapshotDiff(null);
     resetSharedLibraryRestore("Restore applied. Select another backup to preview a restore.");
     toast(`Restored ${result.presets.result} preset(s) and ${result.timeline_views.result} timeline view(s)`, "good");
   } catch (error) {
@@ -2637,6 +2695,7 @@ function bindOptimizationEvents() {
   $("#optimization-shared-restore-mode").addEventListener("change", () => {
     if (state.optimization.sharedRestorePending) requestSharedLibraryRestorePreview();
     else resetSharedLibraryRestore("Select a backup file to preview a restore.");
+    if (state.optimization.snapshotDiffName) showLibrarySnapshotDiff(state.optimization.snapshotDiffName);
   });
   $("#optimization-shared-snapshot-now").addEventListener("click", createLibrarySnapshot);
   $("#optimization-shared-snapshot-refresh").addEventListener("click", loadLibrarySnapshots);

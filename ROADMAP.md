@@ -215,6 +215,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 74 is closed: shared-library snapshots can be written manually or on an opt-in interval,
   retained newest-N, listed, downloaded, and restored through the existing preview. PR #377 merged as
   `8de03ba`; parent #374 and children #375/#376 are closed. Post-merge Test and Docs Pages passed.
+- Phase 75 is implemented on `feature/p75-snapshot-diff`: snapshots can be diffed against the current
+  library with exact added/replaced/removed/kept counts, changed metadata/state/filter keys, and
+  bounded history deltas. Parent #378 and child #379 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5267,4 +5270,62 @@ Verification evidence:
 Closeout evidence:
 
 - PR #377 squash-merged as `8de03ba`; parent #374 and children #375/#376 closed.
+
+## Phase 75: Snapshot Diff Against Current Library
+
+GitHub parent issue: #378.
+
+Branch: `feature/p75-snapshot-diff`.
+
+Status: implemented; PR pending.
+
+Goal: show exact differences between a stored snapshot and the current shared library.
+
+Tasks:
+
+- [x] P75.1 Add exact snapshot diff API and inventory diff viewer. Child issue: #379.
+
+Scope:
+
+- Diff presets and timeline views in merge or replace orientation.
+- Report added, replaced, removed, kept, unchanged, and changed entries.
+- Report changed metadata, state/filter keys, and bounded history additions/removals.
+- Render the diff from the snapshot inventory before restore.
+- Keep restore preview and confirmation unchanged.
+
+Out of scope:
+
+- Authentication.
+- New optimization runs.
+- Snapshot scheduling changes.
+- Full value-level JSON patching.
+
+Architecture notes:
+
+- The snapshot bundle and current library use the same normalized schemas.
+- The diff is read-only and never writes.
+- Merge orientation reports current-only entries as kept; replace reports them as removed.
+- History comparisons use exact event tuples within the existing 10-event cap.
+
+Implementation evidence:
+
+- Added `GET /api/optimization/snapshots/{name}/diff?mode=merge|replace`.
+- Preset diff reports added/replaced/removed/kept names, unchanged count, changed metadata keys, state keys, and history additions/removals.
+- Timeline diff reports changed metadata and filter keys.
+- Snapshot inventory adds a **Diff** action and a read-only comparison panel.
+- Diff mode follows the restore mode and refreshes when mode changes.
+- Restore still requires the existing preview and confirmation.
+
+Verification evidence:
+
+- Full suite: 247 passed, 16 skipped.
+- Exact API diff test covers merge/replace orientation, changed metadata, filter keys, and history removal.
+- Browser smoke created a snapshot, changed preset and timeline metadata, rendered merge and replace diffs, and cleaned up.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke: no page errors.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

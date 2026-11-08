@@ -225,6 +225,18 @@ def _clean_restored_preset(value: Any) -> dict[str, Any]:
     return preset
 
 
+def _preset_event_key(event: Mapping[str, Any]) -> tuple[str, str, str, str, str]:
+    """Return the exact comparison key for one bounded history event."""
+
+    return (
+        str(event.get("at", "")),
+        str(event.get("action", "")),
+        str(event.get("author", "")),
+        str(event.get("note", "")),
+        str(event.get("review_status", "")),
+    )
+
+
 def _merge_preset_history(
     existing: Any,
     incoming: Any,
@@ -234,13 +246,7 @@ def _merge_preset_history(
     merged: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str, str, str]] = set()
     for event in [*(_clean_preset_history(existing)), *(_clean_preset_history(incoming))]:
-        key = (
-            str(event.get("at", "")),
-            str(event.get("action", "")),
-            str(event.get("author", "")),
-            str(event.get("note", "")),
-            str(event.get("review_status", "")),
-        )
+        key = _preset_event_key(event)
         if key in seen:
             continue
         seen.add(key)
@@ -1222,6 +1228,109 @@ class PortalState:
         )
         result["snapshot"] = name
         return result
+
+    def diff_library_snapshot(self, name: str, mode: str = "merge") -> dict[str, Any]:
+        """Return an exact read-only diff between one snapshot and the current library."""
+
+        if mode not in {"merge", "replace"}:
+            raise ValueError("diff mode must be merge or replace")
+        snapshot = self.library_snapshot(name)
+        current = self.optimization_library()
+        snapshot_presets = {
+            str(item["name"]): item
+            for item in snapshot.get("presets", [])
+            if isinstance(item, Mapping) and isinstance(item.get("name"), str)
+        }
+        current_presets = {
+            str(item["name"]): item
+            for item in current.get("presets", [])
+            if isinstance(item, Mapping) and isinstance(item.get("name"), str)
+        }
+        added = sorted(set(snapshot_presets) - set(current_presets))
+        replaced = sorted(set(snapshot_presets) & set(current_presets))
+        current_only = sorted(set(current_presets) - set(snapshot_presets))
+        changed: list[dict[str, Any]] = []
+        for preset_name in replaced:
+            old = current_presets[preset_name]
+            new = snapshot_presets[preset_name]
+            metadata = [
+                field for field in ("author", "note", "review_status", "saved_at") if old.get(field) != new.get(field)
+            ]
+            old_state = old.get("state") if isinstance(old.get("state"), Mapping) else {}
+            new_state = new.get("state") if isinstance(new.get("state"), Mapping) else {}
+            state = sorted(key for key in set(old_state) | set(new_state) if old_state.get(key) != new_state.get(key))
+            old_history = old.get("history") if isinstance(old.get("history"), list) else []
+            new_history = new.get("history") if isinstance(new.get("history"), list) else []
+            old_keys = {_preset_event_key(event) for event in old_history if isinstance(event, Mapping)}
+            new_keys = {_preset_event_key(event) for event in new_history if isinstance(event, Mapping)}
+            history_added = [
+                event
+                for event in new_history
+                if isinstance(event, Mapping) and _preset_event_key(event) not in old_keys
+            ]
+            history_removed = [
+                event
+                for event in old_history
+                if isinstance(event, Mapping) and _preset_event_key(event) not in new_keys
+            ]
+            if metadata or state or history_added or history_removed:
+                changed.append(
+                    {
+                        "name": preset_name,
+                        "metadata": metadata,
+                        "state": state,
+                        "history_added": history_added,
+                        "history_removed": history_removed,
+                    }
+                )
+        snapshot_views = {
+            str(item["name"]): item
+            for item in snapshot.get("timeline_views", [])
+            if isinstance(item, Mapping) and isinstance(item.get("name"), str)
+        }
+        current_views = {
+            str(item["name"]): item
+            for item in current.get("timeline_views", [])
+            if isinstance(item, Mapping) and isinstance(item.get("name"), str)
+        }
+        view_added = sorted(set(snapshot_views) - set(current_views))
+        view_replaced = sorted(set(snapshot_views) & set(current_views))
+        view_current_only = sorted(set(current_views) - set(snapshot_views))
+        view_changed: list[dict[str, Any]] = []
+        for view_name in view_replaced:
+            old = current_views[view_name]
+            new = snapshot_views[view_name]
+            metadata = [
+                field for field in ("author", "note", "review_status", "saved_at") if old.get(field) != new.get(field)
+            ]
+            old_filter = old.get("filter") if isinstance(old.get("filter"), Mapping) else {}
+            new_filter = new.get("filter") if isinstance(new.get("filter"), Mapping) else {}
+            filter_changed = sorted(
+                key for key in set(old_filter) | set(new_filter) if old_filter.get(key) != new_filter.get(key)
+            )
+            if metadata or filter_changed:
+                view_changed.append({"name": view_name, "metadata": metadata, "filter": filter_changed})
+        return {
+            "snapshot": name,
+            "mode": mode,
+            "at": datetime.now(UTC).isoformat(timespec="seconds"),
+            "presets": {
+                "added": added,
+                "replaced": replaced,
+                "removed": current_only if mode == "replace" else [],
+                "kept": current_only if mode == "merge" else [],
+                "changed": changed,
+                "unchanged": len(replaced) - len(changed),
+            },
+            "timeline_views": {
+                "added": view_added,
+                "replaced": view_replaced,
+                "removed": view_current_only if mode == "replace" else [],
+                "kept": view_current_only if mode == "merge" else [],
+                "changed": view_changed,
+                "unchanged": len(view_replaced) - len(view_changed),
+            },
+        }
 
     def save_timeline_view(
         self,

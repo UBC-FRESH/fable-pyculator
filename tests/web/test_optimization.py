@@ -107,6 +107,7 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-shared-snapshot-now"' in shell.text
     assert 'id="optimization-shared-snapshot-refresh"' in shell.text
     assert 'id="optimization-shared-snapshots"' in shell.text
+    assert 'id="optimization-shared-snapshot-diff"' in shell.text
     assert 'id="optimization-shared-timeline"' in shell.text
     assert 'id="optimization-timeline-author"' in shell.text
     assert 'id="optimization-timeline-action"' in shell.text
@@ -180,7 +181,10 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "createLibrarySnapshot" in script.text
     assert "downloadLibrarySnapshot" in script.text
     assert "prepareLibrarySnapshotRestore" in script.text
+    assert "showLibrarySnapshotDiff" in script.text
+    assert "renderLibrarySnapshotDiff" in script.text
     assert "optimization/snapshots" in script.text
+    assert "/diff?mode=" in script.text
     assert "timelineFilter" in script.text
     assert "Recently reviewed" in shell.text
     assert "renderReviewWorkload" in script.text
@@ -570,6 +574,56 @@ def test_library_snapshot_scheduler_starts_and_stops(tmp_path: Path) -> None:
     finally:
         state.close()
     assert not state._snapshot_thread.is_alive()
+
+
+def test_library_snapshot_diff_reports_changes(tmp_path: Path) -> None:
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", versions=("2024",))
+    with TestClient(create_app(config)) as client:
+        client.post("/api/optimization/presets", json=_preset_payload("Alpha", review_status="draft"))
+        client.post("/api/optimization/presets", json=_preset_payload("Beta"))
+        client.post("/api/optimization/timeline-views", json=_timeline_view_payload("Views Alpha"))
+        snapshot = client.post("/api/optimization/snapshots").json()["name"]
+
+        changed_alpha = _preset_payload("Alpha", review_status="reviewed")
+        changed_alpha["note"] = "Changed after snapshot"
+        client.post("/api/optimization/presets", json=changed_alpha)
+        client.delete("/api/optimization/presets/Beta")
+        client.post("/api/optimization/presets", json=_preset_payload("Current only"))
+        changed_view = _timeline_view_payload("Views Alpha")
+        changed_view["filter"] = {
+            "author": "Hisham",
+            "action": "created",
+            "preset": "Alpha",
+            "window": "30d",
+        }
+        changed_view["note"] = "Changed after snapshot"
+        client.post("/api/optimization/timeline-views", json=changed_view)
+        client.post("/api/optimization/timeline-views", json=_timeline_view_payload("Views current"))
+
+        merge = client.get(f"/api/optimization/snapshots/{snapshot}/diff?mode=merge")
+        assert merge.status_code == 200
+        payload = merge.json()
+        assert payload["snapshot"] == snapshot
+        assert payload["presets"]["added"] == ["Beta"]
+        assert payload["presets"]["replaced"] == ["Alpha"]
+        assert payload["presets"]["kept"] == ["Current only"]
+        assert payload["presets"]["removed"] == []
+        assert payload["presets"]["changed"][0]["name"] == "Alpha"
+        assert "note" in payload["presets"]["changed"][0]["metadata"]
+        assert "review_status" in payload["presets"]["changed"][0]["metadata"]
+        assert [event["action"] for event in payload["presets"]["changed"][0]["history_removed"]] == ["reviewed"]
+        assert payload["timeline_views"]["replaced"] == ["Views Alpha"]
+        assert payload["timeline_views"]["kept"] == ["Views current"]
+        assert payload["timeline_views"]["changed"][0]["filter"] == ["action", "preset", "window"]
+
+        replace = client.get(f"/api/optimization/snapshots/{snapshot}/diff?mode=replace").json()
+        assert replace["presets"]["removed"] == ["Current only"]
+        assert replace["presets"]["kept"] == []
+        assert replace["timeline_views"]["removed"] == ["Views current"]
+        assert replace["timeline_views"]["kept"] == []
+
+        assert client.get(f"/api/optimization/snapshots/{snapshot}/diff?mode=bad").status_code == 400
+        assert client.get("/api/optimization/presets").json()[0]["name"] == "Current only"
 
 
 def test_prune_shared_preset_history_preserves_latest(tmp_path: Path) -> None:
