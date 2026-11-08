@@ -211,7 +211,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   parent #367 and child #368 are closed. Post-merge Test and Docs Pages passed.
 - Phase 73 is implemented on `feature/p73-shared-library-backup`: shared presets, histories, and
   timeline views can be backed up as one JSON bundle and restored through a dry-run preview with
-  merge or replace mode. Parent #370 and children #371/#372 are mapped; PR and closeout remain.
+  merge or replace mode. Parent #370 and children #371/#372 are mapped; PR #373 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5145,7 +5145,9 @@ GitHub parent issue: #370.
 
 Branch: `feature/p73-shared-library-backup`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #373.
 
 Goal: back up the shared Optimization library and restore it with a dry-run preview.
 
