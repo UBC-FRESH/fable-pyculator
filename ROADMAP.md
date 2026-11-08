@@ -152,7 +152,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   `17acb88`; parent #307 and child #308 are closed. Post-merge Test and Docs Pages passed.
 - Phase 53 is implemented on `feature/p53-shared-review-queue`: the shared library now filters by
   all/needs-review/reviewed, shows draft/reviewed counts, and can mark a selected draft reviewed.
-  Parent #310 and child #311 are mapped; PR and closeout remain.
+  Parent #310 and child #311 are mapped; PR #312 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3959,7 +3959,9 @@ GitHub parent issue: #310.
 
 Branch: `feature/p53-shared-review-queue`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #312.
 
 Goal: turn shared preset review status into a lightweight review queue.
 
