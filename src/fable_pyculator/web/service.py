@@ -53,6 +53,75 @@ EXTENSION_YEARS = (2055, 2060, 2065, 2070)
 EXTENSION_NOTE = (
     "2055-2070 are trend extensions extrapolated from the 2035-2050 linear trend, not native FABLE Calculator results."
 )
+_PRESET_STATE_KEYS = (
+    "version",
+    "x",
+    "y",
+    "z",
+    "colour",
+    "size",
+    "floor_dimension",
+    "floor",
+    "front",
+    "warning_free",
+    "brushes",
+    "reference",
+    "point",
+)
+
+
+def _clean_optimization_preset(
+    name: Any,
+    state: Any,
+    saved_at: Any = None,
+) -> dict[str, Any]:
+    """Validate and normalize one shared Optimization preset."""
+
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("preset name must be a non-empty string")
+    if not isinstance(state, Mapping):
+        raise ValueError("preset state must be an object")
+    clean_name = name.strip()[:40]
+    if not clean_name:
+        raise ValueError("preset name must be a non-empty string")
+    clean_state: dict[str, Any] = {}
+    for key in _PRESET_STATE_KEYS:
+        if key not in state:
+            continue
+        value = state[key]
+        if key in {"version", "x", "y", "z", "colour", "size", "floor_dimension"}:
+            clean_state[key] = str(value)[:60]
+        elif key == "floor":
+            number = float(value)
+            if not 0 <= number <= 100:
+                raise ValueError("preset floor must be between 0 and 100")
+            clean_state[key] = number
+        elif key in {"front", "warning_free"}:
+            clean_state[key] = bool(value)
+        elif key == "brushes":
+            if not isinstance(value, (list, tuple)) or len(value) > 20:
+                raise ValueError("preset brushes must be a list of at most 20 entries")
+            brushes: list[dict[str, Any]] = []
+            for brush in value:
+                if not isinstance(brush, Mapping):
+                    raise ValueError("each preset brush must be an object")
+                axis_key = brush.get("axisKey")
+                if not isinstance(axis_key, str) or not axis_key:
+                    raise ValueError("each preset brush needs an axisKey")
+                start = float(brush.get("start"))
+                end = float(brush.get("end"))
+                if not 0 <= start <= 1 or not 0 <= end <= 1:
+                    raise ValueError("preset brush ranges must be between 0 and 1")
+                brushes.append({"axisKey": axis_key[:60], "start": start, "end": end})
+            clean_state[key] = brushes
+        elif key in {"reference", "point"}:
+            clean_state[key] = None if value in (None, "") else str(value)[:20]
+    if not clean_state.get("version"):
+        raise ValueError("preset state needs a version")
+    timestamp = saved_at if isinstance(saved_at, str) and len(saved_at) <= 40 else None
+    if timestamp is None:
+        timestamp = datetime.now(UTC).isoformat(timespec="seconds")
+    return {"name": clean_name, "saved_at": timestamp, "state": clean_state}
 
 
 class PortalError(RuntimeError):
@@ -227,6 +296,7 @@ class PortalState:
         self.chats = ChatStore(self.runtime_dir / "chats")
         self._prepared: dict[str, PreparedModel] = {}
         self._compute_lock = threading.RLock()
+        self._preset_lock = threading.Lock()
         self._cheat_sheet: CheatSheet | None = None
         self.ensure_cheat_sheet()
 
@@ -683,6 +753,65 @@ class PortalState:
             if str(payload.get("version")) == str(version):
                 return payload
         raise PortalError(f"unknown optimization frontier {version!r}", status_code=404)
+
+    def optimization_presets(self) -> list[dict[str, Any]]:
+        """Return the shared Optimization preset library."""
+
+        with self._preset_lock:
+            return self._load_shared_presets()
+
+    def save_optimization_preset(
+        self,
+        name: str,
+        state: Mapping[str, Any],
+        saved_at: str | None = None,
+    ) -> dict[str, Any]:
+        """Create or replace one shared Optimization preset."""
+
+        preset = _clean_optimization_preset(name, state, saved_at)
+        with self._preset_lock:
+            presets = [item for item in self._load_shared_presets() if item["name"] != preset["name"]]
+            presets.insert(0, preset)
+            self._write_shared_presets(presets[:20])
+        return preset
+
+    def delete_optimization_preset(self, name: str) -> dict[str, Any]:
+        """Delete one shared Optimization preset by name."""
+
+        with self._preset_lock:
+            presets = self._load_shared_presets()
+            remaining = [item for item in presets if item["name"] != name]
+            if len(remaining) == len(presets):
+                raise PortalError(f"unknown optimization preset {name!r}", status_code=404)
+            self._write_shared_presets(remaining)
+        return {"deleted": name, "count": len(remaining)}
+
+    def _load_shared_presets(self) -> list[dict[str, Any]]:
+        path = self.runtime_dir / "optimization-presets.json"
+        if not path.is_file():
+            return []
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return []
+        if not isinstance(payload, list):
+            return []
+        presets: list[dict[str, Any]] = []
+        for item in payload:
+            if not isinstance(item, Mapping):
+                continue
+            try:
+                presets.append(_clean_optimization_preset(item.get("name"), item.get("state"), item.get("saved_at")))
+            except ValueError:
+                continue
+        return presets[:20]
+
+    def _write_shared_presets(self, presets: list[dict[str, Any]]) -> None:
+        path = self.runtime_dir / "optimization-presets.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+        temporary.write_text(json.dumps(presets, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        temporary.replace(path)
 
     def runs(self) -> list[dict[str, Any]]:
         """Return saved runs, newest first, without loading table files."""

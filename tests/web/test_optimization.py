@@ -83,6 +83,10 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-preset-import"' in shell.text
     assert 'id="optimization-preset-file"' in shell.text
     assert 'id="optimization-preset-copy-link"' in shell.text
+    assert 'id="optimization-shared-preset"' in shell.text
+    assert 'id="optimization-shared-save"' in shell.text
+    assert 'id="optimization-shared-load"' in shell.text
+    assert 'id="optimization-shared-delete"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -113,7 +117,64 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "normalizeImportedPreset" in script.text
     assert "copyOptimizationPresetLink" in script.text
     assert "opt_preset" in script.text
+    assert "loadSharedOptimizationPresets" in script.text
+    assert "saveSharedOptimizationPreset" in script.text
+    assert "deleteSharedOptimizationPreset" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
     assert "OrbitControls" in controls.text
+
+
+def _preset_payload(name: str) -> dict[str, object]:
+    return {
+        "name": name,
+        "state": {
+            "version": "2024",
+            "x": "food_total_kcal_feas",
+            "y": "ghg_total_co2e",
+            "z": "goal",
+            "colour": "front",
+            "size": "uniform",
+            "floor_dimension": "goal",
+            "floor": 0,
+            "front": True,
+            "warning_free": True,
+            "brushes": [{"axisKey": "diet_scen", "start": 0.25, "end": 0.6}],
+            "reference": "p012",
+            "point": "p001",
+        },
+    }
+
+
+def test_shared_optimization_preset_api_round_trip(tmp_path: Path) -> None:
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", versions=("2024",))
+    with TestClient(create_app(config)) as client:
+        assert client.get("/api/optimization/presets").json() == []
+        created = client.post("/api/optimization/presets", json=_preset_payload("Shared view"))
+        assert created.status_code == 200
+        assert created.json()["name"] == "Shared view"
+        listing = client.get("/api/optimization/presets").json()
+        assert len(listing) == 1
+        assert listing[0]["state"]["brushes"][0]["axisKey"] == "diet_scen"
+
+        replaced = client.post("/api/optimization/presets", json=_preset_payload("Shared view"))
+        assert replaced.status_code == 200
+        assert len(client.get("/api/optimization/presets").json()) == 1
+
+        invalid = client.post("/api/optimization/presets", json={"name": "Bad", "state": {}})
+        assert invalid.status_code == 400
+
+        deleted = client.delete("/api/optimization/presets/Shared view")
+        assert deleted.status_code == 200
+        assert client.get("/api/optimization/presets").json() == []
+        assert client.delete("/api/optimization/presets/Shared view").status_code == 404
+
+
+def test_shared_optimization_presets_survive_app_restart(tmp_path: Path) -> None:
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", versions=("2024",))
+    with TestClient(create_app(config)) as client:
+        assert client.post("/api/optimization/presets", json=_preset_payload("Persistent")).status_code == 200
+    with TestClient(create_app(config)) as client:
+        listing = client.get("/api/optimization/presets").json()
+    assert [preset["name"] for preset in listing] == ["Persistent"]

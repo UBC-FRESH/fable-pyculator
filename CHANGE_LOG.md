@@ -114,6 +114,8 @@ This file records completed project work in chronological order.
 - Added Copy preset link with `opt_preset` plus full viewer state, portable to recipients without the
   local preset library; local `opt_preset` links restore by name when state params are absent.
   PR #303 merged as `034478b`; post-merge Test and Docs Pages passed.
+- Added a server-backed shared Optimization preset library under `runtime/portal/`, with validated
+  list/save/delete APIs and UI controls visible to everyone with portal access.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

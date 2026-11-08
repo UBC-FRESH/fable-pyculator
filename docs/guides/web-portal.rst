@@ -101,9 +101,10 @@ Optimization
    synchronized reference markers. Complete viewer states can be saved as named local presets and
    recalled from the **Saved views** panel; the library can also be exported to and imported from
    JSON, and **Copy preset link** embeds the named preset and full viewer state in a portable URL.
-   The current axes, colour, size, filters, brushes, selected point, and reference are encoded in the
-   URL; **Copy view link** shares that exact state, and **Download filtered CSV** exports the visible
-   exact points. The viewer reads
+   A server-backed **Shared library** persists named views under the portal runtime directory for
+   everyone with portal access. The current axes, colour, size, filters, brushes, selected point, and
+   reference are encoded in the URL; **Copy view link** shares that exact state, and **Download
+   filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through
    ``/api/optimization/frontiers``; it never runs an optimizer or a surrogate in the browser.
 
