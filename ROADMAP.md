@@ -196,7 +196,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   `9a20f5a`; parent #352 and child #353 are closed. Post-merge Test and Docs Pages passed.
 - Phase 68 is implemented on `feature/p68-retention-run-details`: retention runs now record bounded
   per-preset removed-event details, and the dashboard shows them for a selected run. Parent #355 and
-  child #356 are mapped; PR and closeout remain.
+  child #356 are mapped; PR #357 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4845,7 +4845,9 @@ GitHub parent issue: #355.
 
 Branch: `feature/p68-retention-run-details`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #357.
 
 Goal: record per-preset removed events in retention runs and show them in the dashboard.
 
