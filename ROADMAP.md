@@ -155,7 +155,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   #311 are closed. Post-merge Test and Docs Pages passed.
 - Phase 54 is implemented on `feature/p54-preset-review-history`: shared presets now keep a compact
   server-owned history of created/updated/reviewed events with self-declared author and timestamp.
-  Parent #313 and child #314 are mapped; PR and closeout remain.
+  Parent #313 and child #314 are mapped; PR #315 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4018,7 +4018,9 @@ GitHub parent issue: #313.
 
 Branch: `feature/p54-preset-review-history`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #315.
 
 Goal: add a compact per-preset changelog for shared Optimization views.
 
