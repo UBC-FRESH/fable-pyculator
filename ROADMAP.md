@@ -117,7 +117,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   Docs Pages passed.
 - Phase 43 is implemented on `feature/p43-pareto-share-export`: the Optimization view now encodes
   axes, colour, size, floor, filters, and selected point in the URL; supports copy-link; and exports
-  the currently filtered exact points as CSV. Parent #280 and child #281 are mapped; PR and closeout
+  the currently filtered exact points as CSV. Parent #280 and child #281 are mapped; PR #282 and closeout
   remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
@@ -3359,7 +3359,9 @@ GitHub parent issue: #280.
 
 Branch: `feature/p43-pareto-share-export`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #282.
 
 Goal: make exact Pareto views shareable and exportable without changing the frontier data.
 
