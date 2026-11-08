@@ -212,9 +212,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 73 is closed: shared presets, histories, and timeline views can be backed up as one JSON
   bundle and restored through a dry-run preview with merge or replace mode. PR #373 merged as
   `d67e064`; parent #370 and children #371/#372 are closed. Post-merge Test and Docs Pages passed.
-- Phase 74 is implemented on `feature/p74-library-snapshots`: shared-library snapshots can be written
-  manually or on an opt-in interval, retained newest-N, listed, downloaded, and restored through the
-  existing preview. Parent #374 and children #375/#376 are mapped; PR #377 and closeout remain.
+- Phase 74 is closed: shared-library snapshots can be written manually or on an opt-in interval,
+  retained newest-N, listed, downloaded, and restored through the existing preview. PR #377 merged as
+  `8de03ba`; parent #374 and children #375/#376 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5210,9 +5210,9 @@ GitHub parent issue: #374.
 
 Branch: `feature/p74-library-snapshots`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #377.
+Pull request: #377 (merged as `8de03ba`).
 
 Goal: persist bounded shared-library snapshots manually or on a maintenance interval.
 
@@ -5262,8 +5262,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke: no page errors.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #377 squash-merged as `8de03ba`; parent #374 and children #375/#376 closed.
 
