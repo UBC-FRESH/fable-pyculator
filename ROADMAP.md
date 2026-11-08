@@ -159,6 +159,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 55 is closed: a read-only shared audit table and JSON export cover all shared presets,
   metadata, latest events, and full history. PR #318 merged as `94881a5`; parent #316 and child #317
   are closed. Post-merge Test and Docs Pages passed.
+- Phase 56 is implemented on `feature/p56-activity-timeline`: the shared library now has a compact
+  cross-preset review activity timeline and event-level audit CSV export. Parent #319 and child #320
+  are mapped; PR #321 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4127,4 +4130,58 @@ Verification evidence:
 Closeout evidence:
 
 - PR #318 squash-merged as `94881a5`; parent #316 and child #317 closed.
+
+## Phase 56: Shared Review Timeline and CSV Audit
+
+GitHub parent issue: #319.
+
+Branch: `feature/p56-activity-timeline`.
+
+Status: pr-open.
+
+Pull request: #321.
+
+Goal: add a cross-preset review activity timeline and CSV audit export.
+
+Tasks:
+
+- [x] P56.1 Add cross-preset review timeline and audit CSV. Child issue: #320.
+
+Scope:
+
+- Aggregate review history across shared presets.
+- Show the latest events in a compact timeline.
+- Export per-event audit rows as CSV.
+- Keep the view read-only and self-declared.
+
+Out of scope:
+
+- Authentication or verified reviewer identity.
+- New optimization runs.
+- Global-frontier claims.
+
+Architecture notes:
+
+- Timeline rows come from server-owned preset history.
+- CSV audit is per history event, sorted newest first.
+- Self-declared metadata remains non-authoritative.
+
+Implementation evidence:
+
+- Added a compact activity timeline aggregating recent created/updated/reviewed events.
+- Added **Export audit CSV** with columns `preset`, `author`, `review_status`, `action`, `at`, `note`.
+- Browser smoke showed the timeline event and exported a two-line CSV (header plus event).
+- Existing audit table/JSON export, review queue/history, presets, links, and viewer behavior remain
+  intact.
+
+Verification evidence:
+
+- Full suite: 230 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; timeline and CSV audit verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

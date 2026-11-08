@@ -1147,6 +1147,7 @@ function renderSharedOptimizationPresets(selectedName = "") {
   const remove = $("#optimization-shared-delete");
   const mark = $("#optimization-shared-mark-reviewed");
   const exportButton = $("#optimization-shared-export");
+  const exportCsv = $("#optimization-shared-export-csv");
   if (!select) return;
   const presets = state.optimization.sharedPresets || [];
   if (filter) filter.value = state.optimization.sharedFilter || "all";
@@ -1176,7 +1177,9 @@ function renderSharedOptimizationPresets(selectedName = "") {
     mark.disabled = !selected || selected.review_status === "reviewed";
   }
   if (exportButton) exportButton.disabled = !presets.length;
+  if (exportCsv) exportCsv.disabled = !presets.length;
   renderSharedAudit(presets);
+  renderSharedTimeline(presets);
   syncSharedPresetMetadata();
 }
 
@@ -1348,6 +1351,63 @@ function exportSharedOptimizationPresets() {
   link.remove();
   URL.revokeObjectURL(url);
   toast(`Exported ${presets.length} shared preset${presets.length === 1 ? "" : "s"}`, "good");
+}
+
+
+function sharedAuditEvents(presets) {
+  return presets
+    .flatMap((preset) =>
+      (preset.history || []).map((event) => ({
+        preset: preset.name,
+        author: preset.author || event.author || "",
+        review_status: preset.review_status || "draft",
+        action: event.action,
+        at: event.at,
+        note: event.note || "",
+      })),
+    )
+    .sort((left, right) => String(right.at).localeCompare(String(left.at)));
+}
+
+function renderSharedTimeline(presets) {
+  const container = $("#optimization-shared-timeline");
+  if (!container) return;
+  const events = sharedAuditEvents(presets).slice(0, 20);
+  if (!events.length) {
+    container.innerHTML = '<p class="hint">No review activity.</p>';
+    return;
+  }
+  const rows = events
+    .map((event) => {
+      const when = event.at ? formatDate(event.at) : "—";
+      const author = event.author ? ` · ${escapeHtml(event.author)}` : "";
+      const note = event.note ? ` — ${escapeHtml(event.note)}` : "";
+      return `<li><b>${escapeHtml(event.preset)}</b> · ${escapeHtml(event.action)} · ${escapeHtml(when)}${author}${note}</li>`;
+    })
+    .join("");
+  container.innerHTML = `<ol>${rows}</ol>`;
+}
+
+function exportSharedAuditCsv() {
+  const presets = state.optimization.sharedPresets || [];
+  const events = sharedAuditEvents(presets);
+  if (!events.length) {
+    toast("There is no shared review activity to export.", "warn");
+    return;
+  }
+  const header = ["preset", "author", "review_status", "action", "at", "note"];
+  const rows = events.map((event) => [event.preset, event.author, event.review_status, event.action, event.at, event.note]);
+  const csv = [header, ...rows].map((row) => row.map(optimizationCsvCell).join(",")).join("\n") + "\n";
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "fable-shared-review-audit.csv";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${events.length} audit event${events.length === 1 ? "" : "s"}`, "good");
 }
 
 function drawOptimization() {
@@ -1804,6 +1864,7 @@ function bindOptimizationEvents() {
   });
   $("#optimization-shared-mark-reviewed").addEventListener("click", markSharedOptimizationPresetReviewed);
   $("#optimization-shared-export").addEventListener("click", exportSharedOptimizationPresets);
+  $("#optimization-shared-export-csv").addEventListener("click", exportSharedAuditCsv);
   $("#optimization-shared-load").addEventListener("click", loadSharedOptimizationPreset);
   $("#optimization-shared-delete").addEventListener("click", deleteSharedOptimizationPreset);
   $("#pareto-clear-reference").addEventListener("click", clearOptimizationReference);
