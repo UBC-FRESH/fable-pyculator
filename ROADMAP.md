@@ -217,7 +217,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   `8de03ba`; parent #374 and children #375/#376 are closed. Post-merge Test and Docs Pages passed.
 - Phase 75 is implemented on `feature/p75-snapshot-diff`: snapshots can be diffed against the current
   library with exact added/replaced/removed/kept counts, changed metadata/state/filter keys, and
-  bounded history deltas. Parent #378 and child #379 are mapped; PR and closeout remain.
+  bounded history deltas. Parent #378 and child #379 are mapped; PR #380 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5277,7 +5277,9 @@ GitHub parent issue: #378.
 
 Branch: `feature/p75-snapshot-diff`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #380.
 
 Goal: show exact differences between a stored snapshot and the current shared library.
 
