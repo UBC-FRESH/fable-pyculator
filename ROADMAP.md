@@ -140,6 +140,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 49 is closed: the local preset library can be exported as a versioned JSON document and
   imported back with validation and merge-by-name. PR #300 merged as `b4d67d9`; parent #298 and
   child #299 are closed. Post-merge Test and Docs Pages passed.
+- Phase 50 is implemented on `feature/p50-preset-deep-links`: named presets can be copied as portable
+  links carrying the full viewer state plus `opt_preset`; local presets restore from `opt_preset`
+  when no explicit state params exist. Parent #301 and child #302 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3766,4 +3769,59 @@ Verification evidence:
 Closeout evidence:
 
 - PR #300 squash-merged as `b4d67d9`; parent #298 and child #299 closed.
+
+## Phase 50: Preset Deep Links
+
+GitHub parent issue: #301.
+
+Branch: `feature/p50-preset-deep-links`.
+
+Status: implemented; PR pending.
+
+Goal: make named viewer presets linkable without requiring the recipient to have the local library.
+
+Tasks:
+
+- [x] P50.1 Add portable preset links and opt_preset restore. Child issue: #302.
+
+Scope:
+
+- Add a Copy preset link action.
+- Embed the full viewer state plus `opt_preset` in the URL.
+- Restore local presets from `opt_preset` when present.
+- Keep existing state URLs and preset library behavior intact.
+
+Out of scope:
+
+- Server-side accounts or sync.
+- New optimization runs.
+- Global-frontier claims.
+
+Architecture notes:
+
+- The copied link carries both the preset label and the complete portable viewer state.
+- Recipients without the preset library can still restore the full state.
+- Local users can restore by preset name when no explicit state params are present.
+
+Implementation evidence:
+
+- Added **Copy preset link** to the Saved views panel.
+- The copied URL includes `opt_preset` plus axes, filters, brushes, reference, and selected point.
+- A recipient without the local preset library restored the full state from the URL.
+- A `?opt_preset=Deep+Link` link restored the local preset by name.
+- Missing local presets produce a warning while preserving the portable state.
+- Existing export/import, save/load/delete, multi-brush, reference/delta, share, CSV, and Workbench
+  behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 227 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; preset link portability and local opt_preset restore
+  verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

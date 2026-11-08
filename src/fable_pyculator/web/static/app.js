@@ -977,6 +977,7 @@ function renderOptimizationPresets() {
   const load = $("#optimization-preset-load");
   const remove = $("#optimization-preset-delete");
   const exportButton = $("#optimization-preset-export");
+  const copyLink = $("#optimization-preset-copy-link");
   if (!select) return;
   const presets = loadOptimizationPresets();
   const previous = select.value;
@@ -988,6 +989,7 @@ function renderOptimizationPresets() {
   if (load) load.disabled = !presets.length;
   if (remove) remove.disabled = !presets.length;
   if (exportButton) exportButton.disabled = !presets.length;
+  if (copyLink) copyLink.disabled = !presets.length;
 }
 
 function saveOptimizationPreset() {
@@ -1442,14 +1444,24 @@ function restoreOptimizationState() {
       drawParallelCoordinates();
     }
   }
+  const presetName = params.get("opt_preset");
+  if (presetName) {
+    const presets = loadOptimizationPresets();
+    const index = presets.findIndex((preset) => preset.name === presetName);
+    if (index >= 0) {
+      const select = $("#optimization-preset");
+      if (select) select.value = String(index);
+      if (!params.get("opt_x")) applyOptimizationPreset(presets[index]);
+    } else {
+      toast(`Preset "${presetName}" is not in this browser; using the shared state.`, "warn");
+    }
+  }
 }
 
-async function copyOptimizationLink() {
-  persistOptimizationState();
-  const text = location.href;
+async function copyTextToClipboard(text, successMessage) {
   try {
     await navigator.clipboard.writeText(text);
-    toast("View link copied", "good");
+    toast(successMessage, "good");
     return;
   } catch {
     const area = document.createElement("textarea");
@@ -1461,8 +1473,27 @@ async function copyOptimizationLink() {
     area.select();
     const copied = document.execCommand("copy");
     area.remove();
-    toast(copied ? "View link copied" : "Copy failed; copy the URL from the address bar", copied ? "good" : "warn");
+    toast(copied ? successMessage : "Copy failed; copy the URL from the address bar", copied ? "good" : "warn");
   }
+}
+
+async function copyOptimizationLink() {
+  persistOptimizationState();
+  await copyTextToClipboard(location.href, "View link copied");
+}
+
+async function copyOptimizationPresetLink() {
+  const select = $("#optimization-preset");
+  const presets = loadOptimizationPresets();
+  const preset = presets[Number(select?.value)];
+  if (!preset) {
+    toast("No saved view is selected.", "warn");
+    return;
+  }
+  applyOptimizationPreset(preset);
+  const url = new URL(location.href);
+  url.searchParams.set("opt_preset", preset.name);
+  await copyTextToClipboard(url.toString(), `Preset link copied: ${preset.name}`);
 }
 
 function optimizationCsvCell(value) {
@@ -1535,6 +1566,7 @@ function bindOptimizationEvents() {
   $("#optimization-preset-save").addEventListener("click", saveOptimizationPreset);
   $("#optimization-preset-load").addEventListener("click", loadOptimizationPreset);
   $("#optimization-preset-delete").addEventListener("click", deleteOptimizationPreset);
+  $("#optimization-preset-copy-link").addEventListener("click", copyOptimizationPresetLink);
   $("#optimization-preset-export").addEventListener("click", exportOptimizationPresets);
   $("#optimization-preset-import").addEventListener("click", () => $("#optimization-preset-file").click());
   $("#optimization-preset-file").addEventListener("change", importOptimizationPresets);

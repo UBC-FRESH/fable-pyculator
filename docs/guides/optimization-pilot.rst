@@ -535,9 +535,9 @@ Dragging on a parallel axis brushes a range and filters both views; Shift-drag a
 brush, with removable chips and a clear-all action. A selected point can be compared against a
 reference point with exact objective deltas and changed selections; the reference is marked in both
 views. Complete viewer states, including multiple brushes and the reference, can be saved as local
-presets in the **Saved views** panel, and the preset library can be exported/imported as JSON. The
-view state is shareable through URL query parameters, and the currently filtered exact points can be
-downloaded as CSV.
+presets in the **Saved views** panel, and the preset library can be exported/imported as JSON or
+shared as a named preset link carrying the full viewer state. The view state is shareable through URL
+query parameters, and the currently filtered exact points can be downloaded as CSV.
 
 This is the same interaction pattern as the urban-forest lab and WS4 Pareto explorer. The FABLE
 viewer is read-only over exact points: it does not run the optimizer, a surrogate, or a hidden model
