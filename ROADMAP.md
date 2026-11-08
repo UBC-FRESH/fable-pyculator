@@ -146,7 +146,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   passed.
 - Phase 51 is implemented on `feature/p51-shared-presets`: a server-backed Shared library persists
   named Optimization views under the runtime directory, with list/save/delete APIs and UI controls.
-  Parent #304 and child #305 are mapped; PR and closeout remain.
+  Parent #304 and child #305 are mapped; PR #306 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3838,7 +3838,9 @@ GitHub parent issue: #304.
 
 Branch: `feature/p51-shared-presets`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #306.
 
 Goal: add a server-side shared preset library for the Optimization page.
 
