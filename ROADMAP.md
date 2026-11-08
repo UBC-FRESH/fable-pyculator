@@ -144,6 +144,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   plus `opt_preset`; local presets restore from `opt_preset` when no explicit state params exist.
   PR #303 merged as `034478b`; parent #301 and child #302 are closed. Post-merge Test and Docs Pages
   passed.
+- Phase 51 is implemented on `feature/p51-shared-presets`: a server-backed Shared library persists
+  named Optimization views under the runtime directory, with list/save/delete APIs and UI controls.
+  Parent #304 and child #305 are mapped; PR #306 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3828,4 +3831,61 @@ Verification evidence:
 Closeout evidence:
 
 - PR #303 squash-merged as `034478b`; parent #301 and child #302 closed.
+
+## Phase 51: Shared Preset Library
+
+GitHub parent issue: #304.
+
+Branch: `feature/p51-shared-presets`.
+
+Status: pr-open.
+
+Pull request: #306.
+
+Goal: add a server-side shared preset library for the Optimization page.
+
+Tasks:
+
+- [x] P51.1 Add server-side shared preset storage and UI. Child issue: #305.
+
+Scope:
+
+- Persist shared presets under the portal runtime directory.
+- Add list/save/delete API endpoints.
+- Add shared-library controls to the Optimization page.
+- Validate state and cap the shared library.
+
+Out of scope:
+
+- User accounts or per-user permissions.
+- New optimization runs.
+- Global-frontier claims.
+
+Architecture notes:
+
+- Shared presets are visible to everyone with portal access.
+- Writes are atomic and protected by a process lock.
+- Validation mirrors the browser preset schema.
+
+Implementation evidence:
+
+- Added a runtime JSON store at `runtime/portal/optimization-presets.json`.
+- Added `GET/POST/DELETE /api/optimization/presets` with validation, atomic writes, a process lock,
+  merge-by-name, and a 20-preset cap.
+- Added a **Shared library** panel with save current, load, and delete controls.
+- Browser smoke saved `Team view`, verified the API listing, loaded it, and deleted it.
+- API tests cover round-trip, replacement, invalid input, missing delete, and app restart persistence.
+- Existing local presets, export/import, preset links, multi-brush, reference/delta, share, CSV, and
+  Workbench behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 229 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; shared save/load/delete verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

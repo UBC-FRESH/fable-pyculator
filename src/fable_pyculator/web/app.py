@@ -47,6 +47,14 @@ class CompareRequest(BaseModel):
     run_ids: list[str] = Field(min_length=2, max_length=12)
 
 
+class OptimizationPresetRequest(BaseModel):
+    """One shared Optimization preset request."""
+
+    name: str = Field(min_length=1, max_length=40)
+    state: dict[str, Any] = Field(default_factory=dict)
+    saved_at: str | None = Field(default=None, max_length=40)
+
+
 class ChatCreateRequest(BaseModel):
     """Create a persistent assistant chat."""
 
@@ -224,6 +232,21 @@ def create_app(config: PortalConfig) -> FastAPI:
     @app.get("/api/optimization/frontiers/{version}")
     def optimization_frontier(version: str) -> dict[str, Any]:
         return state.optimization_frontier(version)
+
+    @app.get("/api/optimization/presets")
+    def optimization_presets() -> list[dict[str, Any]]:
+        return state.optimization_presets()
+
+    @app.post("/api/optimization/presets")
+    def save_optimization_preset(request: OptimizationPresetRequest) -> dict[str, Any]:
+        try:
+            return state.save_optimization_preset(request.name, request.state, request.saved_at)
+        except ValueError as error:
+            raise PortalError(str(error), status_code=400) from error
+
+    @app.delete("/api/optimization/presets/{name}")
+    def delete_optimization_preset(name: str) -> dict[str, Any]:
+        return state.delete_optimization_preset(name)
 
     @app.get("/api/chats")
     def chats(

@@ -293,6 +293,20 @@
               </div>
             </details>
 
+            <details class="preset-box shared-preset-box">
+              <summary>Shared library <span id="optimization-shared-count" class="pill muted">0</span></summary>
+              <p class="hint">Visible to everyone with portal access.</p>
+              <div class="inline-fields">
+                <label class="field"><span>Shared preset</span><select id="optimization-shared-preset"></select></label>
+                <label class="field"><span>Name</span><input id="optimization-shared-preset-name" type="text" maxlength="40" placeholder="e.g. Team view"></label>
+              </div>
+              <div class="button-row">
+                <button id="optimization-shared-save" class="button ghost small" type="button">Save current</button>
+                <button id="optimization-shared-load" class="button ghost small" type="button">Load</button>
+                <button id="optimization-shared-delete" class="button ghost small" type="button">Delete</button>
+              </div>
+            </details>
+
             <div class="inline-fields three-up">
               <label class="field"><span>X</span><select id="pareto-x"></select></label>
               <label class="field"><span>Y</span><select id="pareto-y"></select></label>

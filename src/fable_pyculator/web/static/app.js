@@ -26,6 +26,7 @@ const state = {
     selected: null,
     reference: null,
     brushes: [],
+    sharedPresets: [],
     filtered: [],
     pinned: [],
     pending: null,
@@ -198,6 +199,7 @@ async function loadOptimization() {
     if (!state.optimization.list) {
       state.optimization.list = await request("optimization/frontiers");
     }
+    await loadSharedOptimizationPresets();
     const select = $("#optimization-version");
     if (!state.optimization.list.length) {
       status.textContent = "no frontier";
@@ -1124,6 +1126,79 @@ async function importOptimizationPresets(event) {
   }
 }
 
+
+async function loadSharedOptimizationPresets() {
+  try {
+    const presets = await request("optimization/presets");
+    state.optimization.sharedPresets = Array.isArray(presets) ? presets : [];
+  } catch {
+    state.optimization.sharedPresets = [];
+  }
+  renderSharedOptimizationPresets();
+}
+
+function renderSharedOptimizationPresets(selectedName = "") {
+  const select = $("#optimization-shared-preset");
+  const count = $("#optimization-shared-count");
+  const load = $("#optimization-shared-load");
+  const remove = $("#optimization-shared-delete");
+  if (!select) return;
+  const presets = state.optimization.sharedPresets || [];
+  select.innerHTML = presets.length
+    ? presets.map((preset, index) => `<option value="${index}">${escapeHtml(preset.name)}</option>`).join("")
+    : '<option value="">No shared views</option>';
+  if (selectedName) {
+    const index = presets.findIndex((preset) => preset.name === selectedName);
+    if (index >= 0) select.value = String(index);
+  }
+  if (count) count.textContent = String(presets.length);
+  if (load) load.disabled = !presets.length;
+  if (remove) remove.disabled = !presets.length;
+}
+
+async function saveSharedOptimizationPreset() {
+  const presetState = collectOptimizationPreset();
+  if (!presetState) return;
+  const input = $("#optimization-shared-preset-name");
+  const presets = state.optimization.sharedPresets || [];
+  const name = (input?.value || "").trim() || `Shared View ${presets.length + 1}`;
+  try {
+    await request("optimization/presets", {
+      method: "POST",
+      body: JSON.stringify({ name: name.slice(0, 40), state: presetState }),
+    });
+    await loadSharedOptimizationPresets();
+    renderSharedOptimizationPresets(name.slice(0, 40));
+    if (input) input.value = name.slice(0, 40);
+    toast(`Saved shared view ${name.slice(0, 40)}`, "good");
+  } catch (error) {
+    toast(`Could not save shared view: ${error.message}`, "bad");
+  }
+}
+
+function loadSharedOptimizationPreset() {
+  const select = $("#optimization-shared-preset");
+  const preset = state.optimization.sharedPresets?.[Number(select?.value)];
+  if (!preset) {
+    toast("No shared view is selected.", "warn");
+    return;
+  }
+  applyOptimizationPreset(preset);
+}
+
+async function deleteSharedOptimizationPreset() {
+  const select = $("#optimization-shared-preset");
+  const preset = state.optimization.sharedPresets?.[Number(select?.value)];
+  if (!preset) return;
+  try {
+    await request(`optimization/presets/${encodeURIComponent(preset.name)}`, { method: "DELETE" });
+    await loadSharedOptimizationPresets();
+    toast(`Deleted shared view ${preset.name}`);
+  } catch (error) {
+    toast(`Could not delete shared view: ${error.message}`, "bad");
+  }
+}
+
 function drawOptimization() {
   const chart = ensureOptimizationChart();
   const data = state.optimization.data;
@@ -1570,6 +1645,9 @@ function bindOptimizationEvents() {
   $("#optimization-preset-export").addEventListener("click", exportOptimizationPresets);
   $("#optimization-preset-import").addEventListener("click", () => $("#optimization-preset-file").click());
   $("#optimization-preset-file").addEventListener("change", importOptimizationPresets);
+  $("#optimization-shared-save").addEventListener("click", saveSharedOptimizationPreset);
+  $("#optimization-shared-load").addEventListener("click", loadSharedOptimizationPreset);
+  $("#optimization-shared-delete").addEventListener("click", deleteSharedOptimizationPreset);
   $("#pareto-clear-reference").addEventListener("click", clearOptimizationReference);
   $("#pareto-clear-pins").addEventListener("click", clearOptimizationPins);
   $("#pareto-reset").addEventListener("click", resetOptimizationView);
