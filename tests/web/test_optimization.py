@@ -111,6 +111,10 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-timeline-preset-copy-link"' in shell.text
     assert 'id="optimization-timeline-preset-export"' in shell.text
     assert 'id="optimization-timeline-preset-import"' in shell.text
+    assert 'id="optimization-shared-timeline-view"' in shell.text
+    assert 'id="optimization-shared-timeline-save"' in shell.text
+    assert 'id="optimization-shared-timeline-load"' in shell.text
+    assert 'id="optimization-shared-timeline-delete"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -163,6 +167,9 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "copyTimelineLink" in script.text
     assert "exportTimelinePresets" in script.text
     assert "opt_tl_author" in script.text
+    assert "loadSharedTimelineViews" in script.text
+    assert "saveSharedTimelineView" in script.text
+    assert "optimization/timeline-views" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
@@ -254,3 +261,42 @@ def test_shared_preset_history_records_review(tmp_path: Path) -> None:
     with TestClient(create_app(config)) as client:
         listing = client.get("/api/optimization/presets").json()
     assert [event["action"] for event in listing[0]["history"]] == ["created", "reviewed"]
+
+
+def _timeline_view_payload(name: str) -> dict[str, object]:
+    return {
+        "name": name,
+        "filter": {"author": "Hisham", "action": "reviewed", "preset": "Team view", "window": "7d"},
+    }
+
+
+def test_shared_timeline_view_api_round_trip(tmp_path: Path) -> None:
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", versions=("2024",))
+    with TestClient(create_app(config)) as client:
+        assert client.get("/api/optimization/timeline-views").json() == []
+        created = client.post("/api/optimization/timeline-views", json=_timeline_view_payload("My reviews"))
+        assert created.status_code == 200
+        listing = client.get("/api/optimization/timeline-views").json()
+        assert listing[0]["filter"]["window"] == "7d"
+        assert listing[0]["filter"]["action"] == "reviewed"
+
+        invalid = client.post(
+            "/api/optimization/timeline-views",
+            json={"name": "Bad", "filter": {"window": "year"}},
+        )
+        assert invalid.status_code == 400
+
+        assert client.delete("/api/optimization/timeline-views/My reviews").status_code == 200
+        assert client.get("/api/optimization/timeline-views").json() == []
+
+
+def test_shared_timeline_views_survive_app_restart(tmp_path: Path) -> None:
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", versions=("2024",))
+    with TestClient(create_app(config)) as client:
+        assert (
+            client.post("/api/optimization/timeline-views", json=_timeline_view_payload("Persistent")).status_code
+            == 200
+        )
+    with TestClient(create_app(config)) as client:
+        listing = client.get("/api/optimization/timeline-views").json()
+    assert [view["name"] for view in listing] == ["Persistent"]

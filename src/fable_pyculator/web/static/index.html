@@ -350,6 +350,18 @@
                   <input id="optimization-timeline-preset-file" type="file" accept="application/json,.json" hidden>
                 </div>
               </div>
+              <div class="timeline-preset-box shared-timeline-box">
+                <div class="inline-fields">
+                  <label class="field"><span>Shared timeline view</span><select id="optimization-shared-timeline-view"></select></label>
+                  <label class="field"><span>Name</span><input id="optimization-shared-timeline-name" type="text" maxlength="40" placeholder="e.g. Team reviews"></label>
+                </div>
+                <div class="button-row">
+                  <button id="optimization-shared-timeline-save" class="button ghost small" type="button">Save current</button>
+                  <button id="optimization-shared-timeline-load" class="button ghost small" type="button">Load</button>
+                  <button id="optimization-shared-timeline-delete" class="button ghost small" type="button">Delete</button>
+                </div>
+                <p class="hint">Visible to everyone with portal access.</p>
+              </div>
               <div id="optimization-shared-timeline" class="shared-timeline">
                 <p class="hint">No review activity.</p>
               </div>
