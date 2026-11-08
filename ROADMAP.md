@@ -139,7 +139,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   `bd39a2d`; parent #295 and child #296 are closed. Post-merge Test and Docs Pages passed.
 - Phase 49 is implemented on `feature/p49-preset-export-import`: the local preset library can be
   exported as a versioned JSON document and imported back with validation and merge-by-name.
-  Parent #298 and child #299 are mapped; PR and closeout remain.
+  Parent #298 and child #299 are mapped; PR #300 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3717,7 +3717,9 @@ GitHub parent issue: #298.
 
 Branch: `feature/p49-preset-export-import`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #300.
 
 Goal: make the local Optimization preset library portable through JSON export and import.
 
