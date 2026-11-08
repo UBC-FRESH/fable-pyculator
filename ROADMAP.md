@@ -5473,7 +5473,9 @@ GitHub parent issue: #387.
 
 Branch: `feature/p78-snapshot-cleanup`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #389.
 
 Goal: expose snapshot retention policy and add confirmed snapshot deletion in the portal.
 
