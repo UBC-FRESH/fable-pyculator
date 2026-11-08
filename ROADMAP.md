@@ -137,9 +137,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 48 is closed: the Optimization page has a local saved view library covering axes, colour,
   size, floor, filters, brushes, reference, and selection, with save/load/delete. PR #297 merged as
   `bd39a2d`; parent #295 and child #296 are closed. Post-merge Test and Docs Pages passed.
-- Phase 49 is implemented on `feature/p49-preset-export-import`: the local preset library can be
-  exported as a versioned JSON document and imported back with validation and merge-by-name.
-  Parent #298 and child #299 are mapped; PR #300 and closeout remain.
+- Phase 49 is closed: the local preset library can be exported as a versioned JSON document and
+  imported back with validation and merge-by-name. PR #300 merged as `b4d67d9`; parent #298 and
+  child #299 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3717,9 +3717,9 @@ GitHub parent issue: #298.
 
 Branch: `feature/p49-preset-export-import`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #300.
+Pull request: #300 (merged as `b4d67d9`).
 
 Goal: make the local Optimization preset library portable through JSON export and import.
 
@@ -3761,8 +3761,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; export/import round-trip verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #300 squash-merged as `b4d67d9`; parent #298 and child #299 closed.
 

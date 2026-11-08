@@ -110,6 +110,7 @@ This file records completed project work in chronological order.
   PR #297 merged as `bd39a2d`; post-merge Test and Docs Pages passed.
 - Added portable preset-library JSON export/import with schema validation, name-based merge, and a
   cap of 20 saved views.
+  PR #300 merged as `b4d67d9`; post-merge Test and Docs Pages passed.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
