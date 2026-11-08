@@ -179,7 +179,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   child #335 are closed. Post-merge Test and Docs Pages passed.
 - Phase 62 is implemented on `feature/p62-timeline-view-metadata`: shared timeline views can carry
   optional self-declared author, note, and draft/reviewed status. Parent #337 and child #338 are
-  mapped; PR and closeout remain.
+  mapped; PR #339 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4489,7 +4489,9 @@ GitHub parent issue: #337.
 
 Branch: `feature/p62-timeline-view-metadata`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #339.
 
 Goal: add lightweight metadata to shared timeline views.
 
