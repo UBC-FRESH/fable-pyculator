@@ -206,9 +206,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 71 is closed: the selected retention run can export its exact per-preset
   before/after/removed vectors as CSV. PR #366 merged as `a31f5f3`; parent #364 and child #365 are
   closed. Post-merge Test and Docs Pages passed.
-- Phase 72 is implemented on `feature/p72-per-value-custom-export`: requirements can resolve the
-  custom-table row from `key_switch`, and `CUSTOM-EXPORT-001` now checks the selected `scen_exports`
-  value. Parent #367 and child #368 are mapped; PR #369 and closeout remain.
+- Phase 72 is closed: requirements can resolve the custom-table row from `key_switch`, and
+  `CUSTOM-EXPORT-001` now checks the selected `scen_exports` value. PR #369 merged as `15b8516`;
+  parent #367 and child #368 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5084,9 +5084,9 @@ GitHub parent issue: #367.
 
 Branch: `feature/p72-per-value-custom-export`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #369.
+Pull request: #369 (merged as `15b8516`).
 
 Goal: make `CUSTOM-EXPORT-001` check the selected custom export value instead of only `MyExportScen`.
 
@@ -5130,8 +5130,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Real-registry check: `MyExportScen2` fails, `MyExportScen`/`MyExportScen3` populated rows pass.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #369 squash-merged as `15b8516`; parent #367 and child #368 closed.
 
