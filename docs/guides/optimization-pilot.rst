@@ -529,8 +529,10 @@ GHG, land, and the weighted-goal score to X/Y/Z, supports colour and size mappin
 filtering, an exact-front-only toggle, and a hide-provisional-warning filter. Hover shows exact
 values, the selected point is highlighted, and the panel shows the actual range of each mapped
 dimension. A point can be selected, pinned with up to two other points for comparison, and loaded
-into the Workbench as a scenario prefill. The view state is shareable through URL query parameters,
-and the currently filtered exact points can be downloaded as CSV.
+into the Workbench as a scenario prefill. A synchronized parallel-coordinates view shows the same
+filtered exact points across controls and outcomes, and clicking a line selects the matching 3D point.
+The view state is shareable through URL query parameters, and the currently filtered exact points can
+be downloaded as CSV.
 
 This is the same interaction pattern as the urban-forest lab and WS4 Pareto explorer. The FABLE
 viewer is read-only over exact points: it does not run the optimizer, a surrogate, or a hidden model

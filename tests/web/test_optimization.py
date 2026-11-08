@@ -68,6 +68,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="pareto-warning-free"' in shell.text
     assert 'id="pareto-copy-link"' in shell.text
     assert 'id="pareto-download-csv"' in shell.text
+    assert 'id="parallel-chart"' in shell.text
+    assert 'id="parallel-count"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -78,6 +80,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "persistOptimizationState" in script.text
     assert "restoreOptimizationState" in script.text
     assert "downloadOptimizationCsv" in script.text
+    assert "drawParallelCoordinates" in script.text
+    assert "PARALLEL_AXES" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200

@@ -93,13 +93,20 @@ Optimization
    land, and the weighted-goal score to X/Y/Z, supports colour, size, quality-floor filtering, an
    exact-front-only toggle, a provisional-warning filter, hover values, selected-point highlighting,
    and actual axis ranges. It also lets you inspect, pin, compare, and load a frontier point into the
-   Workbench. The current axes, colour, size, filters, and selected point are encoded in the URL;
-   **Copy view link** shares that exact state, and **Download filtered CSV** exports the visible exact
-   points. The viewer reads ``examples/optimization/fable_2024/frontier.json`` through
+   Workbench. A synchronized parallel-coordinates panel shows the same filtered exact points across
+   land, diet, trade-fix, livestock, crop, afforestation, food, GHG, and goal axes; clicking a line
+   selects the matching 3D point. The current axes, colour, size, filters, and selected point are
+   encoded in the URL; **Copy view link** shares that exact state, and **Download filtered CSV**
+   exports the visible exact points. The viewer reads
+   ``examples/optimization/fable_2024/frontier.json`` through
    ``/api/optimization/frontiers``; it never runs an optimizer or a surrogate in the browser.
 
    .. image:: /_static/optimization-frontier.png
       :alt: Optimization page with the exact FABLE Pareto solution cloud and decision views
+      :width: 100%
+
+   .. image:: /_static/optimization-parallel.png
+      :alt: Parallel-coordinates view of the same exact Pareto points
       :width: 100%
 
 Validation

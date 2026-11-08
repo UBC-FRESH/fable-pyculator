@@ -333,6 +333,21 @@
           </div>
           <div id="optimization-views" class="optimization-views"></div>
         </section>
+
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <h2>Parallel coordinates</h2>
+              <p class="hint">
+                Same exact points, same filters. Click a line to select it in the 3D view.
+              </p>
+            </div>
+            <span id="parallel-count" class="pill muted">--</span>
+          </div>
+          <div class="panel parallel-panel">
+            <svg id="parallel-chart" viewBox="0 0 1000 460" role="img" aria-label="Parallel coordinates of exact Pareto points"></svg>
+          </div>
+        </section>
       </section>
 
       <section id="page-validation" class="page" aria-labelledby="validation-title" hidden>

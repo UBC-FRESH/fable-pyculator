@@ -119,6 +119,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   point in the URL; supports copy-link; and exports the currently filtered exact points as CSV.
   PR #282 merged as `49e3bed`; parent #280 and child #281 are closed. Post-merge Test and Docs Pages
   passed.
+- Phase 44 is implemented on `feature/p44-parallel-coordinates`: the Optimization page now has a
+  synchronized parallel-coordinates view over land, diet, trade-fix, livestock, crop, afforestation,
+  food, GHG, and goal. It renders the same filtered exact points and clicking a line selects the 3D
+  point. Parent #283 and child #284 are mapped; PR #285 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3407,4 +3411,59 @@ Verification evidence:
 Closeout evidence:
 
 - PR #282 squash-merged as `49e3bed`; parent #280 and child #281 closed.
+
+## Phase 44: Parallel Coordinates for the Exact Frontier
+
+GitHub parent issue: #283.
+
+Branch: `feature/p44-parallel-coordinates`.
+
+Status: pr-open.
+
+Pull request: #285.
+
+Goal: add a synchronized parallel-coordinates view for the same exact Pareto points.
+
+Tasks:
+
+- [x] P44.1 Add synchronized parallel coordinates. Child issue: #284.
+
+Scope:
+
+- Scenario controls and outcomes as parallel axes.
+- Current exact-front, warning, and quality-floor filters.
+- Click a line to select and highlight the same point in the 3D viewer.
+- Read-only exact view.
+
+Out of scope:
+
+- New optimization runs.
+- Surrogate points.
+- Global-frontier claims.
+
+Architecture notes:
+
+- The parallel view consumes the same filtered exact points as the 3D view.
+- Axis scales are relative to the current exact artifact.
+- Selected lines use the same point id as the 3D marker.
+
+Implementation evidence:
+
+- Added an SVG parallel-coordinates panel with 9 axes: land, diet, trade-fix, livestock, crop,
+  afforestation, food, GHG, and goal.
+- The panel renders all 160 exact points under the current filters; selected lines are highlighted
+  gold and are shared with the 3D selection.
+- Clicking a line selects the matching point and enables Workbench prefill.
+- The existing share-link, CSV export, hover, marker, and pin/compare behavior remains intact.
+
+Verification evidence:
+
+- Full suite: 227 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; 160 lines and 9 axes rendered, line selection worked.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 
