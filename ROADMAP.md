@@ -134,9 +134,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   each brush has a removable chip, clear-all works, and multiple brushes round-trip through
   `opt_brushes` with legacy `opt_brush` support. PR #294 merged as `bcf9f2a`; parent #292 and child
   #293 are closed. Post-merge Test and Docs Pages passed.
-- Phase 48 is implemented on `feature/p48-view-presets`: the Optimization page now has a local saved
-  view library covering axes, colour, size, floor, filters, brushes, reference, and selection, with
-  save/load/delete. Parent #295 and child #296 are mapped; PR #297 and closeout remain.
+- Phase 48 is closed: the Optimization page has a local saved view library covering axes, colour,
+  size, floor, filters, brushes, reference, and selection, with save/load/delete. PR #297 merged as
+  `bd39a2d`; parent #295 and child #296 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3658,9 +3658,9 @@ GitHub parent issue: #295.
 
 Branch: `feature/p48-view-presets`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #297.
+Pull request: #297 (merged as `bd39a2d`).
 
 Goal: add a compact local preset library for complete Optimization viewer states.
 
@@ -3702,8 +3702,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; save/load/delete and persistence verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #297 squash-merged as `bd39a2d`; parent #295 and child #296 closed.
 
