@@ -1242,6 +1242,7 @@ function syncSharedPresetMetadata() {
     }
     const mark = $("#optimization-shared-mark-reviewed");
     if (mark) mark.disabled = true;
+    renderSharedPresetHistory(null);
     return;
   }
   const author = $("#optimization-shared-author");
@@ -1257,6 +1258,28 @@ function syncSharedPresetMetadata() {
   }
   const mark = $("#optimization-shared-mark-reviewed");
   if (mark) mark.disabled = preset.review_status === "reviewed";
+  renderSharedPresetHistory(preset);
+}
+
+function renderSharedPresetHistory(preset) {
+  const container = $("#optimization-shared-history");
+  if (!container) return;
+  const history = preset?.history || [];
+  if (!history.length) {
+    container.innerHTML = '<p class="hint">No history yet.</p>';
+    return;
+  }
+  const entries = history
+    .slice()
+    .reverse()
+    .map((event) => {
+      const when = event.at ? new Date(event.at).toLocaleString() : "—";
+      const author = event.author ? ` · ${escapeHtml(event.author)}` : "";
+      const note = event.note ? `<br><span>${escapeHtml(event.note)}</span>` : "";
+      return `<li><b>${escapeHtml(event.action)}</b> · ${escapeHtml(when)}${author}${note}</li>`;
+    })
+    .join("");
+  container.innerHTML = `<ol>${entries}</ol>`;
 }
 
 async function markSharedOptimizationPresetReviewed() {
@@ -1269,7 +1292,7 @@ async function markSharedOptimizationPresetReviewed() {
       body: JSON.stringify({
         name: preset.name,
         state: preset.state,
-        author: preset.author || "",
+        author: ($("#optimization-shared-author")?.value || preset.author || "").trim().slice(0, 40),
         note: preset.note || "",
         review_status: "reviewed",
       }),

@@ -153,6 +153,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 53 is closed: the shared library filters by all/needs-review/reviewed, shows draft/reviewed
   counts, and can mark a selected draft reviewed. PR #312 merged as `f516c2f`; parent #310 and child
   #311 are closed. Post-merge Test and Docs Pages passed.
+- Phase 54 is implemented on `feature/p54-preset-review-history`: shared presets now keep a compact
+  server-owned history of created/updated/reviewed events with self-declared author and timestamp.
+  Parent #313 and child #314 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4008,4 +4011,59 @@ Verification evidence:
 Closeout evidence:
 
 - PR #312 squash-merged as `f516c2f`; parent #310 and child #311 closed.
+
+## Phase 54: Shared Preset Review History
+
+GitHub parent issue: #313.
+
+Branch: `feature/p54-preset-review-history`.
+
+Status: implemented; PR pending.
+
+Goal: add a compact per-preset changelog for shared Optimization views.
+
+Tasks:
+
+- [x] P54.1 Add compact per-preset review history. Child issue: #314.
+
+Scope:
+
+- Record created/updated/reviewed events with timestamp and self-declared author.
+- Cap history per preset.
+- Show history for the selected shared preset.
+- Keep old presets compatible.
+
+Out of scope:
+
+- Authentication or verified reviewer identity.
+- Per-user permissions.
+- New optimization runs.
+
+Architecture notes:
+
+- History events are derived from save and review actions.
+- The server owns history updates; client-supplied history is ignored.
+- Events are capped to keep the store compact.
+
+Implementation evidence:
+
+- Added server-owned history with created/updated/reviewed actions, author, note, timestamp, and
+  review status; history is capped at 10 events.
+- Extended `GET /api/optimization/presets` with history.
+- Added a selected-preset history list in the Shared library panel.
+- Browser smoke: create recorded `created`; marking reviewed recorded `reviewed`; history survived
+  reload.
+- API tests cover created/reviewed actions and restart persistence.
+- Existing review queue, metadata, local/shared presets, links, and viewer behavior remain intact.
+
+Verification evidence:
+
+- Full suite: 230 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; history round-trip verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

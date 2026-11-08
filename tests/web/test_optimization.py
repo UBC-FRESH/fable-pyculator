@@ -93,6 +93,7 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="optimization-shared-filter"' in shell.text
     assert 'id="optimization-shared-summary"' in shell.text
     assert 'id="optimization-shared-mark-reviewed"' in shell.text
+    assert 'id="optimization-shared-history"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -130,18 +131,19 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "review_status" in script.text
     assert "markSharedOptimizationPresetReviewed" in script.text
     assert "sharedFilter" in script.text
+    assert "renderSharedPresetHistory" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
     assert "OrbitControls" in controls.text
 
 
-def _preset_payload(name: str) -> dict[str, object]:
+def _preset_payload(name: str, review_status: str = "reviewed") -> dict[str, object]:
     return {
         "name": name,
         "author": "Reviewer",
         "note": "Team view",
-        "review_status": "reviewed",
+        "review_status": review_status,
         "state": {
             "version": "2024",
             "x": "food_total_kcal_feas",
@@ -173,6 +175,7 @@ def test_shared_optimization_preset_api_round_trip(tmp_path: Path) -> None:
         assert listing[0]["author"] == "Reviewer"
         assert listing[0]["note"] == "Team view"
         assert listing[0]["review_status"] == "reviewed"
+        assert listing[0]["history"][-1]["action"] == "created"
 
         replaced = client.post("/api/optimization/presets", json=_preset_payload("Shared view"))
         assert replaced.status_code == 200
@@ -199,3 +202,24 @@ def test_shared_optimization_presets_survive_app_restart(tmp_path: Path) -> None
     with TestClient(create_app(config)) as client:
         listing = client.get("/api/optimization/presets").json()
     assert [preset["name"] for preset in listing] == ["Persistent"]
+
+
+def test_shared_preset_history_records_review(tmp_path: Path) -> None:
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=tmp_path / "runtime", versions=("2024",))
+    with TestClient(create_app(config)) as client:
+        created = client.post(
+            "/api/optimization/presets",
+            json=_preset_payload("History view", review_status="draft"),
+        ).json()
+        assert created["history"][-1]["action"] == "created"
+
+        reviewed = client.post(
+            "/api/optimization/presets",
+            json=_preset_payload("History view", review_status="reviewed"),
+        ).json()
+        assert reviewed["history"][-1]["action"] == "reviewed"
+        assert len(reviewed["history"]) == 2
+
+    with TestClient(create_app(config)) as client:
+        listing = client.get("/api/optimization/presets").json()
+    assert [event["action"] for event in listing[0]["history"]] == ["created", "reviewed"]
