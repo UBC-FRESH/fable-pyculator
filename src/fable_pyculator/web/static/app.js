@@ -577,6 +577,102 @@ function updateOptimizationSelectionMarker() {
   chart.marker.visible = true;
 }
 
+
+const PARALLEL_AXES = [
+  { key: "land_scen", label: "Land", kind: "control" },
+  { key: "diet_scen", label: "Diet", kind: "control" },
+  { key: "fixtrade_scen", label: "Fix trade", kind: "control" },
+  { key: "live_scen", label: "Livestock", kind: "control" },
+  { key: "crop_scen", label: "Crop", kind: "control" },
+  { key: "affor_scen", label: "Afforestation", kind: "control" },
+  { key: "food_total_kcal_feas", label: "Food", kind: "outcome" },
+  { key: "ghg_total_co2e", label: "GHG", kind: "outcome" },
+  { key: "goal", label: "Goal", kind: "outcome" },
+];
+
+function parallelValue(point, key) {
+  return key === "goal" ? point.goal : point.objectives?.[key] ?? point.selections?.[key];
+}
+
+function shortenParallelLabel(value, limit = 13) {
+  const text = String(value ?? "—");
+  return text.length > limit ? `${text.slice(0, limit - 1)}…` : text;
+}
+
+function drawParallelCoordinates() {
+  const data = state.optimization.data;
+  const svg = $("#parallel-chart");
+  const count = $("#parallel-count");
+  if (!data || !svg) return;
+  const points = state.optimization.filtered || [];
+  if (count) count.textContent = `${points.length} points · ${PARALLEL_AXES.length} axes`;
+  if (!points.length) {
+    svg.innerHTML = '<text class="parallel-empty" x="500" y="230">No exact points pass the current filters.</text>';
+    return;
+  }
+  const W = 1000;
+  const H = 460;
+  const left = 48;
+  const right = 952;
+  const top = 54;
+  const bottom = 42;
+  const plotHeight = H - top - bottom;
+  const xFor = (index) => left + (index * (right - left)) / (PARALLEL_AXES.length - 1);
+  const axisValues = {};
+  for (const axis of PARALLEL_AXES) {
+    if (axis.kind === "control") {
+      axisValues[axis.key] = [...new Set(points.map((point) => optimizationControlValue(point, axis.key)))].sort();
+    } else if (axis.key === "goal") {
+      axisValues[axis.key] = data.ranges?.goal || [0, 1];
+    } else {
+      axisValues[axis.key] = data.ranges?.[axis.key] || [0, 1];
+    }
+  }
+  const yFor = (axis, value) => {
+    if (axis.kind === "control") {
+      const values = axisValues[axis.key];
+      const index = values.indexOf(String(value));
+      return top + (values.length <= 1 ? 0.5 : index / (values.length - 1)) * plotHeight;
+    }
+    const low = Number(axisValues[axis.key][0]);
+    const high = Number(axisValues[axis.key][1]);
+    const number = Number(value);
+    return top + (Math.abs(high - low) <= 1e-12 ? 0.5 : 1 - (number - low) / (high - low)) * plotHeight;
+  };
+  let markup = "";
+  PARALLEL_AXES.forEach((axis, index) => {
+    const x = xFor(index);
+    const values = axisValues[axis.key];
+    markup += `<line class="parallel-axis" x1="${x}" y1="${top}" x2="${x}" y2="${top + plotHeight}"></line>`;
+    markup += `<text class="parallel-axis-label" x="${x}" y="22">${escapeHtml(axis.label)}</text>`;
+    if (axis.kind === "control") {
+      for (const value of values) {
+        const y = yFor(axis, value);
+        markup += `<text class="parallel-tick" x="${x}" y="${y + 3}">${escapeHtml(shortenParallelLabel(value))}</text>`;
+      }
+    } else {
+      const high = Number(values[1]);
+      const low = Number(values[0]);
+      markup += `<text class="parallel-tick" x="${x}" y="${top - 8}">${escapeHtml(formatNumber(high, 4))}</text>`;
+      markup += `<text class="parallel-tick" x="${x}" y="${top + plotHeight + 13}">${escapeHtml(formatNumber(low, 4))}</text>`;
+    }
+  });
+  const selectedId = state.optimization.selected?.id;
+  for (const point of points) {
+    const coordinates = PARALLEL_AXES.map((axis, index) => {
+      const value = parallelValue(point, axis.key);
+      return `${xFor(index)},${yFor(axis, value)}`;
+    }).join(" ");
+    const classes = ["parallel-line", point.front ? "front" : "dominated"];
+    if (point.id === selectedId) classes.push("selected");
+    markup += `<polyline class="${classes.join(" ")}" points="${coordinates}" data-parallel-point="${escapeHtml(point.id)}"><title>${escapeHtml(point.id)} · ${escapeHtml(point.origin || "exact")} · Food ${formatNumber(point.objectives?.food_total_kcal_feas, 4)} · GHG ${formatNumber(point.objectives?.ghg_total_co2e, 4)} · Goal ${formatNumber(point.goal, 4)}</title></polyline>`;
+  }
+  svg.innerHTML = markup;
+  svg.querySelectorAll("[data-parallel-point]").forEach((line) => {
+    line.addEventListener("click", () => selectOptimizationPoint(line.dataset.parallelPoint));
+  });
+}
+
 function drawOptimization() {
   const chart = ensureOptimizationChart();
   const data = state.optimization.data;
@@ -653,6 +749,7 @@ function drawOptimization() {
   $("#pareto-legend").innerHTML = optimizationLegendHtml(data, colourMode, filtered) +
     `<span>${filtered.length} of ${data.points.length} exact points</span>`;
   updateOptimizationSelectionMarker();
+  drawParallelCoordinates();
   persistOptimizationState();
   chart.renderer.render(chart.scene, chart.camera);
 }
@@ -694,6 +791,7 @@ function renderOptimizationInfo(point) {
   $("#pareto-load").disabled = false;
   $("#pareto-pin").disabled = false;
   updateOptimizationSelectionMarker();
+  drawParallelCoordinates();
 }
 
 function pinOptimizationPoint() {
