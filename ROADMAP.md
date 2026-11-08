@@ -192,8 +192,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 66 is closed: retention log entries are exposed newest-first through a read API and rendered
   in a compact dashboard table. PR #351 merged as `edcd312`; parent #349 and child #350 are closed.
   Post-merge Test and Docs Pages passed.
-- Phase 67 is implemented on `feature/p67-retention-csv`: the retention dashboard can export its
-  recent runs as CSV. Parent #352 and child #353 are mapped; PR #354 and closeout remain.
+- Phase 67 is closed: the retention dashboard can export its recent runs as CSV. PR #354 merged as
+  `9a20f5a`; parent #352 and child #353 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4788,9 +4788,9 @@ GitHub parent issue: #352.
 
 Branch: `feature/p67-retention-csv`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #354.
+Pull request: #354 (merged as `9a20f5a`).
 
 Goal: add CSV export for retention maintenance runs.
 
@@ -4830,8 +4830,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; CSV export verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #354 squash-merged as `9a20f5a`; parent #352 and child #353 closed.
 
