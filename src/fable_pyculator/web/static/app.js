@@ -29,6 +29,7 @@ const state = {
     sharedPresets: [],
     sharedTimelineViews: [],
     retentionRuns: [],
+    prunePreviewDays: null,
     sharedFilter: "all",
     timelineFilter: { author: "", action: "", preset: "", window: "all" },
     timelineUrlApplied: false,
@@ -1787,9 +1788,38 @@ async function deleteSharedTimelineView() {
 }
 
 
+function resetPruneConfirmation() {
+  state.optimization.prunePreviewDays = null;
+  const button = $("#optimization-history-prune");
+  if (button) {
+    button.textContent = "Prune history";
+    button.classList.remove("danger");
+  }
+}
+
 async function pruneOptimizationHistory(dryRun) {
   const days = Number($("#optimization-history-days")?.value || 90);
+  const button = $("#optimization-history-prune");
   try {
+    if (!dryRun && state.optimization.prunePreviewDays !== days) {
+      const preview = await request("optimization/presets/prune", {
+        method: "POST",
+        body: JSON.stringify({ days, dry_run: true }),
+      });
+      state.optimization.prunePreviewDays = days;
+      if (button) {
+        button.textContent = "Confirm prune";
+        button.classList.add("danger");
+      }
+      await loadRetentionRuns();
+      renderRetentionDetail(preview);
+      const target = $("#optimization-history-result");
+      if (target) {
+        target.textContent = `Preview: ${preview.removed} removed, ${preview.kept} kept. Click Confirm prune to apply.`;
+      }
+      toast("Prune preview ready; click Confirm prune to apply.", "warn");
+      return;
+    }
     const result = await request("optimization/presets/prune", {
       method: "POST",
       body: JSON.stringify({ days, dry_run: Boolean(dryRun) }),
@@ -1798,7 +1828,12 @@ async function pruneOptimizationHistory(dryRun) {
     const target = $("#optimization-history-result");
     if (target) target.textContent = resultText;
     toast(resultText, "good");
-    if (!dryRun) await loadSharedOptimizationPresets();
+    if (!dryRun) {
+      resetPruneConfirmation();
+      await loadSharedOptimizationPresets();
+    }
+    await loadRetentionRuns();
+    renderRetentionDetail(result);
   } catch (error) {
     toast(`Could not prune history: ${error.message}`, "bad");
   }
@@ -2368,8 +2403,12 @@ function bindOptimizationEvents() {
   $("#optimization-shared-mark-reviewed").addEventListener("click", markSharedOptimizationPresetReviewed);
   $("#optimization-shared-export").addEventListener("click", exportSharedOptimizationPresets);
   $("#optimization-shared-export-csv").addEventListener("click", exportSharedAuditCsv);
-  $("#optimization-history-preview").addEventListener("click", () => pruneOptimizationHistory(true));
+  $("#optimization-history-preview").addEventListener("click", () => {
+    resetPruneConfirmation();
+    pruneOptimizationHistory(true);
+  });
   $("#optimization-history-prune").addEventListener("click", () => pruneOptimizationHistory(false));
+  $("#optimization-history-days").addEventListener("input", resetPruneConfirmation);
   $("#optimization-retention-export").addEventListener("click", exportRetentionRunsCsv);
   for (const [id, key] of [
     ["optimization-timeline-author", "author"],
