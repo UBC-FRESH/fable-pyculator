@@ -193,7 +193,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   in a compact dashboard table. PR #351 merged as `edcd312`; parent #349 and child #350 are closed.
   Post-merge Test and Docs Pages passed.
 - Phase 67 is implemented on `feature/p67-retention-csv`: the retention dashboard can export its
-  recent runs as CSV. Parent #352 and child #353 are mapped; PR and closeout remain.
+  recent runs as CSV. Parent #352 and child #353 are mapped; PR #354 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4788,7 +4788,9 @@ GitHub parent issue: #352.
 
 Branch: `feature/p67-retention-csv`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #354.
 
 Goal: add CSV export for retention maintenance runs.
 
