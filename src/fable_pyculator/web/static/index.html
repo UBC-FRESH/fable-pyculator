@@ -241,9 +241,9 @@
             <p class="eyebrow">Exact decision surface</p>
             <h1 id="optimization-title">Pareto solution space</h1>
             <p class="hint">
-              Every point is a real Pyculator run. Orbit, filter, inspect, pin, and load a point
-              into the Workbench. Axes are normalized so higher is better; the frontier is local to
-              the evaluated scenario set.
+              Every point is a real Pyculator run. Orbit, hover, filter, inspect, pin, and load a
+              point into the Workbench. Axes are normalized so higher is better; the frontier is
+              local to the evaluated scenario set.
             </p>
           </div>
           <span id="optimization-status" class="pill muted" role="status">loading</span>
@@ -258,6 +258,7 @@
               <span id="pareto-axis-z">Z: --</span>
             </div>
             <div id="pareto-legend" class="pareto-legend"></div>
+            <div id="pareto-tooltip" class="pareto-tooltip" hidden></div>
           </div>
 
           <aside class="pareto-panel panel" aria-label="Pareto controls">
@@ -265,6 +266,7 @@
               <div>
                 <h2>Exact frontier</h2>
                 <p id="pareto-meta" class="hint">Loading the tracked frontier…</p>
+                <p id="pareto-ranges" class="hint pareto-ranges"></p>
               </div>
               <span id="pareto-count" class="pill muted">--</span>
             </div>
@@ -292,6 +294,10 @@
             <label class="check-field">
               <input id="pareto-front-only" type="checkbox">
               <span>Exact front only</span>
+            </label>
+            <label class="check-field">
+              <input id="pareto-warning-free" type="checkbox">
+              <span>Hide provisional-warning points</span>
             </label>
 
             <div id="pareto-info" class="pareto-info" aria-live="polite">

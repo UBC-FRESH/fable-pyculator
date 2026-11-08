@@ -368,8 +368,9 @@ function selectOptimizationPoint(pointId) {
   if (!point) return;
   renderOptimizationInfo(point);
   const stage = $("#page-optimization");
-  if (stage && !stage.hidden) {
-    $("#pareto-info").scrollIntoView({ block: "nearest", behavior: "smooth" });
+  const grid = document.querySelector(".optimization-grid");
+  if (stage && !stage.hidden && grid) {
+    grid.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 }
 
@@ -401,8 +402,50 @@ function ensureOptimizationChart() {
   scene.add(box);
   const axes = buildOptimizationAxes();
   scene.add(axes);
+  const marker = new THREE.Mesh(
+    new THREE.SphereGeometry(0.075, 16, 12),
+    new THREE.MeshBasicMaterial({ color: 0xf6d47a, wireframe: true, transparent: true, opacity: 0.95 }),
+  );
+  marker.visible = false;
+  scene.add(marker);
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
+  const tooltip = $("#pareto-tooltip");
+  const hoverPoint = (event) => {
+    const mesh = state.optimization.mesh;
+    if (!mesh) return null;
+    const rect = canvas.getBoundingClientRect();
+    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObject(mesh, false);
+    if (!hits.length) return null;
+    return { point: mesh.userData.points?.[hits[0].instanceId], event };
+  };
+  canvas.addEventListener("mousemove", (event) => {
+    const hit = hoverPoint(event);
+    if (!hit?.point || !tooltip) {
+      if (tooltip) tooltip.hidden = true;
+      canvas.style.cursor = "default";
+      return;
+    }
+    const point = hit.point;
+    const objectives = point.objectives || {};
+    tooltip.innerHTML = `
+      <strong>${escapeHtml(point.id)}</strong> · ${escapeHtml(point.origin || "exact")}<br>
+      Food ${formatNumber(objectives.food_total_kcal_feas, 4)} kcal<br>
+      GHG ${formatNumber(objectives.ghg_total_co2e, 4)} MtCO2e<br>
+      Goal ${formatNumber(point.goal, 4)}`;
+    tooltip.hidden = false;
+    const rect = canvas.getBoundingClientRect();
+    tooltip.style.left = `${Math.max(8, Math.min(rect.width - 180, event.clientX - rect.left + 14))}px`;
+    tooltip.style.top = `${Math.max(8, Math.min(rect.height - 82, event.clientY - rect.top + 14))}px`;
+    canvas.style.cursor = "pointer";
+  });
+  canvas.addEventListener("mouseleave", () => {
+    if (tooltip) tooltip.hidden = true;
+    canvas.style.cursor = "default";
+  });
   canvas.addEventListener("click", (event) => {
     const mesh = state.optimization.mesh;
     if (!mesh) return;
@@ -415,7 +458,7 @@ function ensureOptimizationChart() {
     const point = mesh.userData.points?.[hits[0].instanceId];
     if (point) renderOptimizationInfo(point);
   });
-  const chart = { renderer, scene, camera, controls, canvas, mesh: null, axes };
+  const chart = { renderer, scene, camera, controls, canvas, mesh: null, axes, marker };
   window.addEventListener("resize", () => {
     if (!chart.canvas.clientWidth) return;
     renderer.setSize(chart.canvas.clientWidth, Math.max(chart.canvas.clientHeight, 1), false);
@@ -471,6 +514,66 @@ function animateOptimization() {
   requestAnimationFrame(animateOptimization);
 }
 
+
+function updateOptimizationRangeNote(data, xKey, yKey, zKey) {
+  const note = $("#pareto-ranges");
+  if (!note) return;
+  const parts = [["X", xKey], ["Y", yKey], ["Z", zKey]].map(([axis, key]) => {
+    const dimension = optimizationDimension(data, key);
+    const bounds = data.ranges?.[key] || [];
+    const low = Number(bounds[0]);
+    const high = Number(bounds[1]);
+    const constant = Math.abs(high - low) <= 1e-6 * Math.max(1, Math.abs(low), Math.abs(high));
+    const unit = dimension.unit ? ` ${dimension.unit}` : "";
+    const direction = dimension.direction === "min" ? " · lower is better" : "";
+    return `${axis} ${dimension.label}: ${formatNumber(low, 4)}–${formatNumber(high, 4)}${unit}${constant ? " · constant" : direction}`;
+  });
+  note.textContent = `${parts.join("  ·  ")}  ·  axes are normalized so higher is better`;
+}
+
+function optimizationLegendHtml(data, colourMode, filtered) {
+  const swatch = (colour, label) => `<span><i style="background:${colour}"></i>${escapeHtml(label)}</span>`;
+  let entries = [];
+  if (colourMode === "front") {
+    entries = [swatch("#2f7d4f", "exact front"), swatch("#9fb3c8", "dominated")];
+  } else if (colourMode === "origin") {
+    entries = [...new Set(filtered.map((entry) => entry.point.origin || "Other"))].map((origin) =>
+      swatch(`hsl(${optimizationHue(origin)} 58% 48%)`, origin),
+    );
+  } else if ((data.controls || []).includes(colourMode)) {
+    const values = [...new Set(filtered.map((entry) => optimizationControlValue(entry.point, colourMode)))].sort();
+    entries = values.slice(0, 8).map((value) =>
+      swatch(`hsl(${optimizationHue(value)} 55% 50%)`, value),
+    );
+    if (values.length > 8) entries.push(`<span>+${values.length - 8} more</span>`);
+  } else {
+    const label = optimizationDimension(data, colourMode).label || colourMode;
+    entries = [swatch("hsl(209 68% 48%)", `${label}: better`), swatch("hsl(73 68% 48%)", "worse")];
+  }
+  return entries.join("");
+}
+
+function updateOptimizationSelectionMarker() {
+  const chart = state.optimization.chart;
+  const point = state.optimization.selected;
+  if (!chart?.marker) return;
+  if (!point) {
+    chart.marker.visible = false;
+    return;
+  }
+  const visible = state.optimization.filtered.some((item) => item.id === point.id);
+  if (!visible) {
+    chart.marker.visible = false;
+    return;
+  }
+  const data = state.optimization.data;
+  const x = optimizationPointQuality(data, point, $("#pareto-x").value);
+  const y = optimizationPointQuality(data, point, $("#pareto-y").value);
+  const z = optimizationPointQuality(data, point, $("#pareto-z").value);
+  chart.marker.position.set((x - 0.5) * 3.2, (y - 0.5) * 3.2, (z - 0.5) * 3.2);
+  chart.marker.visible = true;
+}
+
 function drawOptimization() {
   const chart = ensureOptimizationChart();
   const data = state.optimization.data;
@@ -483,6 +586,7 @@ function drawOptimization() {
   const floorKey = $("#pareto-floor-dimension").value;
   const threshold = Number($("#pareto-floor").value) / 100;
   const frontOnly = $("#pareto-front-only").checked;
+  const warningFree = $("#pareto-warning-free")?.checked;
   const filtered = data.points
     .map((point) => ({
       point,
@@ -492,7 +596,12 @@ function drawOptimization() {
       size: sizeKey === "uniform" ? 0.5 : optimizationPointQuality(data, point, sizeKey),
       floor: optimizationPointQuality(data, point, floorKey),
     }))
-    .filter((entry) => (!frontOnly || entry.point.front) && (threshold <= 0 || entry.floor >= threshold));
+    .filter(
+      (entry) =>
+        (!frontOnly || entry.point.front) &&
+        (!warningFree || !(entry.point.warnings || []).length) &&
+        (threshold <= 0 || entry.floor >= threshold),
+    );
   clearOptimizationMesh();
   state.optimization.filtered = filtered.map((entry) => entry.point);
   if (!filtered.length) {
@@ -537,15 +646,10 @@ function drawOptimization() {
   labels.goal = "Goal score";
   updateOptimizationAxes(chart, { x: labels[xKey] || xKey, y: labels[yKey] || yKey, z: labels[zKey] || zKey });
   $("#pareto-count").textContent = `${filtered.length} / ${data.points.length}`;
-  const colourLabel =
-    colourMode === "front"
-      ? "green = exact front · slate = dominated"
-      : colourMode === "origin"
-        ? `coloured by ${colourMode}`
-        : (data.controls || []).includes(colourMode)
-          ? `coloured by ${OPTIMIZATION_CONTROL_LABELS[colourMode] || colourMode}`
-          : `colour = ${labels[colourMode] || colourMode}`;
-  $("#pareto-legend").innerHTML = `<span>${escapeHtml(colourLabel)}</span><span>${filtered.length} of ${data.points.length} exact points</span>`;
+  updateOptimizationRangeNote(data, xKey, yKey, zKey);
+  $("#pareto-legend").innerHTML = optimizationLegendHtml(data, colourMode, filtered) +
+    `<span>${filtered.length} of ${data.points.length} exact points</span>`;
+  updateOptimizationSelectionMarker();
   chart.renderer.render(chart.scene, chart.camera);
 }
 
@@ -585,6 +689,7 @@ function renderOptimizationInfo(point) {
   state.optimization.selected = point;
   $("#pareto-load").disabled = false;
   $("#pareto-pin").disabled = false;
+  updateOptimizationSelectionMarker();
 }
 
 function pinOptimizationPoint() {
@@ -705,6 +810,7 @@ function bindOptimizationEvents() {
     drawOptimization();
   });
   $("#pareto-front-only").addEventListener("change", drawOptimization);
+  $("#pareto-warning-free").addEventListener("change", drawOptimization);
   $("#pareto-pin").addEventListener("click", pinOptimizationPoint);
   $("#pareto-clear-pins").addEventListener("click", clearOptimizationPins);
   $("#pareto-reset").addEventListener("click", resetOptimizationView);

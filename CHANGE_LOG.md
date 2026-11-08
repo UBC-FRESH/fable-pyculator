@@ -85,6 +85,8 @@ This file records completed project work in chronological order.
   quality-floor and exact-front filters, point inspection, pinning/comparison, and Workbench prefill.
   Browser smoke and release artifact checks passed.
   PR #276 merged as `1beceee`; post-merge Test and Docs Pages passed.
+- Polished the Optimization page with hover values, selected-point highlighting, actual axis ranges,
+  categorical legends, and a hide-provisional-warning filter (91 of 160 points remain).
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

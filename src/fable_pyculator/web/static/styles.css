@@ -521,6 +521,7 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
 /* Optimization / Pareto solution space */
 .optimization-grid {
   display: grid; grid-template-columns: minmax(0, 1fr) 23rem; gap: 0.9rem; align-items: start;
+  scroll-margin-top: 5.5rem;
 }
 .pareto-stage {
   position: relative; min-height: 36rem; overflow: hidden;
@@ -594,3 +595,11 @@ summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; font-weight: 
   .pareto-stage { min-height: 22rem; }
   .pareto-axis-labels span { font-size: 0.58rem; }
 }
+.pareto-tooltip {
+  position: absolute; z-index: 4; pointer-events: none;
+  max-width: 15rem; padding: 0.4rem 0.5rem; border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 0.42rem; background: rgba(31, 41, 51, 0.94); color: #fff;
+  box-shadow: 0 6px 20px rgba(31, 41, 51, 0.22); font-size: 0.7rem; line-height: 1.35;
+}
+.pareto-tooltip strong { color: #f6d47a; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.pareto-ranges { margin: 0.15rem 0 0.45rem; font-size: 0.7rem; }
