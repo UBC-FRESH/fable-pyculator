@@ -173,7 +173,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   and Docs Pages passed.
 - Phase 60 is implemented on `feature/p60-shareable-timeline-links`: timeline filters can be copied
   as URL state and the saved timeline library can be exported/imported as JSON. Parent #331 and child
-  #332 are mapped; PR and closeout remain.
+  #332 are mapped; PR #333 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4370,7 +4370,9 @@ GitHub parent issue: #331.
 
 Branch: `feature/p60-shareable-timeline-links`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #333.
 
 Goal: make saved timeline filter views shareable and portable.
 
