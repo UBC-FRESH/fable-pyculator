@@ -225,9 +225,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 77 is closed: completed worksheet decisions can be dry-run or explicitly imported into the
   registry with status/severity/provenance updates. PR #386 merged as `f3dc487`; parent #384 and
   child #385 are closed. Post-merge Test and Docs Pages passed.
-- Phase 78 is implemented on `feature/p78-snapshot-cleanup`: snapshot policy is visible in the shared
-  panel and snapshots can be deleted with a two-step confirmation. Parent #387 and child #388 are
-  mapped; PR and closeout remain.
+- Phase 78 is closed: snapshot policy is visible in the shared panel and snapshots can be deleted with
+  a two-step confirmation. PR #389 merged as `5e8cfb8`; parent #387 and child #388 are closed.
+  Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5473,9 +5473,9 @@ GitHub parent issue: #387.
 
 Branch: `feature/p78-snapshot-cleanup`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #389.
+Pull request: #389 (merged as `5e8cfb8`).
 
 Goal: expose snapshot retention policy and add confirmed snapshot deletion in the portal.
 
@@ -5521,8 +5521,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke: no page errors.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #389 squash-merged as `5e8cfb8`; parent #387 and child #388 closed.
 
