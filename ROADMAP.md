@@ -231,6 +231,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 79 is closed: the local package and provider report `0.1.0a6`, release docs distinguish the
   candidate from published `0.1.0a5`, and the clean-install artifact check passed. PR #392 merged as
   `35a3f2e`; parent #390 and child #391 are closed. No tag or publication was created.
+- Phase 80 is implemented on `feature/p80-snapshot-diff-export`: the selected snapshot diff can be
+  downloaded as exact JSON or a flattened review CSV. Parent #393 and child #394 are mapped; PR and
+  closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5589,4 +5592,60 @@ Closeout evidence:
 
 - PR #392 squash-merged as `35a3f2e`; parent #390 and child #391 closed. No tag or publication.
 
+## Phase 80: Snapshot Diff Export
+
+GitHub parent issue: #393.
+
+Branch: `feature/p80-snapshot-diff-export`.
+
+Status: implemented; PR pending.
+
+Goal: export the selected snapshot diff as JSON or CSV for offline review.
+
+Tasks:
+
+- [x] P80.1 Export exact snapshot diffs as JSON and CSV. Child issue: #394.
+
+Scope:
+
+- Preserve the exact diff payload in UI state.
+- Add JSON and CSV export actions to the diff panel.
+- Include added/replaced/removed/kept/changed and history deltas.
+- Keep diff rendering and restore behavior unchanged.
+
+Out of scope:
+
+- Backend diff changes.
+- Authentication.
+- New optimization runs.
+- Restore semantics changes.
+
+Architecture notes:
+
+- The backend diff is already exact and read-only.
+- JSON exports the full returned object.
+- CSV flattens inventory changes and changed fields into review rows.
+- Filenames derive from the snapshot name with unsafe characters replaced.
+
+Implementation evidence:
+
+- The rendered diff is stored in UI state and cleared when the diff closes or a restore completes.
+- Added **Export diff JSON** and **Export diff CSV** actions.
+- JSON exports the exact backend diff object.
+- CSV columns cover kind, name, change, metadata, state, filter, history-added, and history-removed.
+- CSV includes added/removed/kept entries and changed/unchanged replaced entries.
+- Filenames replace unsafe snapshot-name characters.
+
+Verification evidence:
+
+- Full suite: 252 passed, 16 skipped.
+- Browser smoke created a snapshot, changed a preset, rendered the diff, downloaded JSON and CSV, and cleaned up.
+- JSON matched the selected diff; CSV included the changed preset metadata and history-removed event.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke: no page errors.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

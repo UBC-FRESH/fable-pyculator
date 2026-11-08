@@ -1454,9 +1454,92 @@ function renderLibrarySnapshots() {
   });
 }
 
+function snapshotDiffFilename(diff, extension) {
+  const safe = String(diff?.snapshot || "snapshot").replace(/[^A-Za-z0-9._-]+/g, "-");
+  return `fable-snapshot-diff-${safe}.${extension}`;
+}
+
+function snapshotDiffEvents(events) {
+  return (events || []).map((event) => `${event.action}@${event.at}`).join("; ");
+}
+
+function exportSnapshotDiffJson() {
+  const diff = state.optimization.snapshotDiff;
+  if (!diff) {
+    toast("Select a snapshot diff before exporting.", "warn");
+    return;
+  }
+  const blob = new Blob([JSON.stringify(diff, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = snapshotDiffFilename(diff, "json");
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  toast("Exported snapshot diff JSON", "good");
+}
+
+function exportSnapshotDiffCsv() {
+  const diff = state.optimization.snapshotDiff;
+  if (!diff) {
+    toast("Select a snapshot diff before exporting.", "warn");
+    return;
+  }
+  const header = ["kind", "name", "change", "metadata", "state", "filter", "history_added", "history_removed"];
+  const rows = [];
+  const presetChanges = new Map((diff.presets.changed || []).map((entry) => [entry.name, entry]));
+  for (const name of diff.presets.added || []) rows.push(["preset", name, "added", "", "", "", "", ""]);
+  for (const name of diff.presets.removed || []) rows.push(["preset", name, "removed", "", "", "", "", ""]);
+  for (const name of diff.presets.kept || []) rows.push(["preset", name, "kept", "", "", "", "", ""]);
+  for (const name of diff.presets.replaced || []) {
+    const entry = presetChanges.get(name);
+    rows.push([
+      "preset",
+      name,
+      entry ? "changed" : "unchanged",
+      entry ? (entry.metadata || []).join("; ") : "",
+      entry ? (entry.state || []).join("; ") : "",
+      "",
+      entry ? snapshotDiffEvents(entry.history_added) : "",
+      entry ? snapshotDiffEvents(entry.history_removed) : "",
+    ]);
+  }
+  const viewChanges = new Map((diff.timeline_views.changed || []).map((entry) => [entry.name, entry]));
+  for (const name of diff.timeline_views.added || []) rows.push(["timeline_view", name, "added", "", "", "", "", ""]);
+  for (const name of diff.timeline_views.removed || []) rows.push(["timeline_view", name, "removed", "", "", "", "", ""]);
+  for (const name of diff.timeline_views.kept || []) rows.push(["timeline_view", name, "kept", "", "", "", "", ""]);
+  for (const name of diff.timeline_views.replaced || []) {
+    const entry = viewChanges.get(name);
+    rows.push([
+      "timeline_view",
+      name,
+      entry ? "changed" : "unchanged",
+      entry ? (entry.metadata || []).join("; ") : "",
+      "",
+      entry ? (entry.filter || []).join("; ") : "",
+      "",
+      "",
+    ]);
+  }
+  const csv = [header, ...rows].map((row) => row.map(optimizationCsvCell).join(",")).join("\n") + "\n";
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = snapshotDiffFilename(diff, "csv");
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  toast("Exported snapshot diff CSV", "good");
+}
+
 function renderLibrarySnapshotDiff(diff) {
   const container = $("#optimization-shared-snapshot-diff");
   if (!container) return;
+  state.optimization.snapshotDiff = diff || null;
   if (!diff) {
     container.innerHTML = '<p class="hint">Select Diff on a snapshot to compare it with the current library.</p>';
     return;
@@ -1488,7 +1571,10 @@ function renderLibrarySnapshotDiff(diff) {
   const viewTable = viewRows
     ? `<table><thead><tr><th>Timeline view</th><th>Metadata</th><th>Filter</th></tr></thead><tbody>${viewRows}</tbody></table>`
     : '<p class="hint">No replaced timeline fields differ.</p>';
-  container.innerHTML = `<p class="hint">${escapeHtml(diff.snapshot)} · ${escapeHtml(diff.mode)} · presets: ${escapeHtml(presetSummary)} · timeline views: ${escapeHtml(viewSummary)}</p>` + presetTable + viewTable;
+  const actions = '<div class="button-row"><button id="optimization-shared-snapshot-diff-json" class="button ghost small" type="button">Export diff JSON</button><button id="optimization-shared-snapshot-diff-csv" class="button ghost small" type="button">Export diff CSV</button></div>';
+  container.innerHTML = `<p class="hint">${escapeHtml(diff.snapshot)} · ${escapeHtml(diff.mode)} · presets: ${escapeHtml(presetSummary)} · timeline views: ${escapeHtml(viewSummary)}</p>` + actions + presetTable + viewTable;
+  $("#optimization-shared-snapshot-diff-json")?.addEventListener("click", exportSnapshotDiffJson);
+  $("#optimization-shared-snapshot-diff-csv")?.addEventListener("click", exportSnapshotDiffCsv);
 }
 
 async function showLibrarySnapshotDiff(name) {
