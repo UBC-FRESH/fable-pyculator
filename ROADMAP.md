@@ -111,10 +111,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   X/Y/Z/colour/size mapping, quality-floor and exact-front filters, pinning, comparison, and
   Workbench prefill. PR #276 merged as `1beceee`; parent #273 and children #274-#275 are closed.
   Post-merge Test and Docs Pages passed.
-- Phase 42 is implemented on `feature/p42-pareto-viewer-polish`: the Optimization page now has hover
-  values, selected-point highlighting, actual axis ranges, categorical legends, and a
-  hide-provisional-warning filter (91 of 160 points remain). Parent #277 and child #278 are mapped;
-  PR #279 and closeout remain.
+- Phase 42 is closed: the Optimization page now has hover values, selected-point highlighting,
+  actual axis ranges, categorical legends, and a hide-provisional-warning filter (91 of 160 points
+  remain). PR #279 merged as `a661259`; parent #277 and child #278 are closed. Post-merge Test and
+  Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3298,9 +3298,9 @@ GitHub parent issue: #277.
 
 Branch: `feature/p42-pareto-viewer-polish`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #279.
+Pull request: #279 (merged as `a661259`).
 
 Goal: polish the exact Pareto viewer interactions without changing the exact frontier data.
 
@@ -3343,8 +3343,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; warning filter and Workbench prefill verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #279 squash-merged as `a661259`; parent #277 and child #278 closed.
 
