@@ -130,6 +130,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 46 is closed: dragging a range on a parallel-coordinates axis filters both the parallel and
   3D views, with a visible brush band, clear action, and `opt_brush` URL state. PR #291 merged as
   `9e74875`; parent #289 and child #290 are closed. Post-merge Test and Docs Pages passed.
+- Phase 47 is implemented on `feature/p47-multi-axis-brush`: Shift-drag adds another parallel-axis
+  brush, brushes combine with AND semantics, each brush has a removable chip, clear-all works, and
+  multiple brushes round-trip through `opt_brushes` with legacy `opt_brush` support. Parent #292 and
+  child #293 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3586,4 +3590,59 @@ Verification evidence:
 Closeout evidence:
 
 - PR #291 squash-merged as `9e74875`; parent #289 and child #290 closed.
+
+## Phase 47: Multi-Axis Brushing
+
+GitHub parent issue: #292.
+
+Branch: `feature/p47-multi-axis-brush`.
+
+Status: implemented; PR pending.
+
+Goal: extend parallel-axis brushing from one range to multiple simultaneous axis ranges.
+
+Tasks:
+
+- [x] P47.1 Add additive axis brushes, chips, and shareable multi-brush state. Child issue: #293.
+
+Scope:
+
+- Shift-drag to add another axis brush.
+- Regular drag replaces the current set.
+- Individual brush chips with remove actions.
+- Clear-all action.
+- `opt_brushes` URL state with legacy `opt_brush` fallback.
+
+Out of scope:
+
+- New optimization runs.
+- Surrogate points.
+- Global-frontier claims.
+
+Architecture notes:
+
+- Brushes are combined with AND semantics.
+- A new brush on an already-brushed axis replaces that axis range.
+- The existing single-brush URL remains readable.
+
+Implementation evidence:
+
+- Shift-drag added a second crop brush after a diet brush; both views reduced from 39 to 36
+  points.
+- Each brush renders as a chip with a remove button; removing the diet brush restored 128 points.
+- Clear-all restored 160 points.
+- `opt_brushes` round-tripped both brushes; legacy `opt_brush` still restored a single brush.
+- Existing reference/delta, share, CSV, hover, pin/compare, and Workbench prefill remain intact.
+
+Verification evidence:
+
+- Full suite: 227 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; multi-brush, chip removal, clear-all, and URL restore
+  verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

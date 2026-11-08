@@ -25,7 +25,7 @@ const state = {
     mesh: null,
     selected: null,
     reference: null,
-    brush: null,
+    brushes: [],
     filtered: [],
     pinned: [],
     pending: null,
@@ -235,7 +235,7 @@ async function loadOptimizationFrontier(version) {
   state.optimization.data = data;
   state.optimization.selected = null;
   state.optimization.reference = null;
-  state.optimization.brush = null;
+  state.optimization.brushes = [];
   state.optimization.pinned = [];
   state.optimization.filtered = [];
   $("#pareto-info").innerHTML = '<p class="hint">Select a point to inspect its exact objectives and selections.</p>';
@@ -632,28 +632,46 @@ function parallelAxisNormalized(data, key, value) {
 }
 
 function parallelBrushMatches(data, point) {
-  const brush = state.optimization.brush;
-  if (!brush) return true;
-  const normalized = parallelAxisNormalized(data, brush.axisKey, parallelValue(point, brush.axisKey));
-  const low = Math.min(brush.start, brush.end);
-  const high = Math.max(brush.start, brush.end);
-  return normalized >= low - 1e-9 && normalized <= high + 1e-9;
+  const brushes = state.optimization.brushes || [];
+  return brushes.every((brush) => {
+    const normalized = parallelAxisNormalized(data, brush.axisKey, parallelValue(point, brush.axisKey));
+    const low = Math.min(brush.start, brush.end);
+    const high = Math.max(brush.start, brush.end);
+    return normalized >= low - 1e-9 && normalized <= high + 1e-9;
+  });
 }
 
 function updateParallelBrushLabel() {
   const label = $("#parallel-brush-label");
   const clear = $("#parallel-clear-brush");
-  const brush = state.optimization.brush;
-  if (!brush) {
-    if (label) label.textContent = "";
+  const brushes = state.optimization.brushes || [];
+  if (!label) return;
+  if (!brushes.length) {
+    label.innerHTML = "";
     if (clear) clear.disabled = true;
     return;
   }
-  const axis = PARALLEL_AXES.find((item) => item.key === brush.axisKey);
-  const low = Math.min(brush.start, brush.end);
-  const high = Math.max(brush.start, brush.end);
-  if (label) label.textContent = `Brush ${axis?.label || brush.axisKey}: ${(low * 100).toFixed(0)}–${(high * 100).toFixed(0)}%`;
+  label.innerHTML = brushes
+    .map((brush, index) => {
+      const axis = PARALLEL_AXES.find((item) => item.key === brush.axisKey);
+      const low = Math.min(brush.start, brush.end);
+      const high = Math.max(brush.start, brush.end);
+      return `<span class="chip brush-chip">${escapeHtml(axis?.label || brush.axisKey)} ${(low * 100).toFixed(0)}–${(high * 100).toFixed(0)}%<button type="button" data-remove-brush="${index}" aria-label="Remove ${escapeHtml(axis?.label || brush.axisKey)} brush">×</button></span>`;
+    })
+    .join("");
+  label.querySelectorAll("[data-remove-brush]").forEach((button) => {
+    button.addEventListener("click", () => removeOptimizationBrush(Number(button.dataset.removeBrush)));
+  });
   if (clear) clear.disabled = false;
+}
+
+function removeOptimizationBrush(index) {
+  const brushes = state.optimization.brushes || [];
+  if (!Number.isInteger(index) || index < 0 || index >= brushes.length) return;
+  brushes.splice(index, 1);
+  drawOptimization();
+  persistOptimizationState();
+  toast("Brush removed");
 }
 
 function beginParallelBrush(event, axisKey) {
@@ -665,29 +683,36 @@ function beginParallelBrush(event, axisKey) {
     const viewY = ((clientY - rect.top) * 460) / Math.max(rect.height, 1);
     return Math.max(0, Math.min(1, (viewY - PARALLEL_TOP) / PARALLEL_PLOT_HEIGHT));
   };
-  state.optimization.brush = { axisKey, start: normalize(event.clientY), end: normalize(event.clientY) };
+  const start = normalize(event.clientY);
+  const brush = { axisKey, start, end: start };
+  const additive = event.shiftKey;
+  if (additive) {
+    state.optimization.brushes = [...(state.optimization.brushes || []).filter((item) => item.axisKey !== axisKey), brush];
+  } else {
+    state.optimization.brushes = [brush];
+  }
   drawParallelCoordinates();
   const onMove = (moveEvent) => {
-    if (!state.optimization.brush) return;
-    state.optimization.brush.end = normalize(moveEvent.clientY);
+    brush.end = normalize(moveEvent.clientY);
     drawParallelCoordinates();
   };
   const onUp = () => {
     document.removeEventListener("pointermove", onMove);
-    const brush = state.optimization.brush;
-    if (brush && Math.abs(brush.end - brush.start) < 0.01) state.optimization.brush = null;
+    if (Math.abs(brush.end - brush.start) < 0.01) {
+      state.optimization.brushes = (state.optimization.brushes || []).filter((item) => item !== brush);
+    }
     drawOptimization();
-    toast(state.optimization.brush ? "Parallel brush applied" : "Brush cleared");
+    toast((state.optimization.brushes || []).length ? "Parallel brushes applied" : "Brush cleared");
   };
   document.addEventListener("pointermove", onMove);
   document.addEventListener("pointerup", onUp, { once: true });
 }
 
 function clearOptimizationBrush() {
-  state.optimization.brush = null;
+  state.optimization.brushes = [];
   drawOptimization();
   persistOptimizationState();
-  toast("Parallel brush cleared");
+  toast("Parallel brushes cleared");
 }
 
 function drawParallelCoordinates() {
@@ -750,8 +775,7 @@ function drawParallelCoordinates() {
     if (point.id === state.optimization.reference?.id) classes.push("reference");
     markup += `<polyline class="${classes.join(" ")}" points="${coordinates}" data-parallel-point="${escapeHtml(point.id)}"><title>${escapeHtml(point.id)} · ${escapeHtml(point.origin || "exact")} · Food ${formatNumber(point.objectives?.food_total_kcal_feas, 4)} · GHG ${formatNumber(point.objectives?.ghg_total_co2e, 4)} · Goal ${formatNumber(point.goal, 4)}</title></polyline>`;
   }
-  const brush = state.optimization.brush;
-  if (brush) {
+  for (const brush of state.optimization.brushes || []) {
     const axisIndex = PARALLEL_AXES.findIndex((axis) => axis.key === brush.axisKey);
     if (axisIndex >= 0) {
       const x = xFor(axisIndex);
@@ -847,7 +871,6 @@ function drawOptimization() {
   const threshold = Number($("#pareto-floor").value) / 100;
   const frontOnly = $("#pareto-front-only").checked;
   const warningFree = $("#pareto-warning-free")?.checked;
-  const brush = state.optimization.brush;
   const filtered = data.points
     .map((point) => ({
       point,
@@ -862,13 +885,15 @@ function drawOptimization() {
         (!frontOnly || entry.point.front) &&
         (!warningFree || !(entry.point.warnings || []).length) &&
         (threshold <= 0 || entry.floor >= threshold) &&
-        (!brush || parallelBrushMatches(data, entry.point)),
+        parallelBrushMatches(data, entry.point),
     );
   clearOptimizationMesh();
   state.optimization.filtered = filtered.map((entry) => entry.point);
   if (!filtered.length) {
     $("#pareto-count").textContent = `0 / ${data.points.length}`;
-    $("#pareto-info").innerHTML = '<p class="hint">No points pass the current filters. Lower the quality floor or clear the front filter.</p>';
+    $("#pareto-info").innerHTML = '<p class="hint">No points pass the current filters. Lower the quality floor, remove a brush, or clear the front filter.</p>';
+    drawParallelCoordinates();
+    persistOptimizationState();
     chart.renderer.render(chart.scene, chart.camera);
     return;
   }
@@ -1076,10 +1101,17 @@ function persistOptimizationState() {
   else params.delete("opt_point");
   if (state.optimization.reference?.id) params.set("opt_reference", state.optimization.reference.id);
   else params.delete("opt_reference");
-  if (state.optimization.brush) {
-    const brush = state.optimization.brush;
-    params.set("opt_brush", `${brush.axisKey}:${Math.min(brush.start, brush.end).toFixed(4)}:${Math.max(brush.start, brush.end).toFixed(4)}`);
+  const brushes = state.optimization.brushes || [];
+  if (brushes.length) {
+    params.set(
+      "opt_brushes",
+      brushes
+        .map((brush) => `${brush.axisKey}:${Math.min(brush.start, brush.end).toFixed(4)}:${Math.max(brush.start, brush.end).toFixed(4)}`)
+        .join(","),
+    );
+    params.delete("opt_brush");
   } else {
+    params.delete("opt_brushes");
     params.delete("opt_brush");
   }
   const search = params.toString();
@@ -1114,20 +1146,22 @@ function restoreOptimizationState() {
   if (front) front.checked = params.get("opt_front") === "1";
   const warningFree = $("#pareto-warning-free");
   if (warningFree) warningFree.checked = params.get("opt_nowarn") === "1";
-  const brushParam = params.get("opt_brush");
+  const brushParam = params.get("opt_brushes") || params.get("opt_brush");
   if (brushParam) {
-    const [axisKey, startText, endText] = brushParam.split(":");
-    if (PARALLEL_AXES.some((axis) => axis.key === axisKey)) {
+    const brushes = [];
+    for (const part of brushParam.split(",")) {
+      const [axisKey, startText, endText] = part.split(":");
+      if (!PARALLEL_AXES.some((axis) => axis.key === axisKey)) continue;
       const start = Number(startText);
       const end = Number(endText);
-      if (Number.isFinite(start) && Number.isFinite(end)) {
-        state.optimization.brush = {
-          axisKey,
-          start: Math.max(0, Math.min(1, start)),
-          end: Math.max(0, Math.min(1, end)),
-        };
-      }
+      if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+      brushes.push({
+        axisKey,
+        start: Math.max(0, Math.min(1, start)),
+        end: Math.max(0, Math.min(1, end)),
+      });
     }
+    state.optimization.brushes = brushes;
   }
   const pointId = params.get("opt_point");
   if (pointId) {
