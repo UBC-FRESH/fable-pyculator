@@ -2,6 +2,13 @@
 
 This file records completed project work in chronological order.
 
+## 2026-11-08
+
+- Prepared the local `fable-pyculator 0.1.0a6` release candidate: package/provider metadata, README,
+  release docs, and dynamic release-check versioning updated. The clean-install artifact check built
+  and imported the `0.1.0a6` wheel and sdist. No tag or publication was created; `0.1.0a5` remains
+  the latest PyPI alpha.
+
 ## 2026-11-07
 
 - Closed Phase 29 after PR #221 squash-merged to `main` as `a6534d9`, post-merge Test workflow

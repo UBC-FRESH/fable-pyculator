@@ -18,6 +18,11 @@ if [[ ! -x "$PYTHON_BIN" ]]; then
   fi
 fi
 
+EXPECTED_VERSION="$("$PYTHON_BIN" -c 'import sys, tomllib; from pathlib import Path; print(tomllib.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))["project"]["version"])' "$ROOT_DIR/pyproject.toml")"
+export EXPECTED_VERSION
+
+echo "[release-check] expected version: $EXPECTED_VERSION"
+
 mkdir -p "$RUN_DIR"
 
 echo "[release-check] run directory: $RUN_DIR"
@@ -124,9 +129,11 @@ echo "[release-check] running installed package smoke tests"
 "$INSTALL_DIR/.venv/bin/python" - <<'PY'
 from __future__ import annotations
 
+import os
+
 import fable_pyculator
 
-assert fable_pyculator.__version__ == "0.1.0a5", fable_pyculator.__version__
+assert fable_pyculator.__version__ == os.environ["EXPECTED_VERSION"], fable_pyculator.__version__
 assert "build_notebook_spec" in fable_pyculator.__all__
 assert "build_2021_notebook_spec" in fable_pyculator.__all__
 assert "run_2020_notebook_loop" in fable_pyculator.__all__

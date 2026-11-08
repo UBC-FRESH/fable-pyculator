@@ -151,7 +151,7 @@ from fable_pyculator.workflows import (
     write_validation_scenario,
 )
 
-__version__ = "0.1.0a5"
+__version__ = "0.1.0a6"
 
 __all__ = [
     "FableCalculatorSpec",
