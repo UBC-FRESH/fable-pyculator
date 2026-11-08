@@ -234,6 +234,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 80 is closed: the selected snapshot diff can be downloaded as exact JSON or a flattened review
   CSV. PR #395 merged as `4a80ae5`; parent #393 and child #394 are closed. Post-merge Test and Docs
   Pages passed.
+- Phase 81 published `0.1.0a6`: TestPyPI run 42515188099 passed, tag `v0.1.0a6` triggered PyPI run
+  42515378564, and a clean PyPI install imported `0.1.0a6`. GitHub prerelease
+  https://github.com/UBC-FRESH/fable-pyculator/releases/tag/v0.1.0a6 has the wheel and sdist.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5651,4 +5654,61 @@ Verification evidence:
 Closeout evidence:
 
 - PR #395 squash-merged as `4a80ae5`; parent #393 and child #394 closed.
+
+## Phase 81: Publish 0.1.0a6
+
+GitHub parent issue: #396.
+
+Branch: `feature/p81-publish-a6`.
+
+Status: implemented; evidence PR pending.
+
+Goal: publish the verified 0.1.0a6 candidate with OIDC trusted publishing and create the GitHub prerelease.
+
+Tasks:
+
+- [x] P81.1 Run TestPyPI, publish PyPI, and create the GitHub prerelease. Child issue: #397.
+
+Scope:
+
+- Run the TestPyPI rehearsal from main.
+- Verify a clean TestPyPI install.
+- Create and push annotated tag v0.1.0a6.
+- Approve the protected PyPI environment if required.
+- Download workflow-built artifacts and create the GitHub prerelease.
+- Verify a clean PyPI install.
+- Record publication evidence and update release boundaries.
+
+Out of scope:
+
+- Changing package code after the candidate version.
+- Upgrading the Cloudflare-protected public host without access.
+- New optimization runs.
+
+Architecture notes:
+
+- Publication uses `.github/workflows/release.yml` with OIDC trusted publishing.
+- TestPyPI uses workflow_dispatch with publish_target=testpypi.
+- PyPI publication triggers on the v0.1.0a6 tag push.
+- The GitHub release uses the workflow-built wheel and sdist.
+
+Implementation evidence:
+
+- TestPyPI rehearsal run 42515188099 succeeded (`publish-testpypi` success, `publish-pypi` skipped).
+- Clean TestPyPI install imported `fable_pyculator 0.1.0a6` and CLI reported `fable-pyculator 0.1.0a6`.
+- Annotated tag `v0.1.0a6` points to `98e1b76` with message `fable-pyculator 0.1.0a6`.
+- Tag push triggered Release run 42515378564; `build-artifacts` and `publish-pypi` succeeded.
+- Clean PyPI install of `fable-pyculator[web]==0.1.0a6` imported `0.1.0a6` and CLI reported it.
+- GitHub prerelease v0.1.0a6 has the workflow-built wheel and sdist.
+
+Verification evidence:
+
+- Full suite: 252 passed, 16 skipped before publication.
+- Local release artifact check passed for the 0.1.0a6 wheel and sdist.
+- TestPyPI and PyPI clean-install smoke tests passed.
+- Public host check is still blocked by Cloudflare Access (302 to Access login); local `8768` reports `0.1.0a6` with all three models prepared.
+
+Closeout evidence:
+
+- Pending evidence PR, CI, and closeout.
 

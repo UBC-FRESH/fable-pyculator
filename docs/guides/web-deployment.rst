@@ -130,9 +130,8 @@ Live upgrade runbook
 --------------------
 
 1. Run ``scripts/check_deployed_portal.py`` and record the current version and artifact states.
-2. After ``0.1.0a6`` is published, install it into the service environment:
-   ``python -m pip install --pre 'fable-pyculator[web]==0.1.0a6'``. Before publication, use the
-   locally built candidate wheel from ``tmp/release-checks/`` for validation only.
+2. Install the published release into the service environment:
+   ``python -m pip install --pre 'fable-pyculator[web]==0.1.0a6'``.
 3. Restart the service or systemd unit.
 4. Re-run the checker with ``--expect-version 0.1.0a6``.
 5. Log in through Access and run one prepared-model scenario.

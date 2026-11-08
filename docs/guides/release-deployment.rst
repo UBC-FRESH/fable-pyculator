@@ -8,8 +8,8 @@ all been checked.
 Current Release Candidate
 -------------------------
 
-The current release candidate is ``0.1.0a6`` with planned tag ``v0.1.0a6``. It is not published yet;
-``0.1.0a5`` remains the latest PyPI alpha until the publication sequence below is completed.
+The current alpha target is ``0.1.0a6``, published with Git tag ``v0.1.0a6``. The previous alpha
+was ``0.1.0a5``. Publication and deployment remain maintainer-controlled actions.
 
 This alpha may claim an early FABLE-C notebook wrapper that can discover the public 2020/2021
 ``SCENARIOS selection`` controls, inspect ``SCENARIOS definition`` tables, render canonical output
