@@ -181,6 +181,7 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "history_retention_interval_minutes" in script.text
     assert "loadRetentionRuns" in script.text
     assert "optimization/retention/runs" in script.text
+    assert "exportRetentionRunsCsv" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200

@@ -192,6 +192,8 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 66 is closed: retention log entries are exposed newest-first through a read API and rendered
   in a compact dashboard table. PR #351 merged as `edcd312`; parent #349 and child #350 are closed.
   Post-merge Test and Docs Pages passed.
+- Phase 67 is implemented on `feature/p67-retention-csv`: the retention dashboard can export its
+  recent runs as CSV. Parent #352 and child #353 are mapped; PR #354 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4779,4 +4781,57 @@ Verification evidence:
 Closeout evidence:
 
 - PR #351 squash-merged as `edcd312`; parent #349 and child #350 closed.
+
+## Phase 67: Retention Dashboard CSV
+
+GitHub parent issue: #352.
+
+Branch: `feature/p67-retention-csv`.
+
+Status: pr-open.
+
+Pull request: #354.
+
+Goal: add CSV export for retention maintenance runs.
+
+Tasks:
+
+- [x] P67.1 Add retention-run CSV export. Child issue: #353.
+
+Scope:
+
+- Export the recent retention run table as CSV.
+- Include source, days, mode, and counts.
+- Keep the dashboard read-only.
+- Preserve existing retention behavior.
+
+Out of scope:
+
+- New retention operations.
+- Authentication.
+- New optimization runs.
+
+Architecture notes:
+
+- CSV rows come from the same retention-run payload as the table.
+- Export is client-side and read-only.
+
+Implementation evidence:
+
+- Added **Export runs CSV** to the retention maintenance controls.
+- CSV columns: at, source, days, mode, removed, kept, presets_touched, presets_total.
+- Browser smoke exported the recent retention table and verified the header/row count.
+- Existing retention dashboard, controls, policy, presets, timeline views, and viewer behavior remain
+  intact.
+
+Verification evidence:
+
+- Full suite: 237 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; CSV export verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

@@ -28,6 +28,7 @@ const state = {
     brushes: [],
     sharedPresets: [],
     sharedTimelineViews: [],
+    retentionRuns: [],
     sharedFilter: "all",
     timelineFilter: { author: "", action: "", preset: "", window: "all" },
     timelineUrlApplied: false,
@@ -1833,7 +1834,10 @@ async function loadRetentionRuns() {
   if (!container) return;
   try {
     const runs = await request("optimization/retention/runs?limit=20");
-    if (!Array.isArray(runs) || !runs.length) {
+    state.optimization.retentionRuns = Array.isArray(runs) ? runs : [];
+    const exportButton = $("#optimization-retention-export");
+    if (exportButton) exportButton.disabled = !state.optimization.retentionRuns.length;
+    if (!state.optimization.retentionRuns.length) {
       container.innerHTML = '<p class="hint">No retention runs.</p>';
       return;
     }
@@ -1844,6 +1848,37 @@ async function loadRetentionRuns() {
   } catch {
     container.innerHTML = '<p class="hint">Retention history unavailable.</p>';
   }
+}
+
+
+function exportRetentionRunsCsv() {
+  const runs = state.optimization.retentionRuns || [];
+  if (!runs.length) {
+    toast("There are no retention runs to export.", "warn");
+    return;
+  }
+  const header = ["at", "source", "days", "mode", "removed", "kept", "presets_touched", "presets_total"];
+  const rows = runs.map((run) => [
+    run.at,
+    run.source || "manual",
+    run.days,
+    run.dry_run ? "dry run" : "applied",
+    run.removed,
+    run.kept,
+    run.presets_touched,
+    run.presets_total,
+  ]);
+  const csv = [header, ...rows].map((row) => row.map(optimizationCsvCell).join(",")).join("\n") + "\n";
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "fable-retention-runs.csv";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${runs.length} retention run${runs.length === 1 ? "" : "s"}`, "good");
 }
 
 function drawOptimization() {
@@ -2303,6 +2338,7 @@ function bindOptimizationEvents() {
   $("#optimization-shared-export-csv").addEventListener("click", exportSharedAuditCsv);
   $("#optimization-history-preview").addEventListener("click", () => pruneOptimizationHistory(true));
   $("#optimization-history-prune").addEventListener("click", () => pruneOptimizationHistory(false));
+  $("#optimization-retention-export").addEventListener("click", exportRetentionRunsCsv);
   for (const [id, key] of [
     ["optimization-timeline-author", "author"],
     ["optimization-timeline-action", "action"],
