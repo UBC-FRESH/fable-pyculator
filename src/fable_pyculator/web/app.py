@@ -58,6 +58,13 @@ class OptimizationPresetRequest(BaseModel):
     review_status: str | None = Field(default=None, max_length=20)
 
 
+class PruneHistoryRequest(BaseModel):
+    """A shared-history retention request."""
+
+    days: int = Field(default=90, ge=1, le=3650)
+    dry_run: bool = False
+
+
 class TimelineViewRequest(BaseModel):
     """One shared timeline filter view request."""
 
@@ -262,6 +269,13 @@ def create_app(config: PortalConfig) -> FastAPI:
                 note=request.note,
                 review_status=request.review_status,
             )
+        except ValueError as error:
+            raise PortalError(str(error), status_code=400) from error
+
+    @app.post("/api/optimization/presets/prune")
+    def prune_optimization_history(request: PruneHistoryRequest) -> dict[str, Any]:
+        try:
+            return state.prune_optimization_history(request.days, request.dry_run)
         except ValueError as error:
             raise PortalError(str(error), status_code=400) from error
 

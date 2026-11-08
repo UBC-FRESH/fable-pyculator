@@ -174,6 +174,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "saveSharedTimelineView" in script.text
     assert "optimization/timeline-views" in script.text
     assert "syncSharedTimelineMetadata" in script.text
+    assert "pruneOptimizationHistory" in script.text
+    assert "optimization/presets/prune" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
@@ -315,3 +317,71 @@ def test_shared_timeline_views_survive_app_restart(tmp_path: Path) -> None:
     with TestClient(create_app(config)) as client:
         listing = client.get("/api/optimization/timeline-views").json()
     assert [view["name"] for view in listing] == ["Persistent"]
+
+
+def test_prune_shared_preset_history_preserves_latest(tmp_path: Path) -> None:
+    from datetime import UTC, datetime, timedelta
+
+    runtime = tmp_path / "runtime"
+    runtime.mkdir(parents=True)
+    now = datetime.now(UTC)
+    old = (now - timedelta(days=90)).isoformat(timespec="seconds")
+    recent = now.isoformat(timespec="seconds")
+    state = {
+        "version": "2024",
+        "x": "food_total_kcal_feas",
+        "y": "ghg_total_co2e",
+        "z": "goal",
+        "colour": "front",
+        "size": "uniform",
+        "floor_dimension": "goal",
+        "floor": 0,
+        "front": True,
+        "warning_free": True,
+        "brushes": [],
+        "reference": None,
+        "point": None,
+    }
+    (runtime / "optimization-presets.json").write_text(
+        json.dumps(
+            [
+                {
+                    "name": "Old history",
+                    "saved_at": recent,
+                    "author": "Hisham",
+                    "note": "",
+                    "review_status": "draft",
+                    "state": state,
+                    "history": [
+                        {"at": old, "action": "created", "author": "Hisham", "note": "", "review_status": "draft"},
+                        {
+                            "at": recent,
+                            "action": "reviewed",
+                            "author": "Hisham",
+                            "note": "",
+                            "review_status": "reviewed",
+                        },
+                    ],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    config = PortalConfig(repo_root=tmp_path, runtime_dir=runtime, versions=("2024",))
+    with TestClient(create_app(config)) as client:
+        preview = client.post("/api/optimization/presets/prune", json={"days": 30, "dry_run": True}).json()
+        assert preview == {
+            "days": 30,
+            "dry_run": True,
+            "removed": 1,
+            "kept": 1,
+            "presets_touched": 1,
+            "presets_total": 1,
+        }
+        assert len(client.get("/api/optimization/presets").json()[0]["history"]) == 2
+
+        pruned = client.post("/api/optimization/presets/prune", json={"days": 30, "dry_run": False}).json()
+        assert pruned["removed"] == 1
+        history = client.get("/api/optimization/presets").json()[0]["history"]
+    assert len(history) == 1
+    assert history[0]["action"] == "reviewed"

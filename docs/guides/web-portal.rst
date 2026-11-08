@@ -112,9 +112,10 @@ Optimization
    reviewed counts and links author rows to the timeline filter. Timeline filter combinations can be
    saved as named local views, copied as a URL, exported/imported as JSON, or saved to a
    server-backed shared timeline library; shared timeline views can carry a self-declared author,
-   note, and draft/reviewed status. **Export audit** / **Export audit CSV** download the shared
-   library or event-level CSV. The current axes, colour, size, filters, brushes, selected point, and
-   reference are encoded in the
+   note, and draft/reviewed status. Audit maintenance can preview or prune history older than a
+   configurable day window while always keeping each preset's latest event. **Export audit** /
+   **Export audit CSV** download the shared library or event-level CSV. The current axes, colour,
+   size, filters, brushes, selected point, and reference are encoded in the
    URL; **Copy view link** shares that exact state, and **Download
    filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through
