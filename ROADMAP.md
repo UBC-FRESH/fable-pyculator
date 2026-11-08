@@ -197,9 +197,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 68 is closed: retention runs record bounded per-preset removed-event details, and the
   dashboard shows them for a selected run. PR #357 merged as `d5d26e3`; parent #355 and child #356 are
   closed. Post-merge Test and Docs Pages passed.
-- Phase 69 is implemented on `feature/p69-retention-preview-diff`: retention run details now include
-  exact before/after history vectors per affected preset and the dashboard renders the diff. Parent
-  #358 and child #359 are mapped; PR #360 and closeout remain.
+- Phase 69 is closed: retention run details include exact before/after history vectors per affected
+  preset and the dashboard renders the diff. PR #360 merged as `d10b289`; parent #358 and child #359
+  are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4905,9 +4905,9 @@ GitHub parent issue: #358.
 
 Branch: `feature/p69-retention-preview-diff`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #360.
+Pull request: #360 (merged as `d10b289`).
 
 Goal: show exact before/after history vectors for each affected preset in a retention run.
 
@@ -4949,8 +4949,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; diff rendering verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #360 squash-merged as `d10b289`; parent #358 and child #359 closed.
 
