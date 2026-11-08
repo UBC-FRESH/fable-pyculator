@@ -185,7 +185,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   child #341 are closed. Post-merge Test and Docs Pages passed.
 - Phase 64 is implemented on `feature/p64-startup-retention`: the portal can apply a configurable
   startup retention policy (or dry run), writes a JSONL retention log, and exposes the policy/last
-  result through the API and UI. Parent #343 and child #344 are mapped; PR and closeout remain.
+  result through the API and UI. Parent #343 and child #344 are mapped; PR #345 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4609,7 +4609,9 @@ GitHub parent issue: #343.
 
 Branch: `feature/p64-startup-retention`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #345.
 
 Goal: add a configurable startup retention policy and retention audit log.
 
