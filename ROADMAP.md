@@ -202,7 +202,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   are closed. Post-merge Test and Docs Pages passed.
 - Phase 70 is implemented on `feature/p70-confirm-prune`: Prune history now previews first and requires
   a second Confirm prune click; changing days resets the preview. Parent #361 and child #362 are
-  mapped; PR and closeout remain.
+  mapped; PR #363 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4964,7 +4964,9 @@ GitHub parent issue: #361.
 
 Branch: `feature/p70-confirm-prune`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #363.
 
 Goal: require a dry-run preview before committing retention pruning.
 
