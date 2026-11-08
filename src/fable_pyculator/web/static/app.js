@@ -24,6 +24,7 @@ const state = {
     chart: null,
     mesh: null,
     selected: null,
+    reference: null,
     filtered: [],
     pinned: [],
     pending: null,
@@ -232,12 +233,16 @@ async function loadOptimizationFrontier(version) {
   if (!data.points || !data.points.length) throw new Error("the frontier artifact has no points");
   state.optimization.data = data;
   state.optimization.selected = null;
+  state.optimization.reference = null;
   state.optimization.pinned = [];
   state.optimization.filtered = [];
   $("#pareto-info").innerHTML = '<p class="hint">Select a point to inspect its exact objectives and selections.</p>';
   $("#pareto-load").disabled = true;
   $("#pareto-pin").disabled = true;
+  $("#pareto-reference").disabled = true;
+  $("#pareto-clear-reference").disabled = true;
   $("#pareto-clear-pins").disabled = true;
+  $("#pareto-delta").innerHTML = "";
   $("#pareto-compare").innerHTML = "";
   initOptimizationControls(data);
   restoreOptimizationState();
@@ -411,6 +416,12 @@ function ensureOptimizationChart() {
   );
   marker.visible = false;
   scene.add(marker);
+  const referenceMarker = new THREE.Mesh(
+    new THREE.SphereGeometry(0.08, 16, 12),
+    new THREE.MeshBasicMaterial({ color: 0x1f6feb, wireframe: true, transparent: true, opacity: 0.95 }),
+  );
+  referenceMarker.visible = false;
+  scene.add(referenceMarker);
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
   const tooltip = $("#pareto-tooltip");
@@ -461,7 +472,7 @@ function ensureOptimizationChart() {
     const point = mesh.userData.points?.[hits[0].instanceId];
     if (point) renderOptimizationInfo(point);
   });
-  const chart = { renderer, scene, camera, controls, canvas, mesh: null, axes, marker };
+  const chart = { renderer, scene, camera, controls, canvas, mesh: null, axes, marker, referenceMarker };
   window.addEventListener("resize", () => {
     if (!chart.canvas.clientWidth) return;
     renderer.setSize(chart.canvas.clientWidth, Math.max(chart.canvas.clientHeight, 1), false);
@@ -558,23 +569,23 @@ function optimizationLegendHtml(data, colourMode, filtered) {
 
 function updateOptimizationSelectionMarker() {
   const chart = state.optimization.chart;
-  const point = state.optimization.selected;
-  if (!chart?.marker) return;
-  if (!point) {
-    chart.marker.visible = false;
-    return;
-  }
-  const visible = state.optimization.filtered.some((item) => item.id === point.id);
-  if (!visible) {
-    chart.marker.visible = false;
-    return;
-  }
   const data = state.optimization.data;
-  const x = optimizationPointQuality(data, point, $("#pareto-x").value);
-  const y = optimizationPointQuality(data, point, $("#pareto-y").value);
-  const z = optimizationPointQuality(data, point, $("#pareto-z").value);
-  chart.marker.position.set((x - 0.5) * 3.2, (y - 0.5) * 3.2, (z - 0.5) * 3.2);
-  chart.marker.visible = true;
+  if (!chart?.marker || !data) return;
+  const place = (marker, point) => {
+    if (!marker) return;
+    const visible = point && state.optimization.filtered.some((item) => item.id === point.id);
+    if (!visible) {
+      marker.visible = false;
+      return;
+    }
+    const x = optimizationPointQuality(data, point, $("#pareto-x").value);
+    const y = optimizationPointQuality(data, point, $("#pareto-y").value);
+    const z = optimizationPointQuality(data, point, $("#pareto-z").value);
+    marker.position.set((x - 0.5) * 3.2, (y - 0.5) * 3.2, (z - 0.5) * 3.2);
+    marker.visible = true;
+  };
+  place(chart.marker, state.optimization.selected);
+  place(chart.referenceMarker, state.optimization.reference);
 }
 
 
@@ -665,12 +676,74 @@ function drawParallelCoordinates() {
     }).join(" ");
     const classes = ["parallel-line", point.front ? "front" : "dominated"];
     if (point.id === selectedId) classes.push("selected");
+    if (point.id === state.optimization.reference?.id) classes.push("reference");
     markup += `<polyline class="${classes.join(" ")}" points="${coordinates}" data-parallel-point="${escapeHtml(point.id)}"><title>${escapeHtml(point.id)} · ${escapeHtml(point.origin || "exact")} · Food ${formatNumber(point.objectives?.food_total_kcal_feas, 4)} · GHG ${formatNumber(point.objectives?.ghg_total_co2e, 4)} · Goal ${formatNumber(point.goal, 4)}</title></polyline>`;
   }
   svg.innerHTML = markup;
   svg.querySelectorAll("[data-parallel-point]").forEach((line) => {
     line.addEventListener("click", () => selectOptimizationPoint(line.dataset.parallelPoint));
   });
+}
+
+
+function setOptimizationReference() {
+  const point = state.optimization.selected;
+  if (!point) return;
+  state.optimization.reference = point;
+  renderOptimizationDelta();
+  updateOptimizationSelectionMarker();
+  drawParallelCoordinates();
+  persistOptimizationState();
+  toast(`Reference set to ${point.id}`, "good");
+}
+
+function clearOptimizationReference() {
+  state.optimization.reference = null;
+  renderOptimizationDelta();
+  updateOptimizationSelectionMarker();
+  drawParallelCoordinates();
+  persistOptimizationState();
+  toast("Reference cleared");
+}
+
+function renderOptimizationDelta() {
+  const container = $("#pareto-delta");
+  if (!container) return;
+  const selected = state.optimization.selected;
+  const reference = state.optimization.reference;
+  const referenceButton = $("#pareto-clear-reference");
+  if (referenceButton) referenceButton.disabled = !reference;
+  if (!selected || !reference) {
+    container.innerHTML = reference
+      ? `<p class="hint">Reference ${escapeHtml(reference.id)} is set. Select another point to compare.</p>`
+      : '<p class="hint">Set one exact point as the reference to compare another point against it.</p>';
+    return;
+  }
+  const fields = [
+    ["Food", "food_total_kcal_feas", "max", "kcal"],
+    ["GHG", "ghg_total_co2e", "min", "MtCO2e"],
+    ["Land", "land_total_area", "min", "ha"],
+    ["Goal", "goal", "min", ""],
+  ];
+  const cards = fields
+    .map(([label, key, direction, unit]) => {
+      const selectedValue = Number(key === "goal" ? selected.goal : selected.objectives?.[key]);
+      const referenceValue = Number(key === "goal" ? reference.goal : reference.objectives?.[key]);
+      const delta = selectedValue - referenceValue;
+      const better = direction === "max" ? delta >= 0 : delta <= 0;
+      const tone = Math.abs(delta) < 1e-9 ? "" : better ? "delta-good" : "delta-bad";
+      return `<div class="delta-card"><span>${escapeHtml(label)}</span><strong class="${tone}">${formatSigned(delta, 4)}${unit ? ` ${escapeHtml(unit)}` : ""}</strong></div>`;
+    })
+    .join("");
+  const controls = ["land_scen", "diet_scen", "fixtrade_scen", "live_scen", "crop_scen", "affor_scen", "livedens_scen"];
+  const changes = controls
+    .filter((name) => optimizationControlValue(selected, name) !== optimizationControlValue(reference, name))
+    .map((name) => `<span class="chip"><b>${escapeHtml(OPTIMIZATION_CONTROL_LABELS[name] || name)}</b>${escapeHtml(optimizationControlValue(reference, name))} → ${escapeHtml(optimizationControlValue(selected, name))}</span>`)
+    .join("");
+  container.innerHTML = `
+    <p class="hint">Selected <strong>${escapeHtml(selected.id)}</strong> vs reference <strong>${escapeHtml(reference.id)}</strong> · delta = selected − reference</p>
+    <div class="delta-grid">${cards}</div>
+    <div class="selection-list">${changes || '<span class="hint">No changed scenario controls in the displayed set.</span>'}</div>`;
 }
 
 function drawOptimization() {
@@ -749,6 +822,7 @@ function drawOptimization() {
   $("#pareto-legend").innerHTML = optimizationLegendHtml(data, colourMode, filtered) +
     `<span>${filtered.length} of ${data.points.length} exact points</span>`;
   updateOptimizationSelectionMarker();
+  renderOptimizationDelta();
   drawParallelCoordinates();
   persistOptimizationState();
   chart.renderer.render(chart.scene, chart.camera);
@@ -790,6 +864,8 @@ function renderOptimizationInfo(point) {
   state.optimization.selected = point;
   $("#pareto-load").disabled = false;
   $("#pareto-pin").disabled = false;
+  $("#pareto-reference").disabled = false;
+  renderOptimizationDelta();
   updateOptimizationSelectionMarker();
   drawParallelCoordinates();
 }
@@ -908,6 +984,8 @@ function persistOptimizationState() {
   else params.delete("opt_nowarn");
   if (state.optimization.selected?.id) params.set("opt_point", state.optimization.selected.id);
   else params.delete("opt_point");
+  if (state.optimization.reference?.id) params.set("opt_reference", state.optimization.reference.id);
+  else params.delete("opt_reference");
   const search = params.toString();
   history.replaceState(null, "", `${search ? `?${search}` : ""}${location.hash || "#optimization"}`);
 }
@@ -944,6 +1022,16 @@ function restoreOptimizationState() {
   if (pointId) {
     const point = data.points?.find((item) => item.id === pointId);
     if (point) renderOptimizationInfo(point);
+  }
+  const referenceId = params.get("opt_reference");
+  if (referenceId) {
+    const reference = data.points?.find((item) => item.id === referenceId);
+    if (reference) {
+      state.optimization.reference = reference;
+      renderOptimizationDelta();
+      updateOptimizationSelectionMarker();
+      drawParallelCoordinates();
+    }
   }
 }
 
@@ -1033,6 +1121,8 @@ function bindOptimizationEvents() {
   $("#pareto-front-only").addEventListener("change", drawOptimization);
   $("#pareto-warning-free").addEventListener("change", drawOptimization);
   $("#pareto-pin").addEventListener("click", pinOptimizationPoint);
+  $("#pareto-reference").addEventListener("click", setOptimizationReference);
+  $("#pareto-clear-reference").addEventListener("click", clearOptimizationReference);
   $("#pareto-clear-pins").addEventListener("click", clearOptimizationPins);
   $("#pareto-reset").addEventListener("click", resetOptimizationView);
   $("#pareto-load").addEventListener("click", loadOptimizationPointInWorkbench);

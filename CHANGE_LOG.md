@@ -95,6 +95,9 @@ This file records completed project work in chronological order.
 - Added synchronized parallel coordinates to the Optimization page. The 9-axis SVG view uses the same
   filtered exact points, highlights the selected line, and selects the matching 3D point.
   PR #285 merged as `64e1a01`; post-merge Test and Docs Pages passed.
+- Added selected-vs-reference comparison to the Optimization page: exact objective and selection
+  deltas, a blue reference marker in 3D, a dashed reference line in parallel coordinates, and
+  `opt_reference` URL state.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain
