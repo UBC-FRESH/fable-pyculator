@@ -122,7 +122,7 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 44 is implemented on `feature/p44-parallel-coordinates`: the Optimization page now has a
   synchronized parallel-coordinates view over land, diet, trade-fix, livestock, crop, afforestation,
   food, GHG, and goal. It renders the same filtered exact points and clicking a line selects the 3D
-  point. Parent #283 and child #284 are mapped; PR and closeout remain.
+  point. Parent #283 and child #284 are mapped; PR #285 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -3418,7 +3418,9 @@ GitHub parent issue: #283.
 
 Branch: `feature/p44-parallel-coordinates`.
 
-Status: implemented; PR pending.
+Status: pr-open.
+
+Pull request: #285.
 
 Goal: add a synchronized parallel-coordinates view for the same exact Pareto points.
 
