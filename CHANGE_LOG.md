@@ -181,6 +181,8 @@ This file records completed project work in chronological order.
 - Generated the expert rule-review worksheet and Markdown rule block from the YAML registry, with
   reviewer-decision preservation and a `--check` drift gate.
   PR #383 merged as `996745c`; post-merge Test and Docs Pages passed.
+- Added a dry-run/explicit-write importer from completed review worksheet decisions into the YAML
+  registry, with self-declared reviewer provenance and fail-closed validation.
 - Added `scripts/check_deployed_portal.py` and Cloudflare Access deployment documentation, then
   merged them in PR #232 (`bd7cd0c`). The checker detects the live
   `fable-pyculator.01101.dev` Access redirect; the version check and `0.1.0a5` upgrade remain

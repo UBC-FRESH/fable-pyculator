@@ -42,6 +42,7 @@ class ScenarioRule:
     condition: Mapping[str, Any] | None = None
     require: Mapping[str, Any] | None = None
     coherence: Mapping[str, Any] | None = None
+    review: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -127,6 +128,7 @@ def load_rule_registry(path: str | Path) -> tuple[ScenarioRule, ...]:
                 condition=item.get("when"),
                 require=item.get("require"),
                 coherence=item.get("coherence"),
+                review=item.get("review"),
             )
         )
     return tuple(loaded)

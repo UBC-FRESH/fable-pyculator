@@ -222,6 +222,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 76 is closed: the expert review worksheet and Markdown rule block are generated from the YAML
   registry, preserve reviewer decisions, and have a `--check` drift gate. PR #383 merged as
   `996745c`; parent #381 and child #382 are closed. Post-merge Test and Docs Pages passed.
+- Phase 77 is implemented on `feature/p77-rule-decision-roundtrip`: completed worksheet decisions
+  can be dry-run or explicitly imported into the registry with status/severity/provenance updates.
+  Parent #384 and child #385 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5395,4 +5398,66 @@ Verification evidence:
 Closeout evidence:
 
 - PR #383 squash-merged as `996745c`; parent #381 and child #382 closed.
+
+## Phase 77: Rule Decision Round-Trip
+
+GitHub parent issue: #384.
+
+Branch: `feature/p77-rule-decision-roundtrip`.
+
+Status: implemented; PR pending.
+
+Goal: import completed review worksheet decisions into the YAML registry with a dry-run preview.
+
+Tasks:
+
+- [x] P77.1 Import completed review decisions with a dry-run provenance preview. Child issue: #385.
+
+Scope:
+
+- Read decisions, reviewers, and comments from the review CSV.
+- Map approve_error and approve_warning to approved with the chosen severity.
+- Map reject to rejected; record defer and replace without changing status.
+- Preserve reviewer provenance in the registry.
+- Require an explicit `--write` step and reject missing reviewers or unknown rules.
+- Refresh the generated review package after a write.
+
+Out of scope:
+
+- Authenticated approval.
+- Running new optimization domains automatically.
+- Changing the review-package worksheet UI.
+- Applying any decision to the production registry in this phase.
+
+Architecture notes:
+
+- The worksheet remains the input; the registry remains the machine-readable source.
+- Decisions are self-declared provenance, not authenticated approval.
+- Dry-run is the default; no file is written without `--write`.
+- Timestamps are preserved when the same decision is reapplied.
+- Replacing a rule remains a manual edit; the importer records the decision and leaves the rule provisional.
+
+Implementation evidence:
+
+- Added `scripts/import_rule_review_decisions.py` with JSON/human dry-run output and explicit `--write`.
+- Added optional `review` provenance to the rule model and loader.
+- approve_error/approve_warning set approved status and the chosen severity; reject sets rejected.
+- defer and replace record provenance but leave status unchanged and are flagged for follow-up.
+- Missing reviewers, unknown rule ids, invalid decisions, and duplicate rows fail closed with no write.
+- Repeated writes preserve `decided_at` when the decision is unchanged.
+- Default tracked-registry writes refresh the generated review package; custom paths skip refresh.
+- The tracked registry remains 18 proposed rules; no decision was applied in this phase.
+
+Verification evidence:
+
+- Full suite: 252 passed, 16 skipped.
+- Importer tests cover dry-run no-write, write mappings, provenance, timestamp preservation, generated CSV round-trip, and failure cases.
+- Tracked-registry dry run reports zero changes and zero errors.
+- `build_rule_review_package.py --check` passes.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

@@ -559,7 +559,9 @@ The detailed scenario-consistency rule surface and the extensible coefficient/sw
 in `planning/fable-scenario-consistency-rules.md` and
 `planning/fable-scenario-consistency-rules.yaml`. The expert review worksheet and Markdown rule block
 are generated from that registry by `scripts/build_rule_review_package.py`; `--check` fails when the
-tracked package drifts, while existing reviewer decisions are preserved by rule id.
+tracked package drifts, while existing reviewer decisions are preserved by rule id. Completed
+worksheet decisions are imported by `scripts/import_rule_review_decisions.py`: dry-run is the
+default, and `--write` records self-declared reviewer provenance and refreshes the package.
 
 Commands
 --------
@@ -603,3 +605,6 @@ Commands
 
    .venv/bin/python scripts/build_rule_review_package.py
    .venv/bin/python scripts/build_rule_review_package.py --check
+
+   .venv/bin/python scripts/import_rule_review_decisions.py
+   .venv/bin/python scripts/import_rule_review_decisions.py --write
