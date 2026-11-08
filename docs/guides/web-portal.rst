@@ -95,10 +95,11 @@ Optimization
    and actual axis ranges. It also lets you inspect, pin, compare, and load a frontier point into the
    Workbench. A synchronized parallel-coordinates panel shows the same filtered exact points across
    land, diet, trade-fix, livestock, crop, afforestation, food, GHG, and goal axes; clicking a line
-   selects the matching 3D point. A point can be set as a reference, with an exact selected-vs-reference
-   delta card and synchronized reference markers. The current axes, colour, size, filters, selected
-   point, and reference are encoded in the URL; **Copy view link** shares that exact state, and
-   **Download filtered CSV** exports the visible exact points. The viewer reads
+   selects the matching 3D point. Dragging vertically on an axis brushes a range and filters both
+   views; **Clear brush** resets it. A point can be set as a reference, with an exact
+   selected-vs-reference delta card and synchronized reference markers. The current axes, colour,
+   size, filters, brush, selected point, and reference are encoded in the URL; **Copy view link**
+   shares that exact state, and **Download filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through
    ``/api/optimization/frontiers``; it never runs an optimizer or a surrogate in the browser.
 

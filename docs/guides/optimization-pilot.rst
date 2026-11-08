@@ -531,8 +531,9 @@ values, the selected point is highlighted, and the panel shows the actual range 
 dimension. A point can be selected, pinned with up to two other points for comparison, and loaded
 into the Workbench as a scenario prefill. A synchronized parallel-coordinates view shows the same
 filtered exact points across controls and outcomes, and clicking a line selects the matching 3D point.
-A selected point can be compared against a reference point with exact objective deltas and changed
-selections; the reference is marked in both views. The view state is shareable through URL query
+Dragging on a parallel axis brushes a range and filters both views. A selected point can be compared
+against a reference point with exact objective deltas and changed selections; the reference is marked
+in both views. The view state, including the brush and reference, is shareable through URL query
 parameters, and the currently filtered exact points can be downloaded as CSV.
 
 This is the same interaction pattern as the urban-forest lab and WS4 Pareto explorer. The FABLE

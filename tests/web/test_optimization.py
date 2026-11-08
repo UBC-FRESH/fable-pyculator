@@ -73,6 +73,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert 'id="pareto-reference"' in shell.text
     assert 'id="pareto-clear-reference"' in shell.text
     assert 'id="pareto-delta"' in shell.text
+    assert 'id="parallel-clear-brush"' in shell.text
+    assert 'id="parallel-brush-label"' in shell.text
     assert script.status_code == 200
     assert "drawOptimization" in script.text
     assert "loadOptimizationPointInWorkbench" in script.text
@@ -88,6 +90,10 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "setOptimizationReference" in script.text
     assert "renderOptimizationDelta" in script.text
     assert "opt_reference" in script.text
+    assert "beginParallelBrush" in script.text
+    assert "clearOptimizationBrush" in script.text
+    assert "parallelBrushMatches" in script.text
+    assert "opt_brush" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
