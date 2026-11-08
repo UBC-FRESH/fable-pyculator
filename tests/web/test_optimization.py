@@ -185,6 +185,8 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "renderRetentionDetail" in script.text
     assert "resetPruneConfirmation" in script.text
     assert "Confirm prune" in script.text
+    assert "exportRetentionDiffCsv" in script.text
+    assert "retentionSelected" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
