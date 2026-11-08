@@ -9,7 +9,7 @@ Examples::
 
     python scripts/check_deployed_portal.py --url https://fable-pyculator.01101.dev
     python scripts/check_deployed_portal.py --url https://fable-pyculator.01101.dev \
-        --expect-version 0.1.0a5 --json
+        --expect-version 0.1.0a6 --json
 """
 
 from __future__ import annotations

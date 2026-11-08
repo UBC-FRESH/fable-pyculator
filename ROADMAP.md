@@ -228,6 +228,10 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 78 is closed: snapshot policy is visible in the shared panel and snapshots can be deleted with
   a two-step confirmation. PR #389 merged as `5e8cfb8`; parent #387 and child #388 are closed.
   Post-merge Test and Docs Pages passed.
+- Phase 79 is implemented on `feature/p79-release-candidate-a6`: the local package and provider report
+  `0.1.0a6`, release docs distinguish the candidate from published `0.1.0a5`, and the clean-install
+  artifact check passed. Parent #390 and child #391 are mapped; PR #392 and closeout remain. No tag or
+  publication was created.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -5526,4 +5530,62 @@ Verification evidence:
 Closeout evidence:
 
 - PR #389 squash-merged as `5e8cfb8`; parent #387 and child #388 closed.
+
+## Phase 79: Release Candidate 0.1.0a6
+
+GitHub parent issue: #390.
+
+Branch: `feature/p79-release-candidate-a6`.
+
+Status: pr-open.
+
+Pull request: #392.
+
+Goal: prepare and verify a local 0.1.0a6 release candidate without tagging or publishing.
+
+Tasks:
+
+- [x] P79.1 Bump to 0.1.0a6 and verify local release artifacts. Child issue: #391.
+
+Scope:
+
+- Bump package and FreshForge provider versions to 0.1.0a6.
+- Update version assertions, README, and release/deployment guidance.
+- Make the release-artifact checker read the expected version from pyproject.toml.
+- Run tests, docs, and the clean-install release-artifact check.
+- Document that 0.1.0a5 remains the latest published PyPI alpha until publication.
+
+Out of scope:
+
+- Creating a Git tag.
+- Publishing to TestPyPI or PyPI.
+- Upgrading a remote deployment.
+- Changing the FreshForge dependency minimum.
+
+Architecture notes:
+
+- The package version is the single source for provider metadata and release-check assertions.
+- The release check builds an sdist/wheel and installs the wheel in a clean virtual environment.
+- Publication remains a maintainer-gated action after this phase.
+
+Implementation evidence:
+
+- Package, provider metadata, tests, and CLI report `0.1.0a6`.
+- README and release docs identify `0.1.0a6` as the repository candidate and `0.1.0a5` as the latest published PyPI alpha.
+- `scripts/check_release_artifacts.sh` derives `EXPECTED_VERSION` from `pyproject.toml` instead of hardcoding a release.
+- Release checker built and inspected `fable_pyculator-0.1.0a6-py3-none-any.whl` and `fable_pyculator-0.1.0a6.tar.gz` under `tmp/release-checks/p79/`.
+- Clean installed wheel imported `fable_pyculator 0.1.0a6` and passed release-artifact inspection.
+- No Git tag, TestPyPI publication, PyPI publication, or remote deployment upgrade was created.
+
+Verification evidence:
+
+- Full suite: 252 passed, 16 skipped.
+- `fable-pyculator --version` and import/provider metadata report `0.1.0a6`.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- `scripts/check_release_artifacts.sh` passed with a clean wheel install.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

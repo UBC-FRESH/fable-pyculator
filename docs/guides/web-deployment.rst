@@ -109,7 +109,7 @@ Use a service token for verification:
    export CF_ACCESS_CLIENT_SECRET='...'
    python scripts/check_deployed_portal.py \
      --url https://fable-pyculator.01101.dev \
-     --expect-version 0.1.0a5
+     --expect-version 0.1.0a6
 
 The checker prints the deployed version, prepared models, assistant state, and artifact checksum
 states. It never writes credentials to disk.
@@ -130,10 +130,11 @@ Live upgrade runbook
 --------------------
 
 1. Run ``scripts/check_deployed_portal.py`` and record the current version and artifact states.
-2. Install the published release into the service environment:
-   ``python -m pip install --pre 'fable-pyculator[web]==0.1.0a5'``.
+2. After ``0.1.0a6`` is published, install it into the service environment:
+   ``python -m pip install --pre 'fable-pyculator[web]==0.1.0a6'``. Before publication, use the
+   locally built candidate wheel from ``tmp/release-checks/`` for validation only.
 3. Restart the service or systemd unit.
-4. Re-run the checker with ``--expect-version 0.1.0a5``.
+4. Re-run the checker with ``--expect-version 0.1.0a6``.
 5. Log in through Access and run one prepared-model scenario.
 6. Record the deployment URL, version, commit/tag, workflow runs, and any limitations.
 
