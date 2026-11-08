@@ -182,6 +182,7 @@ def test_optimization_page_and_vendor_assets_are_served(tmp_path: Path) -> None:
     assert "loadRetentionRuns" in script.text
     assert "optimization/retention/runs" in script.text
     assert "exportRetentionRunsCsv" in script.text
+    assert "renderRetentionDetail" in script.text
     assert three.status_code == 200
     assert "THREE" in three.text
     assert controls.status_code == 200
@@ -383,6 +384,8 @@ def test_prune_shared_preset_history_preserves_latest(tmp_path: Path) -> None:
         assert preview["presets_touched"] == 1
         assert preview["presets_total"] == 1
         assert preview["source"] == "manual"
+        assert preview["details"][0]["preset"] == "Old history"
+        assert preview["details"][0]["removed"][0]["action"] == "created"
         assert len(client.get("/api/optimization/presets").json()[0]["history"]) == 2
 
         pruned = client.post("/api/optimization/presets/prune", json={"days": 30, "dry_run": False}).json()

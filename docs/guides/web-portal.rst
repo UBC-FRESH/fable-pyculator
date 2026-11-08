@@ -117,9 +117,10 @@ Optimization
    configured with `--history-retention-days`, `--history-retention-dry-run`, and
    `--history-retention-interval-minutes`; results are written to
    `runtime/portal/retention-log.jsonl`, and a compact dashboard shows recent runs with source, mode,
-   and counts; **Export runs CSV** downloads the recent maintenance log table. **Export audit** /
-   **Export audit CSV** download the shared library or event-level CSV. The current axes, colour,
-   size, filters, brushes, selected point, and reference are encoded in the
+   and counts; selecting a run shows the affected presets and removed events, and **Export runs CSV**
+   downloads the recent maintenance log table. **Export audit** / **Export audit CSV** download the
+   shared library or event-level CSV. The current axes, colour, size, filters, brushes, selected
+   point, and reference are encoded in the
    URL; **Copy view link** shares that exact state, and **Download
    filtered CSV** exports the visible exact points. The viewer reads
    ``examples/optimization/fable_2024/frontier.json`` through

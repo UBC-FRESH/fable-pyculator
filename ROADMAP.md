@@ -194,6 +194,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
   Post-merge Test and Docs Pages passed.
 - Phase 67 is closed: the retention dashboard can export its recent runs as CSV. PR #354 merged as
   `9a20f5a`; parent #352 and child #353 are closed. Post-merge Test and Docs Pages passed.
+- Phase 68 is implemented on `feature/p68-retention-run-details`: retention runs now record bounded
+  per-preset removed-event details, and the dashboard shows them for a selected run. Parent #355 and
+  child #356 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4835,4 +4838,58 @@ Verification evidence:
 Closeout evidence:
 
 - PR #354 squash-merged as `9a20f5a`; parent #352 and child #353 closed.
+
+## Phase 68: Retention Run Details
+
+GitHub parent issue: #355.
+
+Branch: `feature/p68-retention-run-details`.
+
+Status: implemented; PR pending.
+
+Goal: record per-preset removed events in retention runs and show them in the dashboard.
+
+Tasks:
+
+- [x] P68.1 Record and display per-preset removed events. Child issue: #356.
+
+Scope:
+
+- Add compact details to retention log entries.
+- List affected presets and removed event actions/timestamps.
+- Let the dashboard select a run and inspect details.
+- Keep details bounded and backward-compatible.
+
+Out of scope:
+
+- Full event payload snapshots.
+- Authentication.
+- New optimization runs.
+
+Architecture notes:
+
+- Details are bounded to keep the JSONL compact.
+- Old log entries without details remain readable.
+- No new writes beyond retention logging.
+
+Implementation evidence:
+
+- Prune results now include up to 20 affected presets and up to 10 removed events each,
+  with a truncation flag.
+- Dashboard rows are selectable and show preset, removed action/timestamp, and kept count.
+- Old log entries without details display a clear no-details hint.
+- API tests assert the removed `created` event detail.
+- Existing dashboard/CSV export, retention controls, presets, timeline views, and viewer behavior
+  remain intact.
+
+Verification evidence:
+
+- Full suite: 237 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; detail panel verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 
