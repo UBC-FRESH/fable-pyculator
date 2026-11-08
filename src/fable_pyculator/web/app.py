@@ -258,6 +258,10 @@ def create_app(config: PortalConfig) -> FastAPI:
     def optimization_presets() -> list[dict[str, Any]]:
         return state.optimization_presets()
 
+    @app.get("/api/optimization/retention")
+    def optimization_retention() -> dict[str, Any]:
+        return state.retention_status()
+
     @app.post("/api/optimization/presets")
     def save_optimization_preset(request: OptimizationPresetRequest) -> dict[str, Any]:
         try:

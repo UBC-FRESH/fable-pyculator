@@ -93,6 +93,17 @@ def _parser() -> argparse.ArgumentParser:
         type=float,
         help="Assistant subprocess timeout in seconds.",
     )
+    web.add_argument(
+        "--history-retention-days",
+        default=0,
+        type=int,
+        help="Prune shared preset history older than this many days on startup (0 disables).",
+    )
+    web.add_argument(
+        "--history-retention-dry-run",
+        action="store_true",
+        help="Preview startup retention without removing history.",
+    )
     return parser
 
 
@@ -119,6 +130,8 @@ def _web(args: argparse.Namespace) -> int:
         agent_timeout=args.agent_timeout,
         auth_user=args.auth_user,
         auth_password=args.auth_password,
+        history_retention_days=args.history_retention_days,
+        history_retention_dry_run=args.history_retention_dry_run,
     )
     try:
         run_server(

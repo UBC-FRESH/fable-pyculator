@@ -183,6 +183,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 63 is closed: shared preset history can be previewed and pruned by a configurable day window
   while always preserving each preset's latest event. PR #342 merged as `89abc93`; parent #340 and
   child #341 are closed. Post-merge Test and Docs Pages passed.
+- Phase 64 is implemented on `feature/p64-startup-retention`: the portal can apply a configurable
+  startup retention policy (or dry run), writes a JSONL retention log, and exposes the policy/last
+  result through the API and UI. Parent #343 and child #344 are mapped; PR and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4599,4 +4602,59 @@ Verification evidence:
 Closeout evidence:
 
 - PR #342 squash-merged as `89abc93`; parent #340 and child #341 closed.
+
+## Phase 64: Startup Retention Policy
+
+GitHub parent issue: #343.
+
+Branch: `feature/p64-startup-retention`.
+
+Status: implemented; PR pending.
+
+Goal: add a configurable startup retention policy and retention audit log.
+
+Tasks:
+
+- [x] P64.1 Add configurable startup retention and audit log. Child issue: #344.
+
+Scope:
+
+- Add CLI/config fields for retention days and dry-run mode.
+- Apply retention once on portal startup.
+- Write dry-run/prune summaries to a JSONL audit log.
+- Expose current policy and last result through a read endpoint.
+
+Out of scope:
+
+- A background scheduler.
+- Authentication or verified review.
+- Pruning viewer/timeline libraries.
+
+Architecture notes:
+
+- Retention is disabled by default.
+- Startup runs once per portal process.
+- Manual and startup prunes share the same service logic.
+- Dry-run mode never mutates history.
+
+Implementation evidence:
+
+- Added `--history-retention-days` and `--history-retention-dry-run` CLI flags and matching config.
+- Startup applies retention once when days > 0; default is disabled.
+- Added `runtime/portal/retention-log.jsonl` with source, timestamps, and counts.
+- Added `GET /api/optimization/retention` and a policy/last-run hint in the UI.
+- Service tests cover real startup prune, log creation, and non-destructive dry run.
+- Existing manual retention, shared/local presets, timeline views, audit exports, and viewer behavior
+  remain intact.
+
+Verification evidence:
+
+- Full suite: 235 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; policy display verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 
