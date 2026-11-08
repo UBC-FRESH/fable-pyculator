@@ -156,9 +156,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 54 is closed: shared presets keep a compact server-owned history of created/updated/reviewed
   events with self-declared author and timestamp. PR #315 merged as `c9a7b16`; parent #313 and child
   #314 are closed. Post-merge Test and Docs Pages passed.
-- Phase 55 is implemented on `feature/p55-shared-review-audit`: a read-only shared audit table and
-  JSON export now cover all shared presets, metadata, latest events, and full history. Parent #316
-  and child #317 are mapped; PR #318 and closeout remain.
+- Phase 55 is closed: a read-only shared audit table and JSON export cover all shared presets,
+  metadata, latest events, and full history. PR #318 merged as `94881a5`; parent #316 and child #317
+  are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4079,9 +4079,9 @@ GitHub parent issue: #316.
 
 Branch: `feature/p55-shared-review-audit`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #318.
+Pull request: #318 (merged as `94881a5`).
 
 Goal: add an audit table and JSON export for the shared preset library.
 
@@ -4122,8 +4122,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; audit and export verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #318 squash-merged as `94881a5`; parent #316 and child #317 closed.
 
