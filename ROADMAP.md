@@ -165,6 +165,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 57 is closed: the review timeline filters by author/action/preset/date window and has
   Recently reviewed and Reset shortcuts. PR #324 merged as `2af07a9`; parent #322 and child #323 are
   closed. Post-merge Test and Docs Pages passed.
+- Phase 58 is implemented on `feature/p58-review-workload`: a per-author workload table summarizes
+  created/updated/reviewed counts and latest activity, with author-row click-through to the timeline
+  filter. Parent #325 and child #326 are mapped; PR #327 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4244,4 +4247,58 @@ Verification evidence:
 Closeout evidence:
 
 - PR #324 squash-merged as `2af07a9`; parent #322 and child #323 closed.
+
+## Phase 58: Review Workload Summary
+
+GitHub parent issue: #325.
+
+Branch: `feature/p58-review-workload`.
+
+Status: pr-open.
+
+Pull request: #327.
+
+Goal: add a compact per-author review workload summary to the shared audit.
+
+Tasks:
+
+- [x] P58.1 Add per-author review workload summary. Child issue: #326.
+
+Scope:
+
+- Count created/updated/reviewed events by author.
+- Show latest activity per author.
+- Click an author row to filter the timeline.
+- Keep metadata self-declared.
+
+Out of scope:
+
+- Authentication or verified reviewer identity.
+- New optimization runs.
+- Global-frontier claims.
+
+Architecture notes:
+
+- The summary aggregates server-owned preset history.
+- Authors are self-declared labels.
+- Click-through only changes local timeline filter state.
+
+Implementation evidence:
+
+- Added a per-author workload table: Created, Updated, Reviewed, Total, Latest.
+- Author rows link to the timeline author filter.
+- Browser smoke showed two author rows; clicking Hisham filtered the timeline to 1 event.
+- Existing timeline filters/shortcuts, audit table, CSV/JSON export, presets, links, and viewer behavior
+  remain intact.
+
+Verification evidence:
+
+- Full suite: 230 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; workload and click-through verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

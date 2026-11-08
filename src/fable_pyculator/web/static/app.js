@@ -1375,6 +1375,7 @@ function renderSharedTimeline(presets) {
   if (!container) return;
   const filter = state.optimization.timelineFilter;
   const allEvents = sharedAuditEvents(presets);
+  renderReviewWorkload(presets);
   const authors = [...new Set(allEvents.map((event) => event.author).filter(Boolean))].sort();
   const presetNames = presets.map((preset) => preset.name).sort();
   const authorSelect = $("#optimization-timeline-author");
@@ -1418,6 +1419,43 @@ function renderSharedTimeline(presets) {
     })
     .join("");
   container.innerHTML = `<ol>${rows}</ol>`;
+}
+
+function renderReviewWorkload(presets) {
+  const container = $("#optimization-review-workload");
+  if (!container) return;
+  const events = sharedAuditEvents(presets);
+  if (!events.length) {
+    container.innerHTML = '<p class="hint">No workload data.</p>';
+    return;
+  }
+  const byAuthor = new Map();
+  for (const event of events) {
+    const author = event.author || "Unattributed";
+    const entry = byAuthor.get(author) || { author, created: 0, updated: 0, reviewed: 0, total: 0, latest: "" };
+    entry[event.action] = (entry[event.action] || 0) + 1;
+    entry.total += 1;
+    if (!entry.latest || String(event.at) > entry.latest) entry.latest = String(event.at);
+    byAuthor.set(author, entry);
+  }
+  const rows = [...byAuthor.values()]
+    .sort((left, right) => right.total - left.total || left.author.localeCompare(right.author))
+    .map((entry) => {
+      const author = entry.author === "Unattributed" ? "Unattributed" : entry.author;
+      const attrs = entry.author === "Unattributed" ? "" : ` data-workload-author="${escapeHtml(entry.author)}"`;
+      return `<tr${attrs}><td>${escapeHtml(author)}</td><td>${entry.created}</td><td>${entry.updated}</td><td>${entry.reviewed}</td><td>${entry.total}</td><td>${escapeHtml(formatDate(entry.latest))}</td></tr>`;
+    })
+    .join("");
+  container.innerHTML = `<table><thead><tr><th>Author</th><th>Created</th><th>Updated</th><th>Reviewed</th><th>Total</th><th>Latest</th></tr></thead><tbody>${rows}</tbody></table>`;
+  container.querySelectorAll("[data-workload-author]").forEach((row) => {
+    row.addEventListener("click", () => {
+      const author = row.dataset.workloadAuthor;
+      state.optimization.timelineFilter.author = author;
+      const select = $("#optimization-timeline-author");
+      if (select) select.value = author;
+      renderSharedTimeline(state.optimization.sharedPresets || []);
+    });
+  });
 }
 
 function exportSharedAuditCsv() {
