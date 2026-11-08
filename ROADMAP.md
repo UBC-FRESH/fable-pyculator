@@ -174,9 +174,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 60 is closed: timeline filters can be copied as URL state and the saved timeline library can
   be exported/imported as JSON. PR #333 merged as `aebfc7e`; parent #331 and child #332 are closed.
   Post-merge Test and Docs Pages passed.
-- Phase 61 is implemented on `feature/p61-shared-timeline-views`: a server-backed shared timeline
-  library persists filter views under the runtime directory with list/save/delete APIs and UI
-  controls. Parent #334 and child #335 are mapped; PR #336 and closeout remain.
+- Phase 61 is closed: a server-backed shared timeline library persists filter views under the runtime
+  directory with list/save/delete APIs and UI controls. PR #336 merged as `502a4f2`; parent #334 and
+  child #335 are closed. Post-merge Test and Docs Pages passed.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4430,9 +4430,9 @@ GitHub parent issue: #334.
 
 Branch: `feature/p61-shared-timeline-views`.
 
-Status: pr-open.
+Status: complete.
 
-Pull request: #336.
+Pull request: #336 (merged as `502a4f2`).
 
 Goal: add a server-side shared library for timeline filter views.
 
@@ -4474,8 +4474,9 @@ Verification evidence:
 - Ruff passed.
 - Sphinx warning-as-error docs build and theme check passed.
 - Browser smoke passed with no page errors; shared timeline save/load/delete verified.
+- Post-merge Test and Docs Pages passed.
 
 Closeout evidence:
 
-- Pending phase PR, CI, and review.
+- PR #336 squash-merged as `502a4f2`; parent #334 and child #335 closed.
 
