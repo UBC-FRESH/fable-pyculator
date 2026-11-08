@@ -1872,14 +1872,15 @@ function renderRetentionDetail(run) {
     container.innerHTML = header + '<p class="hint">No per-event details were recorded for this run.</p>';
     return;
   }
+  const vector = (events) => (events || []).map((event) => `${event.action} ${formatDate(event.at)}`).join(" → ") || "—";
   const rows = details
     .map((entry) => {
       const removed = (entry.removed || []).map((event) => `${event.action} ${formatDate(event.at)}`).join("; ");
-      return `<tr><td>${escapeHtml(entry.preset)}</td><td>${escapeHtml(removed || "—")}</td><td>${Number(entry.kept || 0)}</td></tr>`;
+      return `<tr><td>${escapeHtml(entry.preset)}</td><td>${escapeHtml(vector(entry.before))}</td><td>${escapeHtml(vector(entry.after))}</td><td>${escapeHtml(removed || "—")}</td></tr>`;
     })
     .join("");
   const truncated = run.details_truncated ? '<p class="hint">Details truncated.</p>' : "";
-  container.innerHTML = header + `<table><thead><tr><th>Preset</th><th>Removed events</th><th>Kept</th></tr></thead><tbody>${rows}</tbody></table>` + truncated;
+  container.innerHTML = header + `<table><thead><tr><th>Preset</th><th>Before</th><th>After</th><th>Removed</th></tr></thead><tbody>${rows}</tbody></table>` + truncated;
 }
 
 function exportRetentionRunsCsv() {

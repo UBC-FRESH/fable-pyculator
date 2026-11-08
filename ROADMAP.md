@@ -197,6 +197,9 @@ Modelwright-generated Python models while preserving Modelwright as the generic 
 - Phase 68 is closed: retention runs record bounded per-preset removed-event details, and the
   dashboard shows them for a selected run. PR #357 merged as `d5d26e3`; parent #355 and child #356 are
   closed. Post-merge Test and Docs Pages passed.
+- Phase 69 is implemented on `feature/p69-retention-preview-diff`: retention run details now include
+  exact before/after history vectors per affected preset and the dashboard renders the diff. Parent
+  #358 and child #359 are mapped; PR #360 and closeout remain.
 - Added a tracked `examples/fable_2024/` generated-model artifact for the 2024 FABLE Calculator
   (Canada) workbook (Modelwright `0.1.0a9` runtime-hardening line), with provenance and validation
   evidence in the example README.
@@ -4895,4 +4898,59 @@ Verification evidence:
 Closeout evidence:
 
 - PR #357 squash-merged as `d5d26e3`; parent #355 and child #356 closed.
+
+## Phase 69: Retention Preview Diff
+
+GitHub parent issue: #358.
+
+Branch: `feature/p69-retention-preview-diff`.
+
+Status: pr-open.
+
+Pull request: #360.
+
+Goal: show exact before/after history vectors for each affected preset in a retention run.
+
+Tasks:
+
+- [x] P69.1 Record before/after history vectors and render the diff. Child issue: #359.
+
+Scope:
+
+- Record before and after event vectors in prune details.
+- Render the diff in the dashboard detail panel.
+- Keep vectors bounded and backward-compatible.
+- Preserve existing preview/prune behavior.
+
+Out of scope:
+
+- Full event payload snapshots.
+- Authentication.
+- New optimization runs.
+
+Architecture notes:
+
+- History is already capped, so vectors are compact.
+- Old log entries without vectors remain readable.
+- No new retention writes beyond the existing log.
+
+Implementation evidence:
+
+- Prune details now include `before` and `after` event vectors, alongside removed events and kept count.
+- Detail panel shows Preset / Before / After / Removed.
+- API test asserts before/after actions and removed event.
+- Old runs without vectors retain the no-details fallback.
+- Existing dashboard/CSV export, retention controls, presets, timeline views, and viewer behavior remain
+  intact.
+
+Verification evidence:
+
+- Full suite: 237 passed, 16 skipped.
+- Ruff passed.
+- Sphinx warning-as-error docs build and theme check passed.
+- Browser smoke passed with no page errors; diff rendering verified.
+
+Closeout evidence:
+
+- Pending phase PR, CI, and review.
 

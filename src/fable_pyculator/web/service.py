@@ -1045,6 +1045,14 @@ class PortalState:
                         details.append(
                             {
                                 "preset": preset["name"],
+                                "before": [
+                                    {"at": str(event.get("at", ""))[:40], "action": str(event.get("action", ""))[:20]}
+                                    for event in history[:10]
+                                ],
+                                "after": [
+                                    {"at": str(event.get("at", ""))[:40], "action": str(event.get("action", ""))[:20]}
+                                    for event in retained[:10]
+                                ],
                                 "removed": removed_events[:10],
                                 "kept": len(retained),
                             }

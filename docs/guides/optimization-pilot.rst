@@ -542,8 +542,8 @@ draft/reviewed metadata. The shared panel has a needs-review queue, draft/review
 mark-reviewed action, and a compact created/updated/reviewed history per preset. A read-only audit
 table, filterable activity timeline, per-author workload summary, local/shared saved timeline filter
 views with URL/JSON sharing, shared timeline metadata, JSON/CSV audit exports, and previewable plus
-startup-configurable, interval-scheduled history retention with a recent-run dashboard, run details,
-and CSV export cover the full shared library. The view state is shareable through URL query
+startup-configurable, interval-scheduled history retention with a recent-run dashboard, before/after
+run diffs, and CSV export cover the full shared library. The view state is shareable through URL query
 parameters, and the currently filtered exact points can be downloaded as CSV.
 
 This is the same interaction pattern as the urban-forest lab and WS4 Pareto explorer. The FABLE
